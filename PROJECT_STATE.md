@@ -10,9 +10,9 @@
 | --- | --- |
 | **Active Phase** | Phase 1 — Project Foundation |
 | **Active Task** | Task 1.1 — Repository Setup |
-| **Last Completed Subtask** | Configure linting |
-| **Active Subtask** | Configure formatting |
-| **Next Subtask** | Configure GitHub repository |
+| **Last Completed Subtask** | Configure formatting |
+| **Active Subtask** | Configure GitHub repository |
+| **Next Subtask** | — (Task 1.1 final subtask) |
 
 > Note: This file is a bootstrap snapshot created during Task 1.1 so the
 > session workflow (AGENTS.md §Session Workflow) can read it on startup.
@@ -24,7 +24,7 @@
 
 | Task | Status | Progress |
 | --- | :---: | --- |
-| 1.1 — Repository Setup | 🟡 In Progress | 6 / 8 subtasks |
+| 1.1 — Repository Setup | 🟡 In Progress | 7 / 8 subtasks |
 | 1.2 — Documentation | ⬜ Not Started | — |
 | 1.3 — Developer Environment | ⬜ Not Started | — |
 
@@ -38,7 +38,7 @@
 | 4 | Create `.gitignore` | ✅ |
 | 5 | Configure editor settings | ✅ |
 | 6 | Configure linting | ✅ |
-| 7 | Configure formatting | ⬜ |
+| 7 | Configure formatting | ✅ |
 | 8 | Configure GitHub repository | ⬜ |
 
 ---
@@ -85,3 +85,4 @@ _(empty — first lesson lands in Phase 2)_
 | 2026-07-02 | Initialized repository: git, Go module, project structure, `.gitignore`, and this bootstrap `PROJECT_STATE.md`. (Task 1.1, subtasks 1–4) |
 | 2026-07-02 | Configured editor settings: `.editorconfig` (tabs for Go, LF everywhere, UTF-8), `.gitattributes` (LF enforcement, binary exclusions), repo-level `core.autocrlf=input`. (Task 1.1, subtask 5) |
 | 2026-07-02 | Configured linting: installed `golangci-lint v1.64.8`, created `.golangci.yml` with correctness, style, performance, and security linters; verified zero issues. (Task 1.1, subtask 6) |
+| 2026-07-02 | Configured formatting: installed `gofumpt v0.10.0` (stricter `gofmt`); verified `gofmt` and `gofumpt` both report zero differences. `goimports` handled by golangci-lint. (Task 1.1, subtask 7) |
