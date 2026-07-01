@@ -51,7 +51,7 @@
 | **Go toolchain** | go1.26.4 windows/amd64 |
 | **Entry point** | `cmd/titanhttp/main.go` |
 | **Git default branch** | `main` |
-| **Git remote** | `git@github.com:Aditya8123/TitanHttp.git` (SSH) |
+| **Git remote** | `https://github.com/Aditya8123/TitanHttp.git` (HTTPS, via Git Credential Manager) |
 
 ---
 
@@ -87,3 +87,4 @@ _(empty — first lesson lands in Phase 2)_
 | 2026-07-02 | Configured linting: installed `golangci-lint v1.64.8`, created `.golangci.yml` with correctness, style, performance, and security linters; verified zero issues. (Task 1.1, subtask 6) |
 | 2026-07-02 | Configured formatting: installed `gofumpt v0.10.0` (stricter `gofmt`); verified `gofmt` and `gofumpt` both report zero differences. `goimports` handled by golangci-lint. (Task 1.1, subtask 7) |
 | 2026-07-02 | Configured GitHub repository: added `origin` remote (`git@github.com:Aditya8123/TitanHttp.git`, SSH). Task 1.1 — Repository Setup complete (8/8 subtasks). (Task 1.1, subtask 8) |
+| 2026-07-02 | Switched origin to HTTPS (no SSH key on machine; using Git Credential Manager). Pushed all commits to `origin/main` — local & remote in sync at `bfe92da`. |
