@@ -10,9 +10,9 @@
 | --- | --- |
 | **Active Phase** | Phase 1 — Project Foundation |
 | **Active Task** | Task 1.1 — Repository Setup |
-| **Last Completed Subtask** | Create `.gitignore` |
-| **Active Subtask** | Configure editor settings |
-| **Next Subtask** | Configure linting |
+| **Last Completed Subtask** | Configure editor settings |
+| **Active Subtask** | Configure linting |
+| **Next Subtask** | Configure formatting |
 
 > Note: This file is a bootstrap snapshot created during Task 1.1 so the
 > session workflow (AGENTS.md §Session Workflow) can read it on startup.
@@ -24,7 +24,7 @@
 
 | Task | Status | Progress |
 | --- | :---: | --- |
-| 1.1 — Repository Setup | 🟡 In Progress | 4 / 8 subtasks |
+| 1.1 — Repository Setup | 🟡 In Progress | 5 / 8 subtasks |
 | 1.2 — Documentation | ⬜ Not Started | — |
 | 1.3 — Developer Environment | ⬜ Not Started | — |
 
@@ -36,7 +36,7 @@
 | 2 | Create project structure | ✅ |
 | 3 | Configure Go module | ✅ |
 | 4 | Create `.gitignore` | ✅ |
-| 5 | Configure editor settings | ⬜ |
+| 5 | Configure editor settings | ✅ |
 | 6 | Configure linting | ⬜ |
 | 7 | Configure formatting | ⬜ |
 | 8 | Configure GitHub repository | ⬜ |
@@ -83,3 +83,4 @@ _(empty — first lesson lands in Phase 2)_
 | Date | Change |
 | --- | --- |
 | 2026-07-02 | Initialized repository: git, Go module, project structure, `.gitignore`, and this bootstrap `PROJECT_STATE.md`. (Task 1.1, subtasks 1–4) |
+| 2026-07-02 | Configured editor settings: `.editorconfig` (tabs for Go, LF everywhere, UTF-8), `.gitattributes` (LF enforcement, binary exclusions), repo-level `core.autocrlf=input`. (Task 1.1, subtask 5) |

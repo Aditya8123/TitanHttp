@@ -1,0 +1,30 @@
+# ─────────────────────────────────────────────────────────────
+# TitanHTTP — .gitattributes  (Phase 1 / Task 1.1 / Subtask 5)
+# ─────────────────────────────────────────────────────────────
+# Enforces LF line endings across all platforms. This eliminates
+# CRLF corruption in shell scripts, heredocs, and future byte-
+# level HTTP protocol tests (Phase 3+).
+
+# ── Line endings ─────────────────────────────────────────────
+* text=auto eol=lf
+
+# ── Binary assets (never transform) ─────────────────────────
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
+*.pdf  binary
+
+# ── Shell scripts ───────────────────────────────────────────
+*.sh text eol=lf
+
+# ── Go ──────────────────────────────────────────────────────
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
+go.work text eol=lf
