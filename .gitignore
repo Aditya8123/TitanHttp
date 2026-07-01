@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────
+# TitanHTTP — .gitignore  (Phase 1 / Task 1.1)
+# ─────────────────────────────────────────────────────────────
+
+# ── Go: build artifacts & test output ─────────────────────────
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/titanhttp
+/titanhttp.exe
+/bin/
+/dist/
+/build/
+coverage.out
+coverage.html
+
+# ── Project-private learning material (never committed) ───────
+.academy/
+
+# ── Local environment & secrets ──────────────────────────────
+.env
+.env.local
+*.pem
+*.key
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+/logs/
+
+# ── Editor / IDE ─────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Operating system ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
