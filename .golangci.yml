@@ -1,0 +1,98 @@
+# ─────────────────────────────────────────────────────────────
+# TitanHTTP — golangci-lint configuration
+# Phase 1 / Task 1.1 / Subtask 6
+# ─────────────────────────────────────────────────────────────
+# Run: golangci-lint run ./...
+# CI:  golangci-lint run --out-format json ./...
+
+# ── Runner ───────────────────────────────────────────────────
+run:
+  timeout: 3m
+  go: "1.26"
+  # Don't lint test files yet — tests land in Phase 2+.
+  tests: true
+
+# ── Severity ─────────────────────────────────────────────────
+severity:
+  default-severity: warning
+
+# ── Linters — enabled ────────────────────────────────────────
+linters:
+  enable:
+    # Correctness
+    - errcheck          # unchecked error returns
+    - govet             # go vet static analysis
+    - ineffassign       # ineffectual assignments
+    - staticcheck       # advanced static analysis (go vet on steroids)
+    - unused            # unused declarations
+    - gosimple          # simplifiable code
+
+    # Style & readability
+    - gofmt             # standard formatting
+    - goimports         # import ordering (groups: std, external, local)
+    - misspell          # common typos
+    - gocritic          # opinionated style suggestions
+
+    # Performance
+    - prealloc          # preallocate slices
+    - predeclared       # check predeclared identifiers shadowing
+
+    # Security
+    - gosec             # security issues (CWE findings)
+
+    # Code quality
+    - exhaustive        # exhaustive switch/case statements
+    - bodyclose         # HTTP response body closed
+    - noctx             # HTTP requests with context
+    - unconvert         # unnecessary type conversions
+    - wastedassign      # wasted assignments
+
+# ── Linters — disabled (reasons documented) ─────────────────
+linters-settings:
+  govet:
+    # Enable all vet analyzers for maximum strictness.
+    enable-all: true
+    disable:
+      - fieldalignment  # too noisy during early development
+      - shadow          # intentional shadowing is common in Go
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - experimental
+    disabled-checks:
+      - hugeParam       # premature; optimize when profiling (Phase 8)
+      - rangeValCopy    # premature; optimize when profiling (Phase 8)
+
+  gosec:
+    excludes:
+      - G104            # audited errors are intentional during prototyping
+
+  goimports:
+    local-prefixes: github.com/Aditya8123/TitanHttp
+
+# ── Issues ───────────────────────────────────────────────────
+issues:
+  # Show all issues by default.
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+  # Exclude generated and vendor code.
+  exclude-dirs:
+    - vendor
+    - third_party
+
+  exclude-rules:
+    # Allow fmt.Println in cmd/ entry points (not for library code).
+    - path: cmd/
+      linters:
+        - forbidigo
+      text: "fmt.Print"
+
+# ── Output ──────────────────────────────────────────────────
+output:
+  sort-results: true
+  formats:
+    - format: colored-line-number
