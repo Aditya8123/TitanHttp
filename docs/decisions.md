@@ -8,7 +8,6 @@
 
 ## ADR 001: Building From Scratch in Pure Go
 
-**Date:** 2026-07-02
 **Status:** Accepted
 
 ### Context
@@ -27,7 +26,6 @@ We will **not** use the `net/http` package to implement core server functionalit
 
 ## ADR 002: Strict Development Hierarchy
 
-**Date:** 2026-07-02
 **Status:** Accepted
 
 ### Context

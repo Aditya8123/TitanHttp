@@ -8,14 +8,57 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 3 — HTTP Parsing |
-| **Active Task** | Task 3.1 — Request Parsing |
-| **Last Completed Subtask** | Task 2.4 — Connection Lifecycle |
-| **Active Subtask** | — |
-| **Next Subtask** | Phase 3 — HTTP Parsing |
+| **Active Phase** | Phase 4 — Routing |
+| **Active Task** | Task 4.1 — Router |
+| **Last Completed Subtask** | Response Generation (Phase 3 complete) |
+| **Active Subtask** | Data structure |
+| **Next Subtask** | Method routing |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 2.4 — Connection Lifecycle.
+> Updated at the completion of Phase 3 (HTTP Core).
+
+---
+
+## Phase 3 — HTTP Core
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 3.1 — HTTP Basics | ✅ Complete | 6 / 6 subtasks |
+| 3.2 — Request Parsing | ✅ Complete | 5 / 5 subtasks |
+| 3.3 — Response Generation | ✅ Complete | 5 / 5 subtasks |
+
+### Task 3.1 — HTTP Basics
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | HTTP request structure | ✅ |
+| 2 | HTTP response structure | ✅ |
+| 3 | Methods | ✅ |
+| 4 | Status codes | ✅ |
+| 5 | Headers | ✅ |
+| 6 | CRLF rules | ✅ |
+
+---
+
+### Task 3.2 — Request Parsing
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Parse request line | ✅ |
+| 2 | Parse headers | ✅ |
+| 3 | Parse body | ✅ |
+| 4 | Handle malformed requests | ✅ |
+| 5 | Validation | ✅ |
+
+### Task 3.3 — Response Generation
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Status line | ✅ |
+| 2 | Headers | ✅ |
+| 3 | Content-Length | ✅ |
+| 4 | Body | ✅ |
+| 5 | Error responses | ✅ |
 
 ---
 
@@ -103,21 +146,51 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | File | Topic |
 | --- | --- |
 | **Module 1 — Go Fundamentals** | |
-| `lessons/01_go_fundamentals/01_syntax_and_types.md` | Go fundamentals, types, conversions |
-| `lessons/01_go_fundamentals/02_pointers_and_memory.md` | Passing by value vs pointer, memory allocation |
-| `lessons/01_go_fundamentals/03_structs_and_interfaces.md` | State (structs) and behavior (interfaces) |
-| `lessons/01_go_fundamentals/04_error_handling.md` | The error interface, returning and wrapping errors |
-| `lessons/01_go_fundamentals/05_goroutines_and_channels.md` | Goroutines and Channels |
+| `lessons/01_go_fundamentals/01_syntax_and_types.md` | Go fundamentals, types, conversions, iota, named returns, variadic functions |
+| `lessons/01_go_fundamentals/02_pointers_and_memory.md` | Passing by value vs pointer, memory allocation, stack/heap escape analysis, GC, sync.Pool |
+| `lessons/01_go_fundamentals/03_structs_and_interfaces.md` | State (structs) and behavior (interfaces), struct embedding, io.Reader/Writer |
+| `lessons/01_go_fundamentals/04_error_handling.md` | The error interface, returning, wrapping, sentinels, recover middleware patterns |
+| `lessons/01_go_fundamentals/05_goroutines_and_channels.md` | Goroutines, Go scheduler details, channels, channel leaks, worker pools |
+| `lessons/01_go_fundamentals/06_slices_and_maps.md` | Slice/map internals, header structures, pre-allocation, nil map safety |
+| `lessons/01_go_fundamentals/07_io_and_bufio.md` | standard I/O reader/writer composition, bufio buffering strategies, io.ReadFull |
+| `lessons/01_go_fundamentals/08_testing_in_go.md` | Go testing framework, table tests, subtests, net.Pipe, benchmarks, -race detector, coverage |
 | **Module 2 — Networking** | |
-| `lessons/02_networking/01_tcp_fundamentals.md` | TCP vs UDP, IP, Ports, Handshakes |
-| `lessons/02_networking/02_socket_programming.md` | Socket programming in Go, net.Listen |
-| `lessons/02_networking/03_accepting_connections.md` | The Accept syscall, net.Conn, and connection loops |
-| `lessons/02_networking/04_reading_bytes.md` | Reading bytes from sockets, net.Conn |
-| `lessons/02_networking/05_writing_bytes.md` | Writing HTTP responses to sockets, net.Conn |
-| `lessons/02_networking/06_defer_and_closure.md` | Robust socket cleanup using defer |
-| `lessons/02_networking/07_connection_lifecycle.md` | Blocking I/O, EOF detection, and Timeouts |
-| **Reference** | |
-| `glossary.md` | Core networking terminology definitions |
+| `lessons/02_networking/01_tcp_fundamentals.md` | TCP vs UDP, IP, Ports, 4-tuples, 3-way/4-way handshakes, sliding windows, Nagle's, SO_REUSEADDR |
+| `lessons/02_networking/02_socket_programming.md` | Socket programming in Go, net.Listen, bind/listen syscalls, backlog, socket options |
+| `lessons/02_networking/03_accepting_connections.md` | The Accept syscall, net.Conn, connection loops, temporary error backoffs, shutdown checks |
+| `lessons/02_networking/04_reading_bytes.md` | Reading bytes, partial reads, bufio parsing strategy, io.ReadFull body reads, deadlines, DoS limits |
+| `lessons/02_networking/05_writing_bytes.md` | Writing HTTP responses, bufio.Writer, Flush(), deadlines, write-after-close coordination, sendfile |
+| `lessons/02_networking/06_defer_and_closure.md` | Robust cleanup using defer, execution stack (LIFO), loop trap, named returns, panic safety |
+| `lessons/02_networking/07_connection_lifecycle.md` | Blocking I/O model, client EOF, Keep-Alive persistent connection state, graceful shutdown |
+| `lessons/02_networking/08_network_debugging.md` | Network debugging toolkit: ss, lsof, tcpdump, curl, netcat (nc), GODEBUG flags |
+| **Module 3 — HTTP Parsing** | |
+| `lessons/03_http_parsing/01_http_anatomy.md` | Version history, CRLF sequence, wire format of requests/responses, method semantics, status code matrix |
+| `lessons/03_http_parsing/02_request_parsing.md` | HTTP parsing architecture, request line splitting, state-machine header parsing, chunked body parsing |
+| `lessons/03_http_parsing/03_response_generation.md` | Bytes() serialization, factory functions, direct WriteTo streaming, memory allocation tradeoffs |
+| `lessons/03_http_parsing/04_http_security.md` | Attack surfaces: smuggling, Slowloris, body/header bombs, path traversal, timing attacks |
+| `lessons/03_http_parsing/05_content_negotiation.md` | Content negotiation, Accept parsing, quality values (q), Content-Type parsing, Vary header |
+| **Module 4 — Concurrency** | |
+| `lessons/04_concurrency/01_goroutine_model.md` | Threading comparison, scheduler architecture (P/M/G), work stealing, preemption, stack growth, leaks |
+| `lessons/04_concurrency/02_channels_deep_dive.md` | Channel internals (hchan), unbuffered/buffered rendezvous, select statements, deadlocks, fan-out/in, pipelines |
+| `lessons/04_concurrency/03_sync_primitives.md` | sync.Mutex/RWMutex, WaitGroup patterns, sync.Once, sync/atomic lock-free ops, sync.Pool recycling |
+| `lessons/04_concurrency/04_worker_pools.md` | Concurrency bounding, load shedding (503), pool sizing, dynamic scaling, per-worker states |
+| `lessons/04_concurrency/05_context_and_cancellation.md` | Context tree, WithCancel/Timeout/Deadline/Value, propagation rules, graceful shutdown coordination |
+| `lessons/04_concurrency/06_race_conditions.md` | Data race definitions, TSAN race detector, common patterns, atomic CAS, stress testing |
+| **Module 5 — Routing** | |
+| `lessons/05_routing/01_routing_concepts.md` | Linear search, hash map, trie, radix tree lookup algorithms, routing priority |
+| `lessons/05_routing/02_pattern_matching.md` | Segment parsing, parameter extraction, wildcard captures, URL decoding, 405 vs 404 behavior |
+| `lessons/05_routing/03_middleware_pipeline.md` | Decorator pattern, HandlerFunc, Chain composition, logging/auth/recovery/CORS middleware |
+| **Module 6 — Production Engineering** | |
+| `lessons/06_production/01_keep_alive.md` | Setup latency overhead, HTTP/1.0 vs 1.1 defaults, idle timeouts, request counts (max=N) |
+| `lessons/06_production/02_tls_and_https.md` | TLS 1.3 handshake RTT, certificate chains, tls.Listen, cipher suite selection, forward secrecy, HSTS |
+| `lessons/06_production/03_rate_limiting.md` | Token bucket, sliding window algorithms, RateLimit headers, proxy IP extraction (XFF) |
+| `lessons/06_production/04_observability.md` | Structured slog logging, Prometheus scraping format, P99 histograms, trace IDs, health checks |
+| `lessons/06_production/05_load_balancing.md` | Reverse proxy forwarding, round robin, least connections, IP sticky sessions, health checks |
+| **Walkthroughs & Reference** | |
+| `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
+| `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
+| `glossary.md` | Comprehensive 60+ term dictionary of networking, concurrency, and HTTP protocols |
+| `README.md` | Academy table of contents and curriculum maps |
 
 ---
 
@@ -140,3 +213,9 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Extracted connection logic to `handleConnection` and implemented robust cleanup using `defer`. Added `lessons/02_networking/06_defer_and_closure.md`. Task 2.3 complete (6/6 subtasks).
 - Implemented continuous `for` loop in `handleConnection`, detecting `io.EOF` for graceful client disconnects, and configured `SetReadDeadline` (5 seconds) to prevent hanging connections. Added `lessons/02_networking/07_connection_lifecycle.md`. Task 2.4 complete (5/5 subtasks). Phase 2 is now complete.
 - Refactored `.academy/` from a flat `lessons/` directory into structured category modules (`01_go_fundamentals/`, `02_networking/`, `03_http_parsing/`, `04_concurrency/`, `walkthroughs/`). Rewrote `README.md` as a full Table of Contents with a guided learning path.
+- Created `internal/http` package to house domain models. Implemented `Request` and `Response` structs along with constants for HTTP Methods and Status Codes. Added `lessons/03_http_parsing/01_http_anatomy.md` covering CRLF rules and request/response formatting. Task 3.1 — HTTP Basics complete (6/6 subtasks).
+- Implemented `parseRequestLine` inside `internal/http/parser.go` utilizing `bufio.Reader` and robust string manipulation to extract the Method, URI, and HTTP Version. Added custom errors in `internal/http/errors.go` and comprehensive unit tests. Task 3.2 — Parse request line subtask complete.
+- Implemented `parseHeaders` inside `internal/http/parser.go` which sequentially reads Request Headers until an empty CRLF is reached, mapping case-insensitive keys. Added `ErrMalformedHeader` and corresponding tests in `parser_test.go`. Task 3.2 — Parse headers subtask complete.
+- Implemented `parseBody` inside `internal/http/parser.go` to handle `Content-Length` headers and safely allocate constrained byte slices (Max 10MB) for payload reads using `io.ReadFull`. Added `ErrInvalidContentLength`, `ErrBodyTooLarge`, and comprehensive test cases. Task 3.2 — Parse body subtask complete.
+- Added `Validate()` to `Request` to enforce HTTP/1.1 `Host` header rules and wired the parser deeply into `internal/server/server.go`, gracefully closing connections on malformed payloads. Task 3.2 complete!
+- Developed dynamic `Bytes()` serialization on the `Response` struct, automatically formatting the status line, parsing Content-Length headers, and writing payloads. Created `NewResponse400`, `NewResponse404`, and `NewResponse500` helpers. Replaced the hardcoded server string in `server.go` with this new system. Documented memory tradeoffs of `Bytes()` in `architecture.md`. Task 3.3 and Phase 3 — HTTP Core are officially complete!
