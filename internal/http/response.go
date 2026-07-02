@@ -59,6 +59,12 @@ var statusText = map[StatusCode]string{
 	StatusInternalServerError: "Internal Server Error",
 }
 
+// StatusText returns a text for the HTTP status code. It returns the empty
+// string if the code is unknown.
+func StatusText(code StatusCode) string {
+	return statusText[code]
+}
+
 // Bytes serializes the Response object into a raw HTTP byte stream.
 func (r *Response) Bytes() []byte {
 	var b bytes.Buffer

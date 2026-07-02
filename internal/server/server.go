@@ -107,15 +107,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-		fmt.Printf("--- Received Request ---\n")
-		fmt.Printf("Method: %s\n", req.Method)
-		fmt.Printf("Path: %s\n", req.Path)
-		fmt.Printf("Version: %s\n", req.Version)
-		fmt.Printf("Headers Count: %d\n", len(req.Headers))
-		if len(req.Body) > 0 {
-			fmt.Printf("Body Length: %d bytes\n", len(req.Body))
-		}
-		fmt.Printf("------------------------\n")
 
 		// Dispatch request to the router
 		resp := s.router.ServeHTTP(req)
