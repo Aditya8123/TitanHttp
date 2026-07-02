@@ -104,6 +104,13 @@ func (r *Response) Bytes() []byte {
 	return b.Bytes()
 }
 
+// NewResponse200 generates a standard 200 OK response.
+func NewResponse200() *Response {
+	resp := NewResponse()
+	resp.StatusCode = StatusOK
+	return resp
+}
+
 // NewResponse400 generates a standard 400 Bad Request response.
 func NewResponse400() *Response {
 	resp := NewResponse()

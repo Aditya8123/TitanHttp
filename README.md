@@ -41,11 +41,10 @@ Our documentation is treated as a first-class, premium editorial experience. Rea
 * [Benchmarking](./docs/benchmarking.md) — Performance engineering metrics.
 * [Recruiter Summary](./docs/recruiter.md) — A 10-minute executive tour of the technical challenges.
 * [Project State](./docs/PROJECT_STATE.md) — The current snapshot of our development progress.
+* [The Learning Academy](./.academy/README.md) — A self-paced curriculum of the engineering concepts underpinning TitanHTTP.
 * [AI Orchestrator Rules](./AGENTS.md) — The strict guidelines that govern the AI Engineering Team building this project.
 
 ## 🛠️ Quick Start
-
-*(Coming soon as Phase 1 completes and Phase 2 begins)*
 
 ```bash
 # Clone the repository
@@ -53,6 +52,9 @@ git clone https://github.com/Aditya8123/TitanHttp.git
 
 # Enter the datacenter
 cd TitanHttp
+
+# Boot the server
+go run cmd/titanhttp/main.go
 ```
 
 ---

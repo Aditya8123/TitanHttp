@@ -78,4 +78,42 @@ We adopted the **Decorator Pattern** for middleware. A middleware is a function 
 - **Con:** Middlewares wrap handlers in closures, which slightly increases the call stack depth and introduces a tiny amount of allocation overhead compared to inline execution.
 
 ---
+
+## ADR 005: Bounded Worker Pool for Connection Handling
+
+**Status:** Accepted
+
+### Context
+Handling thousands of concurrent connections by spawning unbounded goroutines (`go handleConnection(conn)`) can lead to resource exhaustion, memory out-of-bounds, and application crashes under sudden traffic spikes (e.g., DDOS). 
+
+### Decision
+We will employ a **Bounded Worker Pool** pattern. When the server starts, a fixed number of worker goroutines are spawned, blocking on a shared job channel (`chan net.Conn`). The main listener pushes accepted connections to this channel. If the queue reaches capacity, new connections receive an immediate `503 Service Unavailable` response and are closed, enforcing aggressive load shedding.
+
+### Trade-offs & Consequences
+- **Pro:** Hard boundary on CPU and memory usage, ensuring predictable performance under load.
+- **Pro:** Load shedding protects the server from catastrophic cascading failure.
+- **Con:** Connections might be dropped during massive bursts unless the queue size is tuned appropriately.
+- **Con:** More complex connection lifecycle and shutdown sequences compared to naive one-goroutine-per-connection.
+
+---
+
+## ADR 006: Synchronization and Lock-Free Metrics
+
+**Status:** Accepted
+
+### Context
+With a concurrent worker pool, shared state (like the Router table, active connections, request totals, and connection closures) needs protection from Data Races, which could corrupt memory or crash the application.
+
+### Decision
+We will enforce thread-safety using fine-grained synchronization primitives:
+1. `sync.RWMutex` for the Router, allowing unlimited concurrent reads (pattern matching) while locking only for route registration.
+2. `sync/atomic` for all server metrics (`totalRequests`, `activeConns`), circumventing mutex overhead for highly contended counters.
+3. `sync.Mutex` purely to protect the `net.Listener` variable during graceful shutdown.
+
+### Trade-offs & Consequences
+- **Pro:** `sync/atomic` provides lock-free, high-throughput metric tracking, keeping latency negligible.
+- **Pro:** `RWMutex` guarantees safe dynamic route injection without slowing down traffic parsing.
+- **Con:** Atomic primitives restrict complex state interactions (e.g., you cannot easily transactionally update two metrics at once without CAS loops or a Mutex).
+
+---
 > *"Code tells you how; comments tell you why."*

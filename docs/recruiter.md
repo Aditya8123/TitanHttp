@@ -35,9 +35,9 @@ The server is designed to be deterministic. If a client sends malformed headers,
 
 If you have a few minutes to read the source code, I recommend reviewing these specific areas:
 
-1. **The Core Parser:** `internal/parser/http.go` (Look for the zero-allocation string parsing logic).
-2. **The Worker Pool:** `internal/concurrency/worker_pool.go` (Notice the use of channels and WaitGroups for safe synchronization).
-3. **The Router:** `internal/router/router.go` (Check out how middleware pipelines and wildcard routing are implemented cleanly).
+1. **The Core Parser:** `internal/http/parser.go` (Look for the robust string parsing logic handling CRLFs and content-length).
+2. **The Worker Pool & Synchronization:** `internal/server/worker.go` and `internal/server/metrics.go` (Notice the use of channels, WaitGroups, and atomic counters for safe concurrency).
+3. **The Router:** `internal/router/router.go` (Check out how radix-trees, middleware pipelines, and wildcard routing are implemented cleanly and thread-safely).
 4. **The Tests:** (Every critical component is backed by table-driven unit tests, proving that edge cases are accounted for).
 
 ## 4. The Result

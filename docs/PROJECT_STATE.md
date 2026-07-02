@@ -8,14 +8,50 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 5 — Concurrency |
-| **Active Task** | Task 5.1 — Goroutines |
-| **Last Completed Subtask** | Cache headers (Task 4.3) |
-| **Active Subtask** | Per-connection goroutines |
-| **Next Subtask** | Connection isolation |
+| **Active Phase** | Phase 6 — Production Features |
+| **Active Task** | Task 6.1 — Persistent Connections |
+| **Last Completed Subtask** | Shared state (Task 5.3) |
+| **Active Subtask** | Keep-Alive |
+| **Next Subtask** | Connection reuse |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 4.3 (Static Files) and Phase 4 (Routing).
+> Updated at the completion of Task 5.3 (Synchronization).
+
+---
+
+## Phase 5 — Concurrency
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 5.1 — Goroutines | ✅ Complete | 3 / 3 subtasks |
+| 5.2 — Worker Pool | ✅ Complete | 4 / 4 subtasks |
+| 5.3 — Synchronization | ✅ Complete | 4 / 4 subtasks |
+
+### Task 5.1 — Goroutines
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Per-connection goroutines | ✅ |
+| 2 | Connection isolation | ✅ |
+| 3 | Error handling | ✅ |
+
+### Task 5.2 — Worker Pool
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Worker design | ✅ |
+| 2 | Job queue | ✅ |
+| 3 | Scheduling | ✅ |
+| 4 | Shutdown | ✅ |
+
+### Task 5.3 — Synchronization
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Mutexes | ✅ |
+| 2 | WaitGroups | ✅ |
+| 3 | Channels | ✅ |
+| 4 | Shared state | ✅ |
 
 ---
 
@@ -36,6 +72,24 @@
 | 3 | Parameters | ✅ |
 | 4 | Wildcards | ✅ |
 | 5 | Method routing | ✅ |
+
+### Task 4.2 — Middleware
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Middleware pipeline | ✅ |
+| 2 | Logging middleware | ✅ |
+| 3 | Recovery middleware | ✅ |
+| 4 | Authentication placeholder | ✅ |
+
+### Task 4.3 — Static Files
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | File serving | ✅ |
+| 2 | MIME types | ✅ |
+| 3 | Directory handling | ✅ |
+| 4 | Cache headers | ✅ |
 
 ---
 
@@ -247,6 +301,14 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Added wildcard matching (e.g., `/*filepath`) to the Radix tree with validation panics on invalid routes. Task 4.1 is completely finished!
 - Implemented global `Middleware` pipeline in `internal/router`. Added `router.Use()` for zero-allocation handler wrapping. Task 4.2 — Middleware pipeline subtask complete.
 - Created `internal/middleware/logger.go`, replacing raw TCP print statements in the server loop with a unified, latency-tracking logging middleware. Task 4.2 — Logging middleware complete.
-- Implemented `Recovery` middleware using `defer` and `recover()` to gracefully handle handler panics and return a 500 response. Task 4.2 — Recovery middleware complete.
+- Implemented Recovery middleware using `defer` and `recover()` to gracefully handle handler panics and return a 500 response. Task 4.2 — Recovery middleware complete.
 - Implemented `AuthPlaceholder` middleware enforcing a hardcoded Bearer token and created a route-specific middleware composition in `main.go`. Task 4.2 (Middleware) complete (4/4 subtasks).
 - Implemented static file serving with `router.Static()`, added MIME type detection via `mime.TypeByExtension`, supported directory `index.html` resolution (403 for missing), and injected `Cache-Control` headers. Created `NewResponse403` and comprehensive tests. Phase 4 — Routing is complete!
+- Updated server accept loop to handle each connection in its own goroutine, enabling concurrent processing without blocking the listener. Task 5.1 — Per-connection goroutines subtask complete.
+- Added top-level `recover()` inside `handleConnection` to provide connection isolation, preventing a panic in one client's lifecycle from crashing the entire server process. Task 5.1 — Connection isolation subtask complete.
+- Removed noisy `fmt.Printf` statements for standard connection lifecycle events (accept, EOF, timeout) in `server.go` to prevent stdout contention under high concurrent loads. Task 5.1 is complete (3/3 subtasks)!
+- Implemented robust `WorkerPool` architecture in `worker.go` utilizing a bounded pool of goroutines (default 100) communicating over a job queue channel.
+- Implemented connection load shedding in `WorkerPool.Submit()`: automatically returns `HTTP/1.1 503 Service Unavailable` when the connection queue is full. Task 5.2 — Worker Pool complete (4/4 subtasks).
+- Added `sync.RWMutex` to the Router to ensure thread-safe route registration and matching. Task 5.3 — Mutexes complete.
+- Embedded a lock-free `Metrics` struct into `Server` using `sync/atomic` for high-throughput tracking of requests and panics. Task 5.3 — Shared state complete.
+- Implemented `Shutdown(ctx)` utilizing channels (`s.done`) and WaitGroups (`workerPool.wg`) for graceful shutdown coordination, eliminating test data races with a `sync.Mutex` on the listener. Added tests with race detector. Task 5.3 — Channels and WaitGroups complete. Phase 5 — Concurrency is complete!
