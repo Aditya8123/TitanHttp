@@ -10,9 +10,9 @@
 | --- | --- |
 | **Active Phase** | Phase 4 — Routing |
 | **Active Task** | Task 4.2 — Middleware |
-| **Last Completed Subtask** | Wildcards (Task 4.1 complete) |
-| **Active Subtask** | Middleware pipeline |
-| **Next Subtask** | Logging middleware |
+| **Last Completed Subtask** | Middleware pipeline |
+| **Active Subtask** | Logging middleware |
+| **Next Subtask** | Recovery middleware |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Task 4.1 (Router).
@@ -24,7 +24,7 @@
 | Task | Status | Progress |
 | --- | :---: | --- |
 | 4.1 — Router | ✅ Complete | 5 / 5 subtasks |
-| 4.2 — Middleware | ⏳ In Progress | 0 / 4 subtasks |
+| 4.2 — Middleware | ⏳ In Progress | 1 / 4 subtasks |
 | 4.3 — Static Files | 📝 Pending | 0 / 4 subtasks |
 
 ### Task 4.1 — Router
@@ -244,3 +244,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Upgraded Router to enforce HTTP methods (GET, POST). Implemented 405 Method Not Allowed responses when a path exists but the requested method is unregistered. Task 4.1 — Method routing subtask complete.
 - Replaced the map-based router with a Radix Tree (prefix tree) to support dynamic path parameters (e.g., `/users/:id`). Added `Params` field to `Request` struct for zero-context extraction. Added ADR 003. Task 4.1 — Parameters subtask complete.
 - Added wildcard matching (e.g., `/*filepath`) to the Radix tree with validation panics on invalid routes. Task 4.1 is completely finished!
+- Implemented global `Middleware` pipeline in `internal/router`. Added `router.Use()` for zero-allocation handler wrapping. Task 4.2 — Middleware pipeline subtask complete.

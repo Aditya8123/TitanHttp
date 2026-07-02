@@ -8,14 +8,25 @@ type Handler func(req *http.Request) *http.Response
 // Router manages the registration and dispatching of HTTP routes using Radix trees.
 type Router struct {
 	// trees maintains a Radix tree (prefix tree) for each HTTP method.
-	trees map[http.Method]*node
+	trees       map[http.Method]*node
+	middlewares []Middleware
+	handler     Handler
 }
 
 // NewRouter initializes and returns a new Router instance.
 func NewRouter() *Router {
-	return &Router{
+	r := &Router{
 		trees: make(map[http.Method]*node),
 	}
+	r.handler = r.serveHTTP
+	return r
+}
+
+// Use adds global middlewares to the router.
+// Middlewares are executed in the order they are added.
+func (r *Router) Use(middlewares ...Middleware) {
+	r.middlewares = append(r.middlewares, middlewares...)
+	r.handler = Chain(r.middlewares...)(r.serveHTTP)
 }
 
 // AddRoute registers a new handler for the given HTTP method and pattern.
@@ -36,9 +47,13 @@ func (r *Router) Post(path string, handler Handler) {
 	r.AddRoute(http.MethodPost, path, handler)
 }
 
-// ServeHTTP attempts to find a matching route and execute its handler.
-// Extracts dynamic path parameters and injects them into the Request.
+// ServeHTTP processes the request by executing the pre-compiled middleware chain.
 func (r *Router) ServeHTTP(req *http.Request) *http.Response {
+	return r.handler(req)
+}
+
+// serveHTTP is the core routing logic that matches paths and extracts parameters.
+func (r *Router) serveHTTP(req *http.Request) *http.Response {
 	tree, methodExists := r.trees[req.Method]
 	if methodExists {
 		handler, params := tree.search(req.Path)
