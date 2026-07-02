@@ -9,10 +9,10 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 5 — Concurrency |
-| **Active Task** | Task 5.1 — Goroutines |
-| **Last Completed Subtask** | Connection isolation (Task 5.1) |
-| **Active Subtask** | Error handling |
-| **Next Subtask** | Worker design (Task 5.2) |
+| **Active Task** | Task 5.3 — Synchronization |
+| **Last Completed Subtask** | Shutdown (Task 5.2) |
+| **Active Subtask** | Mutexes |
+| **Next Subtask** | WaitGroups |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Task 5.1 (Goroutines).
@@ -24,8 +24,8 @@
 | Task | Status | Progress |
 | --- | :---: | --- |
 | 5.1 — Goroutines | ✅ Complete | 3 / 3 subtasks |
-| 5.2 — Worker Pool | 🚧 Active | 0 / 4 subtasks |
-| 5.3 — Synchronization | ⏳ Pending | 0 / 4 subtasks |
+| 5.2 — Worker Pool | ✅ Complete | 4 / 4 subtasks |
+| 5.3 — Synchronization | 🚧 Active | 0 / 4 subtasks |
 
 ### Task 5.1 — Goroutines
 
@@ -34,6 +34,15 @@
 | 1 | Per-connection goroutines | ✅ |
 | 2 | Connection isolation | ✅ |
 | 3 | Error handling | ✅ |
+
+### Task 5.2 — Worker Pool
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Worker design | ✅ |
+| 2 | Job queue | ✅ |
+| 3 | Scheduling | ✅ |
+| 4 | Shutdown | ✅ |
 
 ---
 
@@ -289,3 +298,5 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Updated server accept loop to handle each connection in its own goroutine, enabling concurrent processing without blocking the listener. Task 5.1 — Per-connection goroutines subtask complete.
 - Added top-level `recover()` inside `handleConnection` to provide connection isolation, preventing a panic in one client's lifecycle from crashing the entire server process. Task 5.1 — Connection isolation subtask complete.
 - Removed noisy `fmt.Printf` statements for standard connection lifecycle events (accept, EOF, timeout) in `server.go` to prevent stdout contention under high concurrent loads. Task 5.1 is complete (3/3 subtasks)!
+- Implemented robust `WorkerPool` architecture in `worker.go` utilizing a bounded pool of goroutines (default 100) communicating over a job queue channel.
+- Implemented connection load shedding in `WorkerPool.Submit()`: automatically returns `HTTP/1.1 503 Service Unavailable` when the connection queue is full. Task 5.2 — Worker Pool complete (4/4 subtasks).

@@ -16,19 +16,21 @@ import (
 	"github.com/Aditya8123/TitanHttp/internal/router"
 )
 
-// Server represents the TitanHTTP core server.
 type Server struct {
-	addr     string
-	listener net.Listener
-	router   *router.Router
+	addr       string
+	listener   net.Listener
+	router     *router.Router
+	workerPool *WorkerPool
 }
 
-// NewServer initializes a new TitanHTTP Server configured to listen on the given address.
 func NewServer(addr string) *Server {
-	return &Server{
+	s := &Server{
 		addr:   addr,
 		router: router.NewRouter(),
 	}
+	// Initialize the worker pool with 100 workers and a queue size of 1024
+	s.workerPool = NewWorkerPool(100, 1024, s.handleConnection)
+	return s
 }
 
 // Router returns the underlying router for registering endpoints.
@@ -48,6 +50,9 @@ func (s *Server) Start() error {
 	fmt.Printf("TitanHTTP Server successfully started.\n")
 	fmt.Printf("Listening on %s...\n", s.addr)
 
+	// Start the worker pool before accepting connections
+	s.workerPool.Start()
+
 	// The main connection accept loop.
 	// This blocks waiting for new connections.
 	for {
@@ -60,7 +65,8 @@ func (s *Server) Start() error {
 		// We don't log accepted connections here anymore to avoid console noise
 		// under heavy concurrent load.
 
-		go s.handleConnection(conn)
+		// Submit the connection to the worker pool instead of spawning a new goroutine
+		s.workerPool.Submit(conn)
 	}
 }
 
