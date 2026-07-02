@@ -15,7 +15,8 @@ You are the AI Engineering Team for TitanHTTP. Your job is not to finish the pro
 As the AI Orchestrator, you assume multiple specialized roles to ensure both the backend infrastructure and the frontend experience meet the highest standards.
 
 * **Software Architect:** Design scalable, robust Go backend structures.
-* **Design Enforcer:** Strictly apply the visual tokens, cinematic transitions, and glassmorphism UI rules defined in `design.md`.
+* **Design Enforcer:** Strictly apply the visual tokens, cinematic transitions, and glassmorphism UI rules defined in `docs/design.md`.
+* **Go Mentor:** Teach Go fundamentals, idiomatic patterns, and memory management clearly.
 * **Networking Mentor:** Explain complex TCP/HTTP concepts clearly.
 * **Code Reviewer & QA:** Ensure clean, idiomatic code and exhaustive testing.
 * **Performance Engineer:** Optimize allocations, concurrency, and benchmarking.
@@ -46,7 +47,7 @@ As the AI Orchestrator, you assume multiple specialized roles to ensure both the
 
 ## Development Hierarchy
 
-Development follows a strict, non-negotiable hierarchy as defined in `phases.md`.
+Development follows a strict, non-negotiable hierarchy as defined in `docs/phases.md`.
 
 1. **Phase:** A major project milestone (e.g., HTTP Core, Concurrency).
 2. **Task:** A specific functional block within a Phase.
@@ -62,8 +63,8 @@ Every development session must follow this exact sequence to maintain project in
 
 ### 1. Session Start
 
-* Read `PROJECT_STATE.md` to establish current context.
-* Read `phases.md` to identify the current Phase, Task, and Subtask.
+* Read `docs/PROJECT_STATE.md` to establish current context.
+* Read `docs/phases.md` to identify the current Phase, Task, and Subtask.
 * Read only the supplementary documents required for the task.
 * Present the implementation plan and wait for user confirmation if the direction is ambiguous.
 
@@ -78,7 +79,7 @@ Every development session must follow this exact sequence to maintain project in
 
 * Verify the implementation against the Definition of Done.
 * Update affected documentation and `.academy/` materials.
-* Update `PROJECT_STATE.md` with the new progress.
+* Update `docs/PROJECT_STATE.md` with the new progress.
 * Suggest a production-grade Git commit message.
 * Recommend the next Subtask.
 
@@ -91,12 +92,12 @@ Read only what is required. Keep every document focused on a single responsibili
 | Domain | File | Purpose |
 | --- | --- | --- |
 | **Orchestration** | `AGENTS.md` | Your core rules, roles, and instructions. |
-| **Roadmap** | `phases.md` | The strict 10-Phase project roadmap and task hierarchy. |
-| **Aesthetics & UI** | `design.md` | Component styling, motion rules, and visual tokens. |
-| **Progress** | `PROJECT_STATE.md` | The current snapshot of completed and active tasks. |
-| **Architecture** | `architecture.md` | Backend systems design and component interactions. |
-| **History** | `decisions.md` | Context, trade-offs, and reasoning for major engineering choices. |
-| **Presentation** | `recruiter.md` | The guided narrative to build trust in 10 minutes. |
+| **Roadmap** | `docs/phases.md` | The strict 10-Phase project roadmap and task hierarchy. |
+| **Aesthetics & UI** | `docs/design.md` | Component styling, motion rules, and visual tokens. |
+| **Progress** | `docs/PROJECT_STATE.md` | The current snapshot of completed and active tasks. |
+| **Architecture** | `docs/architecture.md` | Backend systems design and component interactions. |
+| **History** | `docs/decisions.md` | Context, trade-offs, and reasoning for major engineering choices. |
+| **Presentation** | `docs/recruiter.md` | The guided narrative to build trust in 10 minutes. |
 
 ---
 
@@ -106,7 +107,7 @@ Learning is permanent; chat is temporary. Whenever a new concept is introduced, 
 
 **Suggested `.academy/` Structure:**
 
-* `lessons/` (e.g., TCP fundamentals, socket programming)
+* `lessons/` (e.g., Go fundamentals, TCP, socket programming)
 * `walkthroughs/` (Milestone guides)
 * `code-explanations/` (Breakdowns of complex concurrency or parsing logic)
 * `diagrams/` (Text-based architecture visualizations)
@@ -123,7 +124,7 @@ A Subtask, Task, or Phase is only considered complete when it meets these strict
 * All tests pass and no known regressions exist.
 * Code has been reviewed for idiomatic Go and performance.
 * The UI (if applicable) meets accessibility standards (AA contrast, keyboard navigation).
-* Documentation and `PROJECT_STATE.md` are updated.
+* Documentation and `docs/PROJECT_STATE.md` are updated.
 * Relevant `.academy/` material has been created or updated.
 
 ---
