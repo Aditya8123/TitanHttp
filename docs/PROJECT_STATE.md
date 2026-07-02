@@ -8,14 +8,14 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 5 — Concurrency |
-| **Active Task** | Task 5.3 — Synchronization |
-| **Last Completed Subtask** | Shutdown (Task 5.2) |
-| **Active Subtask** | Mutexes |
-| **Next Subtask** | WaitGroups |
+| **Active Phase** | Phase 6 — Production Features |
+| **Active Task** | Task 6.1 — Persistent Connections |
+| **Last Completed Subtask** | Shared state (Task 5.3) |
+| **Active Subtask** | Keep-Alive |
+| **Next Subtask** | Connection reuse |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 5.1 (Goroutines).
+> Updated at the completion of Task 5.3 (Synchronization).
 
 ---
 
@@ -25,7 +25,7 @@
 | --- | :---: | --- |
 | 5.1 — Goroutines | ✅ Complete | 3 / 3 subtasks |
 | 5.2 — Worker Pool | ✅ Complete | 4 / 4 subtasks |
-| 5.3 — Synchronization | 🚧 Active | 0 / 4 subtasks |
+| 5.3 — Synchronization | ✅ Complete | 4 / 4 subtasks |
 
 ### Task 5.1 — Goroutines
 
@@ -43,6 +43,15 @@
 | 2 | Job queue | ✅ |
 | 3 | Scheduling | ✅ |
 | 4 | Shutdown | ✅ |
+
+### Task 5.3 — Synchronization
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Mutexes | ✅ |
+| 2 | WaitGroups | ✅ |
+| 3 | Channels | ✅ |
+| 4 | Shared state | ✅ |
 
 ---
 
@@ -300,3 +309,6 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Removed noisy `fmt.Printf` statements for standard connection lifecycle events (accept, EOF, timeout) in `server.go` to prevent stdout contention under high concurrent loads. Task 5.1 is complete (3/3 subtasks)!
 - Implemented robust `WorkerPool` architecture in `worker.go` utilizing a bounded pool of goroutines (default 100) communicating over a job queue channel.
 - Implemented connection load shedding in `WorkerPool.Submit()`: automatically returns `HTTP/1.1 503 Service Unavailable` when the connection queue is full. Task 5.2 — Worker Pool complete (4/4 subtasks).
+- Added `sync.RWMutex` to the Router to ensure thread-safe route registration and matching. Task 5.3 — Mutexes complete.
+- Embedded a lock-free `Metrics` struct into `Server` using `sync/atomic` for high-throughput tracking of requests and panics. Task 5.3 — Shared state complete.
+- Implemented `Shutdown(ctx)` utilizing channels (`s.done`) and WaitGroups (`workerPool.wg`) for graceful shutdown coordination, eliminating test data races with a `sync.Mutex` on the listener. Added tests with race detector. Task 5.3 — Channels and WaitGroups complete. Phase 5 — Concurrency is complete!

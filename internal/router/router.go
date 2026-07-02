@@ -1,13 +1,18 @@
 package router
 
-import "github.com/Aditya8123/TitanHttp/internal/http"
+import (
+	"sync"
+
+	"github.com/Aditya8123/TitanHttp/internal/http"
+)
 
 // Handler defines the function signature for processing HTTP requests.
 type Handler func(req *http.Request) *http.Response
 
 // Router manages the registration and dispatching of HTTP routes using Radix trees.
 type Router struct {
-	// trees maintains a Radix tree (prefix tree) for each HTTP method.
+	// mu protects the trees and handler during concurrent read/write operations
+	mu          sync.RWMutex
 	trees       map[http.Method]*node
 	middlewares []Middleware
 	handler     Handler
@@ -25,12 +30,16 @@ func NewRouter() *Router {
 // Use adds global middlewares to the router.
 // Middlewares are executed in the order they are added.
 func (r *Router) Use(middlewares ...Middleware) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.middlewares = append(r.middlewares, middlewares...)
 	r.handler = Chain(r.middlewares...)(r.serveHTTP)
 }
 
 // AddRoute registers a new handler for the given HTTP method and pattern.
 func (r *Router) AddRoute(method http.Method, pattern string, handler Handler) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if r.trees[method] == nil {
 		r.trees[method] = &node{}
 	}
@@ -49,21 +58,31 @@ func (r *Router) Post(path string, handler Handler) {
 
 // ServeHTTP processes the request by executing the pre-compiled middleware chain.
 func (r *Router) ServeHTTP(req *http.Request) *http.Response {
-	return r.handler(req)
+	r.mu.RLock()
+	h := r.handler
+	r.mu.RUnlock()
+	return h(req)
 }
 
 // serveHTTP is the core routing logic that matches paths and extracts parameters.
 func (r *Router) serveHTTP(req *http.Request) *http.Response {
+	r.mu.RLock()
 	tree, methodExists := r.trees[req.Method]
+	var handler Handler
+	var params map[string]string
 	if methodExists {
-		handler, params := tree.search(req.Path)
-		if handler != nil {
-			req.Params = params
-			return handler(req)
-		}
+		handler, params = tree.search(req.Path)
+	}
+	r.mu.RUnlock()
+
+	if handler != nil {
+		req.Params = params
+		return handler(req)
 	}
 
 	// 405 check: Does this path exist under ANY other method?
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	for _, mTree := range r.trees {
 		handler, _ := mTree.search(req.Path)
 		if handler != nil {
@@ -74,3 +93,4 @@ func (r *Router) serveHTTP(req *http.Request) *http.Response {
 	// Fallback to 404
 	return http.NewResponse404()
 }
+

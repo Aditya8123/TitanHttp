@@ -7,9 +7,12 @@ package server
 
 import (
 	"bufio"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
@@ -18,15 +21,20 @@ import (
 
 type Server struct {
 	addr       string
+	mu         sync.Mutex // Protects listener
 	listener   net.Listener
 	router     *router.Router
 	workerPool *WorkerPool
+	metrics    *Metrics
+	done       chan struct{}
 }
 
 func NewServer(addr string) *Server {
 	s := &Server{
-		addr:   addr,
-		router: router.NewRouter(),
+		addr:    addr,
+		router:  router.NewRouter(),
+		metrics: &Metrics{},
+		done:    make(chan struct{}),
 	}
 	// Initialize the worker pool with 100 workers and a queue size of 1024
 	s.workerPool = NewWorkerPool(100, 1024, s.handleConnection)
@@ -38,6 +46,16 @@ func (s *Server) Router() *router.Router {
 	return s.router
 }
 
+// Addr returns the address the server is listening on. It is safe for concurrent use.
+func (s *Server) Addr() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.listener != nil {
+		return s.listener.Addr().String()
+	}
+	return s.addr
+}
+
 // Start opens a TCP socket on the configured address and begins listening for connections.
 // It blocks indefinitely to keep the process alive (for this subtask).
 func (s *Server) Start() error {
@@ -46,24 +64,54 @@ func (s *Server) Start() error {
 		return fmt.Errorf("failed to bind to address %s: %w", s.addr, err)
 	}
 
+	s.mu.Lock()
 	s.listener = l
+	s.mu.Unlock()
+
 	fmt.Printf("TitanHTTP Server successfully started.\n")
-	fmt.Printf("Listening on %s...\n", s.addr)
+	fmt.Printf("Listening on %s...\n", s.Addr())
 
 	// Start the worker pool before accepting connections
 	s.workerPool.Start()
 
+	// Start the background metrics reporter
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				s.metrics.Report()
+			case <-s.done:
+				return
+			}
+		}
+	}()
+
 	// The main connection accept loop.
 	// This blocks waiting for new connections.
 	for {
-		conn, err := s.listener.Accept()
-		if err != nil {
-			fmt.Printf("Error accepting connection: %v\n", err)
-			continue
+		s.mu.Lock()
+		l := s.listener
+		s.mu.Unlock()
+		
+		if l == nil {
+			return nil
 		}
 
-		// We don't log accepted connections here anymore to avoid console noise
-		// under heavy concurrent load.
+		conn, err := l.Accept()
+		if err != nil {
+			select {
+			case <-s.done:
+				return nil // server is shutting down
+			default:
+				if errors.Is(err, net.ErrClosed) {
+					return nil // Listener closed during shutdown
+				}
+				fmt.Printf("Error accepting connection: %v\n", err)
+				continue
+			}
+		}
 
 		// Submit the connection to the worker pool instead of spawning a new goroutine
 		s.workerPool.Submit(conn)
@@ -76,12 +124,20 @@ func (s *Server) handleConnection(conn net.Conn) {
 	// We close the connection last.
 	defer conn.Close()
 
+	var totalConnBytes int64
+	s.metrics.RequestStarted()
+	defer func() {
+		s.metrics.RequestFinished(totalConnBytes)
+	}()
+
 	// Recover from panics to isolate connection failures and prevent server crashes.
 	defer func() {
 		if r := recover(); r != nil {
+			s.metrics.PanicRecovered()
 			fmt.Printf("Critical: Connection panic recovered: %v\n", r)
 			resp := http.NewResponse500()
-			conn.Write(resp.Bytes())
+			n, _ := conn.Write(resp.Bytes())
+			totalConnBytes += int64(n)
 		}
 	}()
 
@@ -126,10 +182,43 @@ func (s *Server) handleConnection(conn net.Conn) {
 		// Dispatch request to the router
 		resp := s.router.ServeHTTP(req)
 
-		_, err = conn.Write(resp.Bytes())
+		n, err := conn.Write(resp.Bytes())
+		totalConnBytes += int64(n)
 		if err != nil {
 			fmt.Printf("Error writing to connection: %v\n", err)
 			return
 		}
+
+		// Close connection if the client requested it
+		if req.Headers["connection"] == "close" {
+			return
+		}
+	}
+}
+
+// Shutdown gracefully shuts down the server.
+func (s *Server) Shutdown(ctx context.Context) error {
+	// Signal all loops to stop
+	close(s.done)
+	
+	// Close listener to unblock Accept()
+	s.mu.Lock()
+	if s.listener != nil {
+		s.listener.Close()
+	}
+	s.mu.Unlock()
+
+	// Wait for worker pool to drain, racing against ctx.Done()
+	stopCh := make(chan struct{})
+	go func() {
+		s.workerPool.Stop()
+		close(stopCh)
+	}()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-stopCh:
+		return nil
 	}
 }
