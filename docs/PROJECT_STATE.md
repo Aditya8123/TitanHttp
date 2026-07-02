@@ -8,14 +8,34 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 4 — Routing |
-| **Active Task** | Task 4.1 — Router |
-| **Last Completed Subtask** | Response Generation (Phase 3 complete) |
-| **Active Subtask** | Data structure |
-| **Next Subtask** | Method routing |
+| **Active Phase** | Phase 5 — Concurrency |
+| **Active Task** | Task 5.1 — Goroutines |
+| **Last Completed Subtask** | Cache headers (Task 4.3) |
+| **Active Subtask** | Per-connection goroutines |
+| **Next Subtask** | Connection isolation |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Phase 3 (HTTP Core).
+> Updated at the completion of Task 4.3 (Static Files) and Phase 4 (Routing).
+
+---
+
+## Phase 4 — Routing
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 4.1 — Router | ✅ Complete | 5 / 5 subtasks |
+| 4.2 — Middleware | ✅ Complete | 4 / 4 subtasks |
+| 4.3 — Static Files | ✅ Complete | 4 / 4 subtasks |
+
+### Task 4.1 — Router
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Route registration | ✅ |
+| 2 | Route matching | ✅ |
+| 3 | Parameters | ✅ |
+| 4 | Wildcards | ✅ |
+| 5 | Method routing | ✅ |
 
 ---
 
@@ -180,6 +200,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | `lessons/05_routing/01_routing_concepts.md` | Linear search, hash map, trie, radix tree lookup algorithms, routing priority |
 | `lessons/05_routing/02_pattern_matching.md` | Segment parsing, parameter extraction, wildcard captures, URL decoding, 405 vs 404 behavior |
 | `lessons/05_routing/03_middleware_pipeline.md` | Decorator pattern, HandlerFunc, Chain composition, logging/auth/recovery/CORS middleware |
+| `lessons/05_routing/04_static_files.md` | Path traversal vulnerabilities, MIME types, directory index handling, Cache-Control headers |
 | **Module 6 — Production Engineering** | |
 | `lessons/06_production/01_keep_alive.md` | Setup latency overhead, HTTP/1.0 vs 1.1 defaults, idle timeouts, request counts (max=N) |
 | `lessons/06_production/02_tls_and_https.md` | TLS 1.3 handshake RTT, certificate chains, tls.Listen, cipher suite selection, forward secrecy, HSTS |
@@ -189,6 +210,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | **Walkthroughs & Reference** | |
 | `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
 | `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
+| `walkthroughs/03_routing_engine.md` | Phase 4 walkthrough: radix tree router, parameter extraction, and wildcards |
 | `glossary.md` | Comprehensive 60+ term dictionary of networking, concurrency, and HTTP protocols |
 | `README.md` | Academy table of contents and curriculum maps |
 
@@ -219,3 +241,12 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented `parseBody` inside `internal/http/parser.go` to handle `Content-Length` headers and safely allocate constrained byte slices (Max 10MB) for payload reads using `io.ReadFull`. Added `ErrInvalidContentLength`, `ErrBodyTooLarge`, and comprehensive test cases. Task 3.2 — Parse body subtask complete.
 - Added `Validate()` to `Request` to enforce HTTP/1.1 `Host` header rules and wired the parser deeply into `internal/server/server.go`, gracefully closing connections on malformed payloads. Task 3.2 complete!
 - Developed dynamic `Bytes()` serialization on the `Response` struct, automatically formatting the status line, parsing Content-Length headers, and writing payloads. Created `NewResponse400`, `NewResponse404`, and `NewResponse500` helpers. Replaced the hardcoded server string in `server.go` with this new system. Documented memory tradeoffs of `Bytes()` in `architecture.md`. Task 3.3 and Phase 3 — HTTP Core are officially complete!
+- Created `internal/router` package defining `Handler` function signature and a basic `Router` map structure. Integrated the router into `server.go` and verified basic route dispatching in `cmd/titanhttp/main.go`. Task 4.1 — Data structure (Route registration) subtask complete.
+- Upgraded Router to enforce HTTP methods (GET, POST). Implemented 405 Method Not Allowed responses when a path exists but the requested method is unregistered. Task 4.1 — Method routing subtask complete.
+- Replaced the map-based router with a Radix Tree (prefix tree) to support dynamic path parameters (e.g., `/users/:id`). Added `Params` field to `Request` struct for zero-context extraction. Added ADR 003. Task 4.1 — Parameters subtask complete.
+- Added wildcard matching (e.g., `/*filepath`) to the Radix tree with validation panics on invalid routes. Task 4.1 is completely finished!
+- Implemented global `Middleware` pipeline in `internal/router`. Added `router.Use()` for zero-allocation handler wrapping. Task 4.2 — Middleware pipeline subtask complete.
+- Created `internal/middleware/logger.go`, replacing raw TCP print statements in the server loop with a unified, latency-tracking logging middleware. Task 4.2 — Logging middleware complete.
+- Implemented `Recovery` middleware using `defer` and `recover()` to gracefully handle handler panics and return a 500 response. Task 4.2 — Recovery middleware complete.
+- Implemented `AuthPlaceholder` middleware enforcing a hardcoded Bearer token and created a route-specific middleware composition in `main.go`. Task 4.2 (Middleware) complete (4/4 subtasks).
+- Implemented static file serving with `router.Static()`, added MIME type detection via `mime.TypeByExtension`, supported directory `index.html` resolution (403 for missing), and injected `Cache-Control` headers. Created `NewResponse403` and comprehensive tests. Phase 4 — Routing is complete!

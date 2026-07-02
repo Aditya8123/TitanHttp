@@ -122,7 +122,7 @@ A Subtask, Task, or Phase is only considered complete when it meets these strict
 * All tests pass and no known regressions exist.
 * Code has been reviewed for idiomatic Go and performance.
 * The UI (if applicable) meets accessibility standards (AA contrast, keyboard navigation).
-* Documentation and `docs/PROJECT_STATE.md` are updated.
+* All relevant documentation in the `docs/` directory (e.g., `architecture.md`, `decisions.md`) and `docs/PROJECT_STATE.md` must be modified and kept up to date.
 * Relevant `.academy/` material has been created or updated.
 
 ---

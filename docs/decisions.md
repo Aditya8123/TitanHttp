@@ -42,4 +42,40 @@ Development will strictly follow the hierarchy defined in `phases.md` (Phase →
 - **Con:** Feels artificially constrained if an engineer wants to jump ahead and implement a "fun" feature early (e.g., compression before basic routing).
 
 ---
+---
+
+## ADR 003: Radix Tree for Dynamic Routing
+
+**Status:** Accepted
+
+### Context
+Our initial routing implementation used an O(1) hash map (`map[http.Method]map[string]Handler`). While this is extremely fast for exact path matches, it completely breaks down when introducing dynamic path parameters (e.g., `/users/:id/posts/:post_id`). We need a data structure capable of parameter extraction and wildcard matching without sacrificing performance by falling back to slow regular expressions.
+
+### Decision
+We will replace the Hash Map with a **Radix Tree** (a space-optimized Trie). The router will maintain one Radix Tree per HTTP Method. The `Request` struct will be extended with a `Params map[string]string` field to hold the extracted values, bypassing standard `context` injection for raw performance and simplicity.
+
+### Trade-offs & Consequences
+- **Pro:** Sub-microsecond routing lookups (O(k) where k is path depth).
+- **Pro:** Built-in parameter extraction and prioritization (Exact > Parameter > Wildcard).
+- **Con:** The `internal/router` package becomes significantly more complex to maintain and debug compared to a map.
+- **Con:** Edge cases with conflicting parameter names at the same tree depth require strict validation during route registration.
+
+---
+
+## ADR 004: Middleware Pipeline Architecture
+
+**Status:** Accepted
+
+### Context
+As the server complexity grows, we need a way to execute cross-cutting concerns (e.g., logging, panic recovery, authentication) across many routes without duplicating code inside every handler.
+
+### Decision
+We adopted the **Decorator Pattern** for middleware. A middleware is a function that takes a `router.Handler` and returns a new `router.Handler`. We built a global `router.Use()` chain, and also allow composing middlewares around specific routes (e.g., `middleware.AuthPlaceholder(myHandler)`). We avoided `net/http`'s `HandlerFunc` to maintain strict compatibility with our custom `Request` and `Response` structs.
+
+### Trade-offs & Consequences
+- **Pro:** Highly composable and idiopathic to Go web engineering.
+- **Pro:** Allows route-specific protections (e.g., Auth only on `/protected`).
+- **Con:** Middlewares wrap handlers in closures, which slightly increases the call stack depth and introduces a tiny amount of allocation overhead compared to inline execution.
+
+---
 > *"Code tells you how; comments tell you why."*

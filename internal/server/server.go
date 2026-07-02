@@ -13,19 +13,27 @@ import (
 	"time"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
+	"github.com/Aditya8123/TitanHttp/internal/router"
 )
 
 // Server represents the TitanHTTP core server.
 type Server struct {
 	addr     string
 	listener net.Listener
+	router   *router.Router
 }
 
 // NewServer initializes a new TitanHTTP Server configured to listen on the given address.
 func NewServer(addr string) *Server {
 	return &Server{
-		addr: addr,
+		addr:   addr,
+		router: router.NewRouter(),
 	}
+}
+
+// Router returns the underlying router for registering endpoints.
+func (s *Server) Router() *router.Router {
+	return s.router
 }
 
 // Start opens a TCP socket on the configured address and begins listening for connections.
@@ -99,21 +107,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-		fmt.Printf("--- Received Request ---\n")
-		fmt.Printf("Method: %s\n", req.Method)
-		fmt.Printf("Path: %s\n", req.Path)
-		fmt.Printf("Version: %s\n", req.Version)
-		fmt.Printf("Headers Count: %d\n", len(req.Headers))
-		if len(req.Body) > 0 {
-			fmt.Printf("Body Length: %d bytes\n", len(req.Body))
-		}
-		fmt.Printf("------------------------\n")
-
-		// Write a dynamic HTTP response back to the client.
-		resp := http.NewResponse()
-		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
-		resp.Body = []byte("Hello from TitanHTTP (Dynamic Response)")
+		// Dispatch request to the router
+		resp := s.router.ServeHTTP(req)
 
 		_, err = conn.Write(resp.Bytes())
 		if err != nil {
