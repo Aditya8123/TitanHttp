@@ -7,7 +7,9 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"net"
+	"time"
 )
 
 // Server represents the TitanHTTP core server.
@@ -56,23 +58,40 @@ func (s *Server) handleConnection(conn net.Conn) {
 	// This guarantees the socket is closed even if a panic occurs or we return early.
 	defer conn.Close()
 
-	// Read incoming bytes into a buffer.
 	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	if err != nil {
-		fmt.Printf("Error reading from connection: %v\n", err)
-		return
-	}
 
-	fmt.Printf("--- Received %d bytes ---\n", n)
-	fmt.Print(string(buf[:n]))
-	fmt.Printf("-------------------------\n")
+	// Connection loop: continuously read from the socket until EOF or error.
+	for {
+		// Set a 5-second timeout for reading to prevent hanging connections.
+		err := conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+		if err != nil {
+			fmt.Printf("Failed to set read deadline: %v\n", err)
+			return
+		}
 
-	// Write a simple HTTP response back to the client.
-	response := "HTTP/1.1 200 OK\r\nContent-Length: 20\r\n\r\nHello from TitanHTTP"
-	_, err = conn.Write([]byte(response))
-	if err != nil {
-		fmt.Printf("Error writing to connection: %v\n", err)
-		return
+		n, err := conn.Read(buf)
+		if err != nil {
+			if err == io.EOF {
+				fmt.Printf("Client disconnected (EOF).\n")
+			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				fmt.Printf("Connection timed out.\n")
+			} else {
+				fmt.Printf("Error reading from connection: %v\n", err)
+			}
+			return
+		}
+
+		fmt.Printf("--- Received %d bytes ---\n", n)
+		fmt.Print(string(buf[:n]))
+		fmt.Printf("-------------------------\n")
+
+		// Write a simple HTTP response back to the client.
+		// In a true HTTP loop, this would happen after parsing a complete request.
+		response := "HTTP/1.1 200 OK\r\nContent-Length: 20\r\n\r\nHello from TitanHTTP"
+		_, err = conn.Write([]byte(response))
+		if err != nil {
+			fmt.Printf("Error writing to connection: %v\n", err)
+			return
+		}
 	}
 }

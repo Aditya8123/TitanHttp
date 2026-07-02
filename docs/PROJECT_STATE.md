@@ -8,14 +8,14 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 2 — Networking Fundamentals |
-| **Active Task** | Task 2.4 — Connection Lifecycle ⬜ |
-| **Last Completed Subtask** | Handle errors (Task 2.3) |
-| **Active Subtask** | — (Task 2.3 complete; next: Task 2.4 — Connection Lifecycle) |
-| **Next Subtask** | Blocking I/O |
+| **Active Phase** | Phase 3 — HTTP Parsing |
+| **Active Task** | Task 3.1 — Request Parsing |
+| **Last Completed Subtask** | Task 2.4 — Connection Lifecycle |
+| **Active Subtask** | — |
+| **Next Subtask** | Phase 3 — HTTP Parsing |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 2.3 — Socket Programming.
+> Updated at the completion of Task 2.4 — Connection Lifecycle.
 
 ---
 
@@ -26,7 +26,7 @@
 | 2.1 — Learn TCP | ✅ Complete | 6 / 6 subtasks |
 | 2.2 — Learn Go | ✅ Complete | 5 / 5 subtasks |
 | 2.3 — Socket Programming | ✅ Complete | 6 / 6 subtasks |
-| 2.4 — Connection Lifecycle | ⬜ Not Started | — |
+| 2.4 — Connection Lifecycle | ✅ Complete | 5 / 5 subtasks |
 
 ### Task 2.1 — Learn TCP
 
@@ -113,6 +113,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | `lessons/09_reading_bytes.md` | Reading bytes from sockets, net.Conn |
 | `lessons/10_writing_bytes.md` | Writing HTTP responses to sockets, net.Conn |
 | `lessons/11_defer_and_closure.md` | Robust socket cleanup using defer |
+| `lessons/12_connection_lifecycle.md` | Blocking I/O, EOF detection, and Timeouts |
 | `glossary.md` | Core networking terminology definitions |
 
 ---
@@ -134,3 +135,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Added buffer allocation and `conn.Read()` calls inside the accept loop to display raw incoming client bytes. Added `09_reading_bytes.md` lesson. Task 2.3 — Read bytes subtask complete.
 - Sent raw text-based HTTP response to client using `conn.Write()` before connection closure. Added `10_writing_bytes.md` lesson. Task 2.3 — Write bytes subtask complete.
 - Extracted connection logic to `handleConnection` and implemented robust cleanup using `defer`. Added `11_defer_and_closure.md`. Task 2.3 complete (6/6 subtasks).
+- Implemented continuous `for` loop in `handleConnection`, detecting `io.EOF` for graceful client disconnects, and configured `SetReadDeadline` (5 seconds) to prevent hanging connections. Task 2.4 complete (5/5 subtasks). Phase 2 is now complete.
