@@ -31,6 +31,13 @@ func TestRouter_MethodAndParamRouting(t *testing.T) {
 		return resp
 	})
 
+	r.Get("/static/*filepath", func(req *http.Request) *http.Response {
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Body = []byte("File: " + req.Params["filepath"])
+		return resp
+	})
+
 	// Test 1: Hit existing GET route
 	reqGet := &http.Request{Method: http.MethodGet, Path: "/hello"}
 	resp1 := r.ServeHTTP(reqGet)
@@ -78,5 +85,23 @@ func TestRouter_MethodAndParamRouting(t *testing.T) {
 	expectedParams := map[string]string{"id": "99"}
 	if !reflect.DeepEqual(reqParam.Params, expectedParams) {
 		t.Errorf("Params not injected correctly. Got %v, want %v", reqParam.Params, expectedParams)
+	}
+
+	// Test 6: Wildcard route
+	reqWild := &http.Request{
+		Method: http.MethodGet,
+		Path:   "/static/css/main.css",
+		Params: make(map[string]string),
+	}
+	resp6 := r.ServeHTTP(reqWild)
+	if resp6.StatusCode != http.StatusOK {
+		t.Errorf("Expected status 200 for /static/css/main.css, got %d", resp6.StatusCode)
+	}
+	if string(resp6.Body) != "File: css/main.css" {
+		t.Errorf("Expected body 'File: css/main.css', got %s", string(resp6.Body))
+	}
+	expectedWildParams := map[string]string{"filepath": "css/main.css"}
+	if !reflect.DeepEqual(reqWild.Params, expectedWildParams) {
+		t.Errorf("Wildcard params not injected correctly. Got %v, want %v", reqWild.Params, expectedWildParams)
 	}
 }

@@ -10,7 +10,8 @@ type node struct {
 	children []*node // child nodes
 	handler  Handler // non-nil if this node is a terminal route
 	isParam  bool    // true if this segment is a parameter (starts with ':')
-	paramKey string  // the name of the parameter (e.g., "id" for ":id")
+	isWild   bool    // true if this segment is a wildcard (starts with '*')
+	paramKey string  // the name of the parameter (e.g., "id" for ":id" or "filepath" for "*filepath")
 }
 
 // insert adds a route to the tree.
@@ -18,18 +19,27 @@ func (n *node) insert(pattern string, handler Handler) {
 	segments := splitPath(pattern)
 	curr := n
 
-	for _, segment := range segments {
+	for i, segment := range segments {
+		// If we encounter a wildcard segment, ensure it's the last one
+		if strings.HasPrefix(segment, "*") {
+			if i != len(segments)-1 {
+				panic("wildcard segment '" + segment + "' must be the final segment in the route")
+			}
+		}
+
 		child := curr.matchChild(segment)
 		if child == nil {
 			isParam := strings.HasPrefix(segment, ":")
+			isWild := strings.HasPrefix(segment, "*")
 			paramKey := ""
-			if isParam {
+			if isParam || isWild {
 				paramKey = segment[1:]
 			}
 
 			child = &node{
 				path:     segment,
 				isParam:  isParam,
+				isWild:   isWild,
 				paramKey: paramKey,
 			}
 			curr.children = append(curr.children, child)
@@ -46,20 +56,37 @@ func (n *node) search(path string) (Handler, map[string]string) {
 	params := make(map[string]string)
 
 	curr := n
-	for _, segment := range segments {
+	for i, segment := range segments {
 		// First try to find an exact match
 		child := curr.matchExactChild(segment)
 		if child == nil {
 			// If no exact match, look for a parameter match
 			child = curr.matchParamChild()
 			if child == nil {
-				// No match found
-				return nil, nil
+				// Finally, look for a wildcard match
+				child = curr.matchWildChild()
+				if child == nil {
+					// No match found
+					return nil, nil
+				}
+				// Wildcard matched! Consume the rest of the segments.
+				params[child.paramKey] = strings.Join(segments[i:], "/")
+				return child.handler, params
 			}
 			// Capture the parameter value
 			params[child.paramKey] = segment
 		}
 		curr = child
+	}
+
+	// If we reach the end of the segments but the current node doesn't have a handler,
+	// check if it has a wildcard child that can catch the empty remaining path.
+	if curr.handler == nil {
+		wildChild := curr.matchWildChild()
+		if wildChild != nil {
+			params[wildChild.paramKey] = ""
+			return wildChild.handler, params
+		}
 	}
 
 	return curr.handler, params
@@ -68,7 +95,7 @@ func (n *node) search(path string) (Handler, map[string]string) {
 // matchExactChild looks for a child node with the exact path segment.
 func (n *node) matchExactChild(segment string) *node {
 	for _, child := range n.children {
-		if !child.isParam && child.path == segment {
+		if !child.isParam && !child.isWild && child.path == segment {
 			return child
 		}
 	}
@@ -79,6 +106,16 @@ func (n *node) matchExactChild(segment string) *node {
 func (n *node) matchParamChild() *node {
 	for _, child := range n.children {
 		if child.isParam {
+			return child
+		}
+	}
+	return nil
+}
+
+// matchWildChild looks for a child node that acts as a wildcard.
+func (n *node) matchWildChild() *node {
+	for _, child := range n.children {
+		if child.isWild {
 			return child
 		}
 	}

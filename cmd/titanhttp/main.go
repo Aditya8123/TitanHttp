@@ -38,6 +38,14 @@ func main() {
 		return resp
 	})
 
+	srv.Router().Get("/static/*filepath", func(req *http.Request) *http.Response {
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "text/plain"
+		resp.Body = []byte(fmt.Sprintf("Serving static file: %s\n", req.Params["filepath"]))
+		return resp
+	})
+
 	if err := srv.Start(); err != nil {
 		fmt.Printf("Fatal error: %v\n", err)
 		os.Exit(1)

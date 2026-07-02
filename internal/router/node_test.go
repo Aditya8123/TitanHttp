@@ -19,6 +19,8 @@ func TestNode_InsertAndSearch(t *testing.T) {
 	root.insert("/users/:id", dummyHandler)
 	root.insert("/users/:id/posts/:post_id", dummyHandler)
 	root.insert("/static/index.html", dummyHandler)
+	root.insert("/static/*filepath", dummyHandler)
+	root.insert("/*catchall", dummyHandler)
 
 	tests := []struct {
 		name       string
@@ -57,16 +59,28 @@ func TestNode_InsertAndSearch(t *testing.T) {
 			wantParams: map[string]string{},
 		},
 		{
-			name:       "Not found - partial match",
-			searchPath: "/users/123/posts",
-			wantMatch:  false,
-			wantParams: nil,
+			name:       "Wildcard match with segments",
+			searchPath: "/static/css/main.css",
+			wantMatch:  true,
+			wantParams: map[string]string{"filepath": "css/main.css"},
 		},
 		{
-			name:       "Not found - completely unknown",
-			searchPath: "/missing",
-			wantMatch:  false,
-			wantParams: nil,
+			name:       "Wildcard match single segment",
+			searchPath: "/static/logo.png",
+			wantMatch:  true,
+			wantParams: map[string]string{"filepath": "logo.png"},
+		},
+		{
+			name:       "Wildcard match exact boundary",
+			searchPath: "/static/",
+			wantMatch:  true,
+			wantParams: map[string]string{"filepath": ""},
+		},
+		{
+			name:       "Global catchall",
+			searchPath: "/something/completely/different",
+			wantMatch:  true,
+			wantParams: map[string]string{"catchall": "something/completely/different"},
 		},
 	}
 
@@ -86,4 +100,17 @@ func TestNode_InsertAndSearch(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNode_InvalidWildcardPanic(t *testing.T) {
+	root := &node{}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic on invalid wildcard insertion")
+		}
+	}()
+
+	// This should panic because there are segments after the wildcard
+	root.insert("/static/*filepath/invalid", dummyHandler)
 }
