@@ -30,6 +30,14 @@ func main() {
 		return resp
 	})
 
+	srv.Router().Get("/users/:name", func(req *http.Request) *http.Response {
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "text/plain"
+		resp.Body = []byte(fmt.Sprintf("Hello, %s!\n", req.Params["name"]))
+		return resp
+	})
+
 	if err := srv.Start(); err != nil {
 		fmt.Printf("Fatal error: %v\n", err)
 		os.Exit(1)

@@ -35,7 +35,8 @@ The engine that reads raw bytes from the TCP socket and translates them into a s
 
 ### 3. Router & Middleware (Phase 4)
 The traffic controller. It determines which piece of application logic should handle the parsed request.
-- **Responsibility:** Match request URIs and methods to registered handlers. Supports parameters and wildcards.
+- **Responsibility:** Match request URIs and methods to registered handlers. Supports dynamic path parameters and wildcards.
+- **Data Structure:** Uses a highly optimized Radix Tree per HTTP Method. This enables O(k) pattern matching (where k is path segments) without relying on slow regular expressions. It strictly enforces routing priority: Exact match > Parameter match > Wildcard match.
 - **Middleware:** A chain of functions (e.g., Logging, Recovery, Authentication) that execute before and after the main handler.
 
 ### 4. Worker Pool (Phase 5)

@@ -42,4 +42,23 @@ Development will strictly follow the hierarchy defined in `phases.md` (Phase →
 - **Con:** Feels artificially constrained if an engineer wants to jump ahead and implement a "fun" feature early (e.g., compression before basic routing).
 
 ---
+---
+
+## ADR 003: Radix Tree for Dynamic Routing
+
+**Status:** Accepted
+
+### Context
+Our initial routing implementation used an O(1) hash map (`map[http.Method]map[string]Handler`). While this is extremely fast for exact path matches, it completely breaks down when introducing dynamic path parameters (e.g., `/users/:id/posts/:post_id`). We need a data structure capable of parameter extraction and wildcard matching without sacrificing performance by falling back to slow regular expressions.
+
+### Decision
+We will replace the Hash Map with a **Radix Tree** (a space-optimized Trie). The router will maintain one Radix Tree per HTTP Method. The `Request` struct will be extended with a `Params map[string]string` field to hold the extracted values, bypassing standard `context` injection for raw performance and simplicity.
+
+### Trade-offs & Consequences
+- **Pro:** Sub-microsecond routing lookups (O(k) where k is path depth).
+- **Pro:** Built-in parameter extraction and prioritization (Exact > Parameter > Wildcard).
+- **Con:** The `internal/router` package becomes significantly more complex to maintain and debug compared to a map.
+- **Con:** Edge cases with conflicting parameter names at the same tree depth require strict validation during route registration.
+
+---
 > *"Code tells you how; comments tell you why."*

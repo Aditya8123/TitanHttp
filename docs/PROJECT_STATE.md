@@ -10,9 +10,9 @@
 | --- | --- |
 | **Active Phase** | Phase 4 — Routing |
 | **Active Task** | Task 4.1 — Router |
-| **Last Completed Subtask** | Method routing |
-| **Active Subtask** | Parameters |
-| **Next Subtask** | Wildcards |
+| **Last Completed Subtask** | Parameters |
+| **Active Subtask** | Wildcards |
+| **Next Subtask** | Middleware pipeline |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Phase 3 (HTTP Core).
@@ -221,3 +221,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Developed dynamic `Bytes()` serialization on the `Response` struct, automatically formatting the status line, parsing Content-Length headers, and writing payloads. Created `NewResponse400`, `NewResponse404`, and `NewResponse500` helpers. Replaced the hardcoded server string in `server.go` with this new system. Documented memory tradeoffs of `Bytes()` in `architecture.md`. Task 3.3 and Phase 3 — HTTP Core are officially complete!
 - Created `internal/router` package defining `Handler` function signature and a basic `Router` map structure. Integrated the router into `server.go` and verified basic route dispatching in `cmd/titanhttp/main.go`. Task 4.1 — Data structure (Route registration) subtask complete.
 - Upgraded Router to enforce HTTP methods (GET, POST). Implemented 405 Method Not Allowed responses when a path exists but the requested method is unregistered. Task 4.1 — Method routing subtask complete.
+- Replaced the map-based router with a Radix Tree (prefix tree) to support dynamic path parameters (e.g., `/users/:id`). Added `Params` field to `Request` struct for zero-context extraction. Added ADR 003. Task 4.1 — Parameters subtask complete.

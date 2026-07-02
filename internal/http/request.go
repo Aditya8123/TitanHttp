@@ -33,12 +33,16 @@ type Request struct {
 
 	// Body contains the payload of the request, if any.
 	Body []byte
+
+	// Params stores dynamic path parameters extracted by the router (e.g., /users/:id).
+	Params map[string]string
 }
 
 // NewRequest creates a new Request with initialized maps.
 func NewRequest() *Request {
 	return &Request{
 		Headers: make(map[string]string),
+		Params:  make(map[string]string),
 	}
 }
 
