@@ -15,7 +15,27 @@
 | **Next Subtask** | Logging middleware |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Phase 3 (HTTP Core).
+> Updated at the completion of Task 4.1 (Router).
+
+---
+
+## Phase 4 — Routing
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 4.1 — Router | ✅ Complete | 5 / 5 subtasks |
+| 4.2 — Middleware | ⏳ In Progress | 0 / 4 subtasks |
+| 4.3 — Static Files | 📝 Pending | 0 / 4 subtasks |
+
+### Task 4.1 — Router
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Route registration | ✅ |
+| 2 | Route matching | ✅ |
+| 3 | Parameters | ✅ |
+| 4 | Wildcards | ✅ |
+| 5 | Method routing | ✅ |
 
 ---
 
@@ -189,6 +209,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | **Walkthroughs & Reference** | |
 | `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
 | `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
+| `walkthroughs/03_routing_engine.md` | Phase 4 walkthrough: radix tree router, parameter extraction, and wildcards |
 | `glossary.md` | Comprehensive 60+ term dictionary of networking, concurrency, and HTTP protocols |
 | `README.md` | Academy table of contents and curriculum maps |
 
