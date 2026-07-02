@@ -65,9 +65,18 @@ func (s *Server) Start() error {
 
 // handleConnection processes an individual client connection.
 func (s *Server) handleConnection(conn net.Conn) {
-	// Defers are executed when the surrounding function returns.
-	// This guarantees the socket is closed even if a panic occurs or we return early.
+	// Defers are executed when the surrounding function returns (LIFO order).
+	// We close the connection last.
 	defer conn.Close()
+
+	// Recover from panics to isolate connection failures and prevent server crashes.
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Critical: Connection panic recovered: %v\n", r)
+			resp := http.NewResponse500()
+			conn.Write(resp.Bytes())
+		}
+	}()
 
 	reader := bufio.NewReader(conn)
 

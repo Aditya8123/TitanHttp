@@ -10,9 +10,9 @@
 | --- | --- |
 | **Active Phase** | Phase 5 — Concurrency |
 | **Active Task** | Task 5.1 — Goroutines |
-| **Last Completed Subtask** | Per-connection goroutines (Task 5.1) |
-| **Active Subtask** | Connection isolation |
-| **Next Subtask** | Error handling |
+| **Last Completed Subtask** | Connection isolation (Task 5.1) |
+| **Active Subtask** | Error handling |
+| **Next Subtask** | Worker design (Task 5.2) |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Task 4.3 (Static Files) and Phase 4 (Routing).
@@ -251,3 +251,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented `AuthPlaceholder` middleware enforcing a hardcoded Bearer token and created a route-specific middleware composition in `main.go`. Task 4.2 (Middleware) complete (4/4 subtasks).
 - Implemented static file serving with `router.Static()`, added MIME type detection via `mime.TypeByExtension`, supported directory `index.html` resolution (403 for missing), and injected `Cache-Control` headers. Created `NewResponse403` and comprehensive tests. Phase 4 — Routing is complete!
 - Updated server accept loop to handle each connection in its own goroutine, enabling concurrent processing without blocking the listener. Task 5.1 — Per-connection goroutines subtask complete.
+- Added top-level `recover()` inside `handleConnection` to provide connection isolation, preventing a panic in one client's lifecycle from crashing the entire server process. Task 5.1 — Connection isolation subtask complete.
