@@ -59,7 +59,7 @@ func (s *Server) Start() error {
 
 		fmt.Printf("Accepted new connection from %s\n", conn.RemoteAddr().String())
 
-		s.handleConnection(conn)
+		go s.handleConnection(conn)
 	}
 }
 

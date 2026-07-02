@@ -10,9 +10,9 @@
 | --- | --- |
 | **Active Phase** | Phase 5 — Concurrency |
 | **Active Task** | Task 5.1 — Goroutines |
-| **Last Completed Subtask** | Cache headers (Task 4.3) |
-| **Active Subtask** | Per-connection goroutines |
-| **Next Subtask** | Connection isolation |
+| **Last Completed Subtask** | Per-connection goroutines (Task 5.1) |
+| **Active Subtask** | Connection isolation |
+| **Next Subtask** | Error handling |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Task 4.3 (Static Files) and Phase 4 (Routing).
@@ -247,6 +247,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Added wildcard matching (e.g., `/*filepath`) to the Radix tree with validation panics on invalid routes. Task 4.1 is completely finished!
 - Implemented global `Middleware` pipeline in `internal/router`. Added `router.Use()` for zero-allocation handler wrapping. Task 4.2 — Middleware pipeline subtask complete.
 - Created `internal/middleware/logger.go`, replacing raw TCP print statements in the server loop with a unified, latency-tracking logging middleware. Task 4.2 — Logging middleware complete.
-- Implemented `Recovery` middleware using `defer` and `recover()` to gracefully handle handler panics and return a 500 response. Task 4.2 — Recovery middleware complete.
+- Implemented Recovery middleware using `defer` and `recover()` to gracefully handle handler panics and return a 500 response. Task 4.2 — Recovery middleware complete.
 - Implemented `AuthPlaceholder` middleware enforcing a hardcoded Bearer token and created a route-specific middleware composition in `main.go`. Task 4.2 (Middleware) complete (4/4 subtasks).
 - Implemented static file serving with `router.Static()`, added MIME type detection via `mime.TypeByExtension`, supported directory `index.html` resolution (403 for missing), and injected `Cache-Control` headers. Created `NewResponse403` and comprehensive tests. Phase 4 — Routing is complete!
+- Updated server accept loop to handle each connection in its own goroutine, enabling concurrent processing without blocking the listener. Task 5.1 — Per-connection goroutines subtask complete.

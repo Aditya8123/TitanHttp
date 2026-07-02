@@ -16,16 +16,16 @@ We deliberately avoid using Go's standard `net/http` for core server functionali
 
 The project is structured as a guided narrative. A visitor follows a single packet through the entire lifecycle:
 
-* **Chapter 1:** Why HTTP Exists
-* **Chapter 2:** TCP
-* **Chapter 3:** Building a Socket
-* **Chapter 4:** Reading Bytes
-* **Chapter 5:** Parsing Requests
-* **Chapter 6:** Routing
-* **Chapter 7:** Concurrency
-* **Chapter 8:** Production Features
-* **Chapter 9:** Benchmarks
-* **Chapter 10:** Source Code
+* **Chapter 1:** Project Foundation
+* **Chapter 2:** Networking Fundamentals
+* **Chapter 3:** HTTP Core
+* **Chapter 4:** Routing
+* **Chapter 5:** Concurrency
+* **Chapter 6:** Production Features
+* **Chapter 7:** Advanced Backend Features
+* **Chapter 8:** Performance Engineering
+* **Chapter 9:** Showcase Platform
+* **Chapter 10:** Release
 
 *(See [phases.md](./docs/phases.md) for the strict engineering roadmap.)*
 
@@ -45,14 +45,15 @@ Our documentation is treated as a first-class, premium editorial experience. Rea
 
 ## 🛠️ Quick Start
 
-*(Coming soon as Phase 1 completes and Phase 2 begins)*
-
 ```bash
 # Clone the repository
 git clone https://github.com/Aditya8123/TitanHttp.git
 
 # Enter the datacenter
 cd TitanHttp
+
+# Boot the server
+go run cmd/titanhttp/main.go
 ```
 
 ---
