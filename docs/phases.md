@@ -77,7 +77,19 @@
 
 ---
 
-## Task 2.2 — Socket Programming
+## Task 2.2 — Learn Go
+
+### Subtasks
+
+* Syntax, types, and variables
+* Pointers and memory management
+* Structs and interfaces
+* Error handling
+* Goroutines and channels
+
+---
+
+## Task 2.3 — Socket Programming
 
 ### Subtasks
 
@@ -90,7 +102,7 @@
 
 ---
 
-## Task 2.3 — Connection Lifecycle
+## Task 2.4 — Connection Lifecycle
 
 ### Subtasks
 
