@@ -57,7 +57,8 @@ func (s *Server) Start() error {
 			continue
 		}
 
-		fmt.Printf("Accepted new connection from %s\n", conn.RemoteAddr().String())
+		// We don't log accepted connections here anymore to avoid console noise
+		// under heavy concurrent load.
 
 		go s.handleConnection(conn)
 	}
@@ -92,9 +93,9 @@ func (s *Server) handleConnection(conn net.Conn) {
 		req, err := http.ParseRequest(reader)
 		if err != nil {
 			if err == io.EOF {
-				fmt.Printf("Client disconnected (EOF).\n")
+				// Silently handle normal disconnects to avoid log noise in concurrent environments.
 			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				fmt.Printf("Connection timed out.\n")
+				// Silently handle read timeouts to avoid log noise.
 			} else {
 				fmt.Printf("Error parsing request: %v\n", err)
 				// Send a 400 Bad Request on parser errors

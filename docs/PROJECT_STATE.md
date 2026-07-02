@@ -15,7 +15,25 @@
 | **Next Subtask** | Worker design (Task 5.2) |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 4.3 (Static Files) and Phase 4 (Routing).
+> Updated at the completion of Task 5.1 (Goroutines).
+
+---
+
+## Phase 5 — Concurrency
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 5.1 — Goroutines | ✅ Complete | 3 / 3 subtasks |
+| 5.2 — Worker Pool | 🚧 Active | 0 / 4 subtasks |
+| 5.3 — Synchronization | ⏳ Pending | 0 / 4 subtasks |
+
+### Task 5.1 — Goroutines
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Per-connection goroutines | ✅ |
+| 2 | Connection isolation | ✅ |
+| 3 | Error handling | ✅ |
 
 ---
 
@@ -252,3 +270,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented static file serving with `router.Static()`, added MIME type detection via `mime.TypeByExtension`, supported directory `index.html` resolution (403 for missing), and injected `Cache-Control` headers. Created `NewResponse403` and comprehensive tests. Phase 4 — Routing is complete!
 - Updated server accept loop to handle each connection in its own goroutine, enabling concurrent processing without blocking the listener. Task 5.1 — Per-connection goroutines subtask complete.
 - Added top-level `recover()` inside `handleConnection` to provide connection isolation, preventing a panic in one client's lifecycle from crashing the entire server process. Task 5.1 — Connection isolation subtask complete.
+- Removed noisy `fmt.Printf` statements for standard connection lifecycle events (accept, EOF, timeout) in `server.go` to prevent stdout contention under high concurrent loads. Task 5.1 is complete (3/3 subtasks)!
