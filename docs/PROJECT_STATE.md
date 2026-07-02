@@ -102,18 +102,21 @@ _Local-only (gitignored). Populated as concepts are introduced._
 
 | File | Topic |
 | --- | --- |
-| `lessons/01_tcp_fundamentals.md` | TCP vs UDP, IP, Ports, Handshakes |
-| `lessons/02_go_syntax_and_types.md` | Go fundamentals, types, conversions |
-| `lessons/03_go_pointers_and_memory.md` | Passing by value vs pointer, memory allocation |
-| `lessons/04_go_structs_and_interfaces.md` | State (structs) and behavior (interfaces) |
-| `lessons/05_go_error_handling.md` | The error interface, returning and wrapping errors |
-| `lessons/06_go_concurrency.md` | Goroutines and Channels |
-| `lessons/07_socket_programming.md` | Socket programming in Go, net.Listen |
-| `lessons/08_accepting_connections.md` | The Accept syscall, net.Conn, and connection loops |
-| `lessons/09_reading_bytes.md` | Reading bytes from sockets, net.Conn |
-| `lessons/10_writing_bytes.md` | Writing HTTP responses to sockets, net.Conn |
-| `lessons/11_defer_and_closure.md` | Robust socket cleanup using defer |
-| `lessons/12_connection_lifecycle.md` | Blocking I/O, EOF detection, and Timeouts |
+| **Module 1 — Go Fundamentals** | |
+| `lessons/01_go_fundamentals/01_syntax_and_types.md` | Go fundamentals, types, conversions |
+| `lessons/01_go_fundamentals/02_pointers_and_memory.md` | Passing by value vs pointer, memory allocation |
+| `lessons/01_go_fundamentals/03_structs_and_interfaces.md` | State (structs) and behavior (interfaces) |
+| `lessons/01_go_fundamentals/04_error_handling.md` | The error interface, returning and wrapping errors |
+| `lessons/01_go_fundamentals/05_goroutines_and_channels.md` | Goroutines and Channels |
+| **Module 2 — Networking** | |
+| `lessons/02_networking/01_tcp_fundamentals.md` | TCP vs UDP, IP, Ports, Handshakes |
+| `lessons/02_networking/02_socket_programming.md` | Socket programming in Go, net.Listen |
+| `lessons/02_networking/03_accepting_connections.md` | The Accept syscall, net.Conn, and connection loops |
+| `lessons/02_networking/04_reading_bytes.md` | Reading bytes from sockets, net.Conn |
+| `lessons/02_networking/05_writing_bytes.md` | Writing HTTP responses to sockets, net.Conn |
+| `lessons/02_networking/06_defer_and_closure.md` | Robust socket cleanup using defer |
+| `lessons/02_networking/07_connection_lifecycle.md` | Blocking I/O, EOF detection, and Timeouts |
+| **Reference** | |
 | `glossary.md` | Core networking terminology definitions |
 
 ---
@@ -128,11 +131,12 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Switched origin to HTTPS (no SSH key on machine; using Git Credential Manager). Pushed all commits to `origin/main` — local & remote in sync at `bfe92da`.
 - Created foundational project documentation: `README.md`, `architecture.md`, `decisions.md`, `deployment.md`, `testing.md`, `benchmarking.md`, `recruiter.md`, and finalized `PROJECT_STATE.md`. Task 1.2 — Documentation complete (10/10 subtasks).
 - Configured developer environment: added `Makefile`, `.air.toml` for live reload, `.vscode/launch.json` for debugger, and established `cmd/titanhttp/main.go` entry point. Task 1.3 — Developer Environment complete (5/5 subtasks). **Phase 1 Complete**.
-- Established the learning system in `.academy/`: created `lessons/01_tcp_fundamentals.md` and `glossary.md` covering IPs, ports, and connection lifecycles. Task 2.1 — Learn TCP complete (6/6 subtasks).
-- Added comprehensive Go tutorials to `.academy/lessons/` (02 through 06) covering syntax, pointers, interfaces, error handling, and concurrency. Task 2.2 — Learn Go complete (5/5 subtasks).
-- Created `internal/server` package and implemented `Server` struct with `Start()` method using `net.Listen`. Added `07_socket_programming.md` lesson. Task 2.3 — Create listener subtask complete.
-- Implemented infinite `for` loop in `Start()` to `Accept()` incoming TCP connections and log their remote address. Added `08_accepting_connections.md` lesson. Task 2.3 — Accept connections subtask complete.
-- Added buffer allocation and `conn.Read()` calls inside the accept loop to display raw incoming client bytes. Added `09_reading_bytes.md` lesson. Task 2.3 — Read bytes subtask complete.
-- Sent raw text-based HTTP response to client using `conn.Write()` before connection closure. Added `10_writing_bytes.md` lesson. Task 2.3 — Write bytes subtask complete.
-- Extracted connection logic to `handleConnection` and implemented robust cleanup using `defer`. Added `11_defer_and_closure.md`. Task 2.3 complete (6/6 subtasks).
-- Implemented continuous `for` loop in `handleConnection`, detecting `io.EOF` for graceful client disconnects, and configured `SetReadDeadline` (5 seconds) to prevent hanging connections. Task 2.4 complete (5/5 subtasks). Phase 2 is now complete.
+- Established the learning system in `.academy/`: created `lessons/02_networking/01_tcp_fundamentals.md` and `glossary.md` covering IPs, ports, and connection lifecycles. Task 2.1 — Learn TCP complete (6/6 subtasks).
+- Added comprehensive Go tutorials to `.academy/lessons/01_go_fundamentals/` (01 through 05) covering syntax, pointers, interfaces, error handling, and concurrency. Task 2.2 — Learn Go complete (5/5 subtasks).
+- Created `internal/server` package and implemented `Server` struct with `Start()` method using `net.Listen`. Added `lessons/02_networking/02_socket_programming.md` lesson. Task 2.3 — Create listener subtask complete.
+- Implemented infinite `for` loop in `Start()` to `Accept()` incoming TCP connections and log their remote address. Added `lessons/02_networking/03_accepting_connections.md` lesson. Task 2.3 — Accept connections subtask complete.
+- Added buffer allocation and `conn.Read()` calls inside the accept loop to display raw incoming client bytes. Added `lessons/02_networking/04_reading_bytes.md` lesson. Task 2.3 — Read bytes subtask complete.
+- Sent raw text-based HTTP response to client using `conn.Write()` before connection closure. Added `lessons/02_networking/05_writing_bytes.md` lesson. Task 2.3 — Write bytes subtask complete.
+- Extracted connection logic to `handleConnection` and implemented robust cleanup using `defer`. Added `lessons/02_networking/06_defer_and_closure.md`. Task 2.3 complete (6/6 subtasks).
+- Implemented continuous `for` loop in `handleConnection`, detecting `io.EOF` for graceful client disconnects, and configured `SetReadDeadline` (5 seconds) to prevent hanging connections. Added `lessons/02_networking/07_connection_lifecycle.md`. Task 2.4 complete (5/5 subtasks). Phase 2 is now complete.
+- Refactored `.academy/` from a flat `lessons/` directory into structured category modules (`01_go_fundamentals/`, `02_networking/`, `03_http_parsing/`, `04_concurrency/`, `walkthroughs/`). Rewrote `README.md` as a full Table of Contents with a guided learning path.
