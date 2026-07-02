@@ -8,14 +8,14 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 4 — Routing |
-| **Active Task** | Task 4.2 — Middleware |
-| **Last Completed Subtask** | Logging middleware |
-| **Active Subtask** | Recovery middleware |
-| **Next Subtask** | Authentication placeholder |
+| **Active Phase** | Phase 5 — Concurrency |
+| **Active Task** | Task 5.1 — Goroutines |
+| **Last Completed Subtask** | Cache headers (Task 4.3) |
+| **Active Subtask** | Per-connection goroutines |
+| **Next Subtask** | Connection isolation |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 4.1 (Router).
+> Updated at the completion of Task 4.3 (Static Files) and Phase 4 (Routing).
 
 ---
 
@@ -24,8 +24,8 @@
 | Task | Status | Progress |
 | --- | :---: | --- |
 | 4.1 — Router | ✅ Complete | 5 / 5 subtasks |
-| 4.2 — Middleware | ⏳ In Progress | 2 / 4 subtasks |
-| 4.3 — Static Files | 📝 Pending | 0 / 4 subtasks |
+| 4.2 — Middleware | ✅ Complete | 4 / 4 subtasks |
+| 4.3 — Static Files | ✅ Complete | 4 / 4 subtasks |
 
 ### Task 4.1 — Router
 
@@ -200,6 +200,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | `lessons/05_routing/01_routing_concepts.md` | Linear search, hash map, trie, radix tree lookup algorithms, routing priority |
 | `lessons/05_routing/02_pattern_matching.md` | Segment parsing, parameter extraction, wildcard captures, URL decoding, 405 vs 404 behavior |
 | `lessons/05_routing/03_middleware_pipeline.md` | Decorator pattern, HandlerFunc, Chain composition, logging/auth/recovery/CORS middleware |
+| `lessons/05_routing/04_static_files.md` | Path traversal vulnerabilities, MIME types, directory index handling, Cache-Control headers |
 | **Module 6 — Production Engineering** | |
 | `lessons/06_production/01_keep_alive.md` | Setup latency overhead, HTTP/1.0 vs 1.1 defaults, idle timeouts, request counts (max=N) |
 | `lessons/06_production/02_tls_and_https.md` | TLS 1.3 handshake RTT, certificate chains, tls.Listen, cipher suite selection, forward secrecy, HSTS |
@@ -246,3 +247,6 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Added wildcard matching (e.g., `/*filepath`) to the Radix tree with validation panics on invalid routes. Task 4.1 is completely finished!
 - Implemented global `Middleware` pipeline in `internal/router`. Added `router.Use()` for zero-allocation handler wrapping. Task 4.2 — Middleware pipeline subtask complete.
 - Created `internal/middleware/logger.go`, replacing raw TCP print statements in the server loop with a unified, latency-tracking logging middleware. Task 4.2 — Logging middleware complete.
+- Implemented `Recovery` middleware using `defer` and `recover()` to gracefully handle handler panics and return a 500 response. Task 4.2 — Recovery middleware complete.
+- Implemented `AuthPlaceholder` middleware enforcing a hardcoded Bearer token and created a route-specific middleware composition in `main.go`. Task 4.2 (Middleware) complete (4/4 subtasks).
+- Implemented static file serving with `router.Static()`, added MIME type detection via `mime.TypeByExtension`, supported directory `index.html` resolution (403 for missing), and injected `Cache-Control` headers. Created `NewResponse403` and comprehensive tests. Phase 4 — Routing is complete!

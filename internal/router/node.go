@@ -51,9 +51,9 @@ func (n *node) insert(pattern string, handler Handler) {
 }
 
 // search finds a handler for the given path, capturing any parameters along the way.
-func (n *node) search(path string) (Handler, map[string]string) {
+func (n *node) search(path string) (handler Handler, params map[string]string) {
 	segments := splitPath(path)
-	params := make(map[string]string)
+	params = make(map[string]string)
 
 	curr := n
 	for i, segment := range segments {

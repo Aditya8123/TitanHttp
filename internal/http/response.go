@@ -16,6 +16,8 @@ const (
 
 	// 4xx Client Errors
 	StatusBadRequest       StatusCode = 400
+	StatusUnauthorized     StatusCode = 401
+	StatusForbidden        StatusCode = 403
 	StatusNotFound         StatusCode = 404
 	StatusMethodNotAllowed StatusCode = 405
 
@@ -54,6 +56,8 @@ var statusText = map[StatusCode]string{
 	StatusOK:                  "OK",
 	StatusCreated:             "Created",
 	StatusBadRequest:          "Bad Request",
+	StatusUnauthorized:        "Unauthorized",
+	StatusForbidden:           "Forbidden",
 	StatusNotFound:            "Not Found",
 	StatusMethodNotAllowed:    "Method Not Allowed",
 	StatusInternalServerError: "Internal Server Error",
@@ -105,6 +109,22 @@ func NewResponse400() *Response {
 	resp := NewResponse()
 	resp.StatusCode = StatusBadRequest
 	resp.Body = []byte("400 Bad Request\n")
+	return resp
+}
+
+// NewResponse401 generates a standard 401 Unauthorized response.
+func NewResponse401() *Response {
+	resp := NewResponse()
+	resp.StatusCode = StatusUnauthorized
+	resp.Body = []byte("401 Unauthorized\n")
+	return resp
+}
+
+// NewResponse403 generates a standard 403 Forbidden response.
+func NewResponse403() *Response {
+	resp := NewResponse()
+	resp.StatusCode = StatusForbidden
+	resp.Body = []byte("403 Forbidden\n")
 	return resp
 }
 

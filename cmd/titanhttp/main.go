@@ -16,6 +16,7 @@ func main() {
 
 	// Mount global middlewares
 	srv.Router().Use(middleware.Logger)
+	srv.Router().Use(middleware.Recovery)
 
 	// Register some basic routes to demonstrate the new Router
 	srv.Router().Get("/", func(req *http.Request) *http.Response {
@@ -49,6 +50,18 @@ func main() {
 		resp.Body = []byte(fmt.Sprintf("Serving static file: %s\n", req.Params["filepath"]))
 		return resp
 	})
+
+	srv.Router().Get("/panic", func(req *http.Request) *http.Response {
+		panic("This is a simulated panic!")
+	})
+
+	srv.Router().Get("/protected", middleware.AuthPlaceholder(func(req *http.Request) *http.Response {
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "text/plain"
+		resp.Body = []byte("Welcome to the secret protected area!\n")
+		return resp
+	}))
 
 	if err := srv.Start(); err != nil {
 		fmt.Printf("Fatal error: %v\n", err)

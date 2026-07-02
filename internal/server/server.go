@@ -107,7 +107,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-
 		// Dispatch request to the router
 		resp := s.router.ServeHTTP(req)
 

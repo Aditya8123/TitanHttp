@@ -61,4 +61,21 @@ We will replace the Hash Map with a **Radix Tree** (a space-optimized Trie). The
 - **Con:** Edge cases with conflicting parameter names at the same tree depth require strict validation during route registration.
 
 ---
+
+## ADR 004: Middleware Pipeline Architecture
+
+**Status:** Accepted
+
+### Context
+As the server complexity grows, we need a way to execute cross-cutting concerns (e.g., logging, panic recovery, authentication) across many routes without duplicating code inside every handler.
+
+### Decision
+We adopted the **Decorator Pattern** for middleware. A middleware is a function that takes a `router.Handler` and returns a new `router.Handler`. We built a global `router.Use()` chain, and also allow composing middlewares around specific routes (e.g., `middleware.AuthPlaceholder(myHandler)`). We avoided `net/http`'s `HandlerFunc` to maintain strict compatibility with our custom `Request` and `Response` structs.
+
+### Trade-offs & Consequences
+- **Pro:** Highly composable and idiopathic to Go web engineering.
+- **Pro:** Allows route-specific protections (e.g., Auth only on `/protected`).
+- **Con:** Middlewares wrap handlers in closures, which slightly increases the call stack depth and introduces a tiny amount of allocation overhead compared to inline execution.
+
+---
 > *"Code tells you how; comments tell you why."*
