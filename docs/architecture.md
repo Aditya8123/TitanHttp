@@ -38,6 +38,7 @@ The traffic controller. It determines which piece of application logic should ha
 - **Responsibility:** Match request URIs and methods to registered handlers. Supports dynamic path parameters and wildcards.
 - **Data Structure:** Uses a highly optimized Radix Tree per HTTP Method. This enables O(k) pattern matching (where k is path segments) without relying on slow regular expressions. It strictly enforces routing priority: Exact match > Parameter match > Wildcard match.
 - **Middleware:** A chain of functions (e.g., Logging, Recovery, Authentication) that execute before and after the main handler.
+- **Static File Serving:** Built-in support for serving static assets, handling MIME type detection, directory index resolution (`index.html`), and injecting `Cache-Control` headers for performance.
 
 ### 4. Worker Pool (Phase 5)
 The concurrency engine. Instead of spinning up an unbounded number of goroutines (which could lead to resource exhaustion under heavy load), TitanHTTP employs a bounded worker pool.

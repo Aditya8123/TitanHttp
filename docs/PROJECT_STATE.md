@@ -55,6 +55,24 @@
 | 4 | Wildcards | ✅ |
 | 5 | Method routing | ✅ |
 
+### Task 4.2 — Middleware
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Middleware pipeline | ✅ |
+| 2 | Logging middleware | ✅ |
+| 3 | Recovery middleware | ✅ |
+| 4 | Authentication placeholder | ✅ |
+
+### Task 4.3 — Static Files
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | File serving | ✅ |
+| 2 | MIME types | ✅ |
+| 3 | Directory handling | ✅ |
+| 4 | Cache headers | ✅ |
+
 ---
 
 ## Phase 3 — HTTP Core
