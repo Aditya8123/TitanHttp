@@ -105,14 +105,12 @@ Read only what is required. Keep every document focused on a single responsibili
 
 Learning is permanent; chat is temporary. Whenever a new concept is introduced, you must create or update files inside the `.academy/` directory. This directory remains in `.gitignore`.
 
-**Suggested `.academy/` Structure:**
+**Established `.academy/` Structure:**
 
-* `lessons/` (e.g., Go fundamentals, TCP, socket programming)
-* `walkthroughs/` (Milestone guides)
-* `code-explanations/` (Breakdowns of complex concurrency or parsing logic)
-* `diagrams/` (Text-based architecture visualizations)
-* `debugging/` (Post-mortems on tricky bugs)
-* `glossary.md` (Definitions of networking and UI tokens)
+* `lessons/` (structured into modules: `01_go_fundamentals/`, `02_networking/`, `03_http_parsing/`, `04_concurrency/`, `05_routing/`, `06_production/`)
+* `walkthroughs/` (milestone-specific implementation guides)
+* `glossary.md` (comprehensive definitions of networking, concurrency, and HTTP tokens)
+* `README.md` (curriculum maps and guided learning paths)
 
 ---
 

@@ -6,10 +6,13 @@
 package server
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net"
 	"time"
+
+	"github.com/Aditya8123/TitanHttp/internal/http"
 )
 
 // Server represents the TitanHTTP core server.
@@ -58,7 +61,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	// This guarantees the socket is closed even if a panic occurs or we return early.
 	defer conn.Close()
 
-	buf := make([]byte, 1024)
+	reader := bufio.NewReader(conn)
 
 	// Connection loop: continuously read from the socket until EOF or error.
 	for {
@@ -69,26 +72,50 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-		n, err := conn.Read(buf)
+		req, err := http.ParseRequest(reader)
 		if err != nil {
 			if err == io.EOF {
 				fmt.Printf("Client disconnected (EOF).\n")
 			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 				fmt.Printf("Connection timed out.\n")
 			} else {
-				fmt.Printf("Error reading from connection: %v\n", err)
+				fmt.Printf("Error parsing request: %v\n", err)
+				// Send a 400 Bad Request on parser errors
+				resp := http.NewResponse400()
+				if _, err := conn.Write(resp.Bytes()); err != nil {
+					fmt.Printf("Failed to write parser error response: %v\n", err)
+				}
 			}
 			return
 		}
 
-		fmt.Printf("--- Received %d bytes ---\n", n)
-		fmt.Print(string(buf[:n]))
-		fmt.Printf("-------------------------\n")
+		err = req.Validate()
+		if err != nil {
+			fmt.Printf("Request validation failed: %v\n", err)
+			resp := http.NewResponse400()
+			if _, err := conn.Write(resp.Bytes()); err != nil {
+				fmt.Printf("Failed to write validation error response: %v\n", err)
+			}
+			return
+		}
 
-		// Write a simple HTTP response back to the client.
-		// In a true HTTP loop, this would happen after parsing a complete request.
-		response := "HTTP/1.1 200 OK\r\nContent-Length: 20\r\n\r\nHello from TitanHTTP"
-		_, err = conn.Write([]byte(response))
+		fmt.Printf("--- Received Request ---\n")
+		fmt.Printf("Method: %s\n", req.Method)
+		fmt.Printf("Path: %s\n", req.Path)
+		fmt.Printf("Version: %s\n", req.Version)
+		fmt.Printf("Headers Count: %d\n", len(req.Headers))
+		if len(req.Body) > 0 {
+			fmt.Printf("Body Length: %d bytes\n", len(req.Body))
+		}
+		fmt.Printf("------------------------\n")
+
+		// Write a dynamic HTTP response back to the client.
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "text/plain"
+		resp.Body = []byte("Hello from TitanHTTP (Dynamic Response)")
+
+		_, err = conn.Write(resp.Bytes())
 		if err != nil {
 			fmt.Printf("Error writing to connection: %v\n", err)
 			return
