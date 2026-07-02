@@ -10,9 +10,9 @@
 | --- | --- |
 | **Active Phase** | Phase 4 — Routing |
 | **Active Task** | Task 4.1 — Router |
-| **Last Completed Subtask** | Response Generation (Phase 3 complete) |
-| **Active Subtask** | Data structure |
-| **Next Subtask** | Method routing |
+| **Last Completed Subtask** | Route registration (Data structure) |
+| **Active Subtask** | Method routing |
+| **Next Subtask** | Parameters |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Phase 3 (HTTP Core).
@@ -219,3 +219,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented `parseBody` inside `internal/http/parser.go` to handle `Content-Length` headers and safely allocate constrained byte slices (Max 10MB) for payload reads using `io.ReadFull`. Added `ErrInvalidContentLength`, `ErrBodyTooLarge`, and comprehensive test cases. Task 3.2 — Parse body subtask complete.
 - Added `Validate()` to `Request` to enforce HTTP/1.1 `Host` header rules and wired the parser deeply into `internal/server/server.go`, gracefully closing connections on malformed payloads. Task 3.2 complete!
 - Developed dynamic `Bytes()` serialization on the `Response` struct, automatically formatting the status line, parsing Content-Length headers, and writing payloads. Created `NewResponse400`, `NewResponse404`, and `NewResponse500` helpers. Replaced the hardcoded server string in `server.go` with this new system. Documented memory tradeoffs of `Bytes()` in `architecture.md`. Task 3.3 and Phase 3 — HTTP Core are officially complete!
+- Created `internal/router` package defining `Handler` function signature and a basic `Router` map structure. Integrated the router into `server.go` and verified basic route dispatching in `cmd/titanhttp/main.go`. Task 4.1 — Data structure (Route registration) subtask complete.
