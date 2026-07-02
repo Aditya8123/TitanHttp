@@ -14,7 +14,7 @@ func main() {
 	srv := server.NewServer(":8080")
 
 	// Register some basic routes to demonstrate the new Router
-	srv.Router().AddRoute("/", func(req *http.Request) *http.Response {
+	srv.Router().Get("/", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
 		resp.Headers["Content-Type"] = "text/plain"
@@ -22,7 +22,7 @@ func main() {
 		return resp
 	})
 
-	srv.Router().AddRoute("/hello", func(req *http.Request) *http.Response {
+	srv.Router().Get("/hello", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
 		resp.Headers["Content-Type"] = "text/plain"

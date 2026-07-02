@@ -15,8 +15,9 @@ const (
 	StatusCreated StatusCode = 201
 
 	// 4xx Client Errors
-	StatusBadRequest StatusCode = 400
-	StatusNotFound   StatusCode = 404
+	StatusBadRequest       StatusCode = 400
+	StatusNotFound         StatusCode = 404
+	StatusMethodNotAllowed StatusCode = 405
 
 	// 5xx Server Errors
 	StatusInternalServerError StatusCode = 500
@@ -54,6 +55,7 @@ var statusText = map[StatusCode]string{
 	StatusCreated:             "Created",
 	StatusBadRequest:          "Bad Request",
 	StatusNotFound:            "Not Found",
+	StatusMethodNotAllowed:    "Method Not Allowed",
 	StatusInternalServerError: "Internal Server Error",
 }
 
@@ -105,6 +107,14 @@ func NewResponse404() *Response {
 	resp := NewResponse()
 	resp.StatusCode = StatusNotFound
 	resp.Body = []byte("404 Not Found\n")
+	return resp
+}
+
+// NewResponse405 generates a standard 405 Method Not Allowed response.
+func NewResponse405() *Response {
+	resp := NewResponse()
+	resp.StatusCode = StatusMethodNotAllowed
+	resp.Body = []byte("405 Method Not Allowed\n")
 	return resp
 }
 
