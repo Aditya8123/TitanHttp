@@ -84,7 +84,10 @@ func (s *Server) StartTLS(certFile, keyFile string) error {
 		return fmt.Errorf("failed to load key pair: %w", err)
 	}
 
-	config := &tls.Config{Certificates: []tls.Certificate{cert}}
+	config := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		NextProtos:   []string{"h2", "http/1.1"},
+	}
 
 	l, err := net.Listen("tcp", s.addr)
 	if err != nil {
@@ -174,6 +177,20 @@ func (s *Server) handleConnection(conn net.Conn) {
 			totalConnBytes += n
 		}
 	}()
+
+	// Check for HTTP/2 ALPN negotiation
+	if tlsConn, ok := conn.(*tls.Conn); ok {
+		// Force TLS Handshake to read the negotiated protocol before parsing
+		if err := tlsConn.Handshake(); err == nil {
+			if tlsConn.ConnectionState().NegotiatedProtocol == "h2" {
+				s.handleHTTP2(conn)
+				return
+			}
+		} else {
+			fmt.Printf("TLS Handshake error: %v\n", err)
+			return
+		}
+	}
 
 	reader := bufio.NewReader(conn)
 	requestsServed := 0

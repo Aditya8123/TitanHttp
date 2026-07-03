@@ -8,14 +8,14 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 6 — Production Features |
-| **Active Task** | Task 6.5 — HTTP/2 |
-| **Last Completed Subtask** | Certificates (Task 6.4) |
-| **Active Subtask** | Protocol overview |
-| **Next Subtask** | Implementation research |
+| **Active Phase** | Phase 7 — Advanced Backend Features |
+| **Active Task** | Task 7.1 — Reverse Proxy |
+| **Last Completed Subtask** | Incremental support (Task 6.5) |
+| **Active Subtask** | Proxy requests |
+| **Next Subtask** | Response forwarding |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 6.4 (HTTPS).
+> Updated at the completion of Task 6.5 (HTTP/2).
 
 ---
 
@@ -27,7 +27,15 @@
 | 6.2 — Transfer Encoding | ✅ Complete | 3 / 3 subtasks |
 | 6.3 — Compression | ✅ Complete | 3 / 3 subtasks |
 | 6.4 — HTTPS | ✅ Complete | 3 / 3 subtasks |
-| 6.5 — HTTP/2 | 🚧 In Progress | 0 / 3 subtasks |
+| 6.5 — HTTP/2 | ✅ Complete | 3 / 3 subtasks |
+
+### Task 7.1 — Reverse Proxy
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Proxy requests | 🚧 In Progress |
+| 2 | Response forwarding | ⏳ Pending |
+| 3 | Header management | ⏳ Pending |
 
 ### Task 6.1 — Persistent Connections
 
@@ -337,3 +345,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented `Transfer-Encoding: chunked` generation for streams with unknown `Content-Length`. Task 6.2 — Transfer Encoding complete!
 - Implemented `middleware.Gzip()` that negotiates `Accept-Encoding: gzip`, filters by `Content-Type`, and dynamically streams compressed payloads via `io.Pipe()`, naturally falling back to chunked encoding. Task 6.3 — Compression complete!
 - Refactored server loop into `serve()` and introduced `StartTLS()` using `crypto/tls` and `tls.NewListener`. This allows the server to securely decrypt and encrypt traffic on the fly. Built an internal test certificate generator and added integration tests. Task 6.4 — HTTPS complete!
+- Researched HTTP/2 multiplexing, HPACK, and ALPN. Enabled ALPN negotiation in `StartTLS()` by advertising `"h2"`. Added an HTTP/2 connection stub `handleHTTP2()` which correctly parses the client preface and safely terminates the connection, laying the groundwork for a future binary parsing engine. Task 6.5 — HTTP/2 and Phase 6 — Production Features complete!
