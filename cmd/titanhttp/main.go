@@ -17,6 +17,7 @@ func main() {
 	// Mount global middlewares
 	srv.Router().Use(middleware.Logger)
 	srv.Router().Use(middleware.Recovery)
+	srv.Router().Use(middleware.Gzip)
 
 	// Register some basic routes to demonstrate the new Router
 	srv.Router().Get("/", func(req *http.Request) *http.Response {

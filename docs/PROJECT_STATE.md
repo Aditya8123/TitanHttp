@@ -9,13 +9,13 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 6 — Production Features |
-| **Active Task** | Task 6.3 — Compression |
-| **Last Completed Subtask** | Large payloads (Task 6.2) |
-| **Active Subtask** | Gzip |
-| **Next Subtask** | Negotiation |
+| **Active Task** | Task 6.4 — HTTPS |
+| **Last Completed Subtask** | Negotiation (Task 6.3) |
+| **Active Subtask** | TLS Handshake |
+| **Next Subtask** | Certificates |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 6.2 (Transfer Encoding).
+> Updated at the completion of Task 6.3 (Compression).
 
 ---
 
@@ -25,8 +25,8 @@
 | --- | :---: | --- |
 | 6.1 — Persistent Connections | ✅ Complete | 3 / 3 subtasks |
 | 6.2 — Transfer Encoding | ✅ Complete | 3 / 3 subtasks |
-| 6.3 — Compression | 🚧 In Progress | 0 / 3 subtasks |
-| 6.4 — HTTPS | ⏳ Pending | 0 / 3 subtasks |
+| 6.3 — Compression | ✅ Complete | 3 / 3 subtasks |
+| 6.4 — HTTPS | 🚧 In Progress | 0 / 3 subtasks |
 | 6.5 — HTTP/2 | ⏳ Pending | 0 / 3 subtasks |
 
 ### Task 6.1 — Persistent Connections
@@ -335,3 +335,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented robust HTTP Keep-Alive in `server.go` with connection reuse tracking and 5-second idle timeouts. Added `WantsKeepAlive()` to `request.go` handling HTTP/1.0 and HTTP/1.1 defaults. Updated headers automatically. Task 6.1 — Persistent Connections is complete.
 - Refactored `Response` struct to support `Stream io.Reader` instead of buffering `Body []byte`. Implemented `WriteTo()` to stream directly to TCP connections, supporting large payloads without memory exhaustion.
 - Implemented `Transfer-Encoding: chunked` generation for streams with unknown `Content-Length`. Task 6.2 — Transfer Encoding complete!
+- Implemented `middleware.Gzip()` that negotiates `Accept-Encoding: gzip`, filters by `Content-Type`, and dynamically streams compressed payloads via `io.Pipe()`, naturally falling back to chunked encoding. Task 6.3 — Compression complete!
