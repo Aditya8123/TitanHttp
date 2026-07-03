@@ -141,8 +141,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 			s.metrics.PanicRecovered()
 			fmt.Printf("Critical: Connection panic recovered: %v\n", r)
 			resp := http.NewResponse500()
-			n, _ := conn.Write(resp.Bytes())
-			totalConnBytes += int64(n)
+			n, _ := resp.WriteTo(conn)
+			totalConnBytes += n
 		}
 	}()
 
@@ -168,7 +168,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 				fmt.Printf("Error parsing request: %v\n", err)
 				// Send a 400 Bad Request on parser errors
 				resp := http.NewResponse400()
-				if _, err := conn.Write(resp.Bytes()); err != nil {
+				if _, err := resp.WriteTo(conn); err != nil {
 					fmt.Printf("Failed to write parser error response: %v\n", err)
 				}
 			}
@@ -179,7 +179,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		if err != nil {
 			fmt.Printf("Request validation failed: %v\n", err)
 			resp := http.NewResponse400()
-			if _, err := conn.Write(resp.Bytes()); err != nil {
+			if _, err := resp.WriteTo(conn); err != nil {
 				fmt.Printf("Failed to write validation error response: %v\n", err)
 			}
 			return
@@ -198,8 +198,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 			resp.Headers["Connection"] = "close"
 		}
 
-		n, err := conn.Write(resp.Bytes())
-		totalConnBytes += int64(n)
+		n, err := resp.WriteTo(conn)
+		totalConnBytes += n
 		if err != nil {
 			fmt.Printf("Error writing to connection: %v\n", err)
 			return

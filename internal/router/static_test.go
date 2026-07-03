@@ -2,6 +2,7 @@ package router
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -124,8 +125,17 @@ func TestStaticFiles(t *testing.T) {
 			}
 
 			if tt.expectedBody != nil {
-				if !bytes.Equal(resp.Body, tt.expectedBody) {
-					t.Errorf("Expected body %q, got %q", string(tt.expectedBody), string(resp.Body))
+				var bodyBytes []byte
+				if resp.Stream != nil {
+					bodyBytes, _ = io.ReadAll(resp.Stream)
+					if closer, ok := resp.Stream.(io.Closer); ok {
+						closer.Close()
+					}
+				} else {
+					bodyBytes = resp.Body
+				}
+				if !bytes.Equal(bodyBytes, tt.expectedBody) {
+					t.Errorf("Expected body %q, got %q", string(tt.expectedBody), string(bodyBytes))
 				}
 			}
 
