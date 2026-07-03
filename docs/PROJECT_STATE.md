@@ -8,17 +8,44 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 6 — Production Features |
-| **Active Task** | Task 6.1 — Persistent Connections |
-| **Last Completed Subtask** | Shared state (Task 5.3) |
-| **Active Subtask** | Keep-Alive |
-| **Next Subtask** | Connection reuse |
+| **Active Phase** | Phase 7 — Advanced Backend Features |
+| **Active Task** | Task 7.1 — Reverse Proxy |
+| **Last Completed Subtask** | Incremental support (Task 6.5) |
+| **Active Subtask** | Proxy requests |
+| **Next Subtask** | Response forwarding |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 5.3 (Synchronization).
+> Updated at the completion of Task 6.5 (HTTP/2).
 
 ---
 
+## Phase 6 — Production Features
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 6.1 — Persistent Connections | ✅ Complete | 3 / 3 subtasks |
+| 6.2 — Transfer Encoding | ✅ Complete | 3 / 3 subtasks |
+| 6.3 — Compression | ✅ Complete | 3 / 3 subtasks |
+| 6.4 — HTTPS | ✅ Complete | 3 / 3 subtasks |
+| 6.5 — HTTP/2 | ✅ Complete | 3 / 3 subtasks |
+
+### Task 7.1 — Reverse Proxy
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Proxy requests | 🚧 In Progress |
+| 2 | Response forwarding | ⏳ Pending |
+| 3 | Header management | ⏳ Pending |
+
+### Task 6.1 — Persistent Connections
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Keep-Alive | ✅ |
+| 2 | Connection reuse | ✅ |
+| 3 | Idle timeout | ✅ |
+
+---
 ## Phase 5 — Concurrency
 
 | Task | Status | Progress |
@@ -265,6 +292,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
 | `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
 | `walkthroughs/03_routing_engine.md` | Phase 4 walkthrough: radix tree router, parameter extraction, and wildcards |
+| `walkthroughs/04_concurrency.md` | Phase 5 walkthrough: goroutines, worker pools, synchronization, and race condition prevention |
 | `glossary.md` | Comprehensive 60+ term dictionary of networking, concurrency, and HTTP protocols |
 | `README.md` | Academy table of contents and curriculum maps |
 
@@ -312,3 +340,9 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Added `sync.RWMutex` to the Router to ensure thread-safe route registration and matching. Task 5.3 — Mutexes complete.
 - Embedded a lock-free `Metrics` struct into `Server` using `sync/atomic` for high-throughput tracking of requests and panics. Task 5.3 — Shared state complete.
 - Implemented `Shutdown(ctx)` utilizing channels (`s.done`) and WaitGroups (`workerPool.wg`) for graceful shutdown coordination, eliminating test data races with a `sync.Mutex` on the listener. Added tests with race detector. Task 5.3 — Channels and WaitGroups complete. Phase 5 — Concurrency is complete!
+- Implemented robust HTTP Keep-Alive in `server.go` with connection reuse tracking and 5-second idle timeouts. Added `WantsKeepAlive()` to `request.go` handling HTTP/1.0 and HTTP/1.1 defaults. Updated headers automatically. Task 6.1 — Persistent Connections is complete.
+- Refactored `Response` struct to support `Stream io.Reader` instead of buffering `Body []byte`. Implemented `WriteTo()` to stream directly to TCP connections, supporting large payloads without memory exhaustion.
+- Implemented `Transfer-Encoding: chunked` generation for streams with unknown `Content-Length`. Task 6.2 — Transfer Encoding complete!
+- Implemented `middleware.Gzip()` that negotiates `Accept-Encoding: gzip`, filters by `Content-Type`, and dynamically streams compressed payloads via `io.Pipe()`, naturally falling back to chunked encoding. Task 6.3 — Compression complete!
+- Refactored server loop into `serve()` and introduced `StartTLS()` using `crypto/tls` and `tls.NewListener`. This allows the server to securely decrypt and encrypt traffic on the fly. Built an internal test certificate generator and added integration tests. Task 6.4 — HTTPS complete!
+- Researched HTTP/2 multiplexing, HPACK, and ALPN. Enabled ALPN negotiation in `StartTLS()` by advertising `"h2"`. Added an HTTP/2 connection stub `handleHTTP2()` which correctly parses the client preface and safely terminates the connection, laying the groundwork for a future binary parsing engine. Task 6.5 — HTTP/2 and Phase 6 — Production Features complete!

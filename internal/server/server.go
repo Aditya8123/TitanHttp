@@ -8,6 +8,7 @@ package server
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,11 @@ import (
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
 	"github.com/Aditya8123/TitanHttp/internal/router"
+)
+
+const (
+	MaxRequestsPerConn = 100
+	IdleTimeout        = 5 * time.Second
 )
 
 type Server struct {
@@ -68,6 +74,37 @@ func (s *Server) Start() error {
 	s.listener = l
 	s.mu.Unlock()
 
+	return s.serve()
+}
+
+// StartTLS opens a TCP socket and wraps it in a TLS listener.
+func (s *Server) StartTLS(certFile, keyFile string) error {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return fmt.Errorf("failed to load key pair: %w", err)
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		NextProtos:   []string{"h2", "http/1.1"},
+	}
+
+	l, err := net.Listen("tcp", s.addr)
+	if err != nil {
+		return fmt.Errorf("failed to bind to address %s: %w", s.addr, err)
+	}
+
+	tlsListener := tls.NewListener(l, config)
+
+	s.mu.Lock()
+	s.listener = tlsListener
+	s.mu.Unlock()
+
+	return s.serve()
+}
+
+// serve contains the core connection acceptance loop.
+func (s *Server) serve() error {
 	fmt.Printf("TitanHTTP Server successfully started.\n")
 	fmt.Printf("Listening on %s...\n", s.Addr())
 
@@ -136,17 +173,32 @@ func (s *Server) handleConnection(conn net.Conn) {
 			s.metrics.PanicRecovered()
 			fmt.Printf("Critical: Connection panic recovered: %v\n", r)
 			resp := http.NewResponse500()
-			n, _ := conn.Write(resp.Bytes())
-			totalConnBytes += int64(n)
+			n, _ := resp.WriteTo(conn)
+			totalConnBytes += n
 		}
 	}()
 
+	// Check for HTTP/2 ALPN negotiation
+	if tlsConn, ok := conn.(*tls.Conn); ok {
+		// Force TLS Handshake to read the negotiated protocol before parsing
+		if err := tlsConn.Handshake(); err == nil {
+			if tlsConn.ConnectionState().NegotiatedProtocol == "h2" {
+				s.handleHTTP2(conn)
+				return
+			}
+		} else {
+			fmt.Printf("TLS Handshake error: %v\n", err)
+			return
+		}
+	}
+
 	reader := bufio.NewReader(conn)
+	requestsServed := 0
 
 	// Connection loop: continuously read from the socket until EOF or error.
 	for {
-		// Set a 5-second timeout for reading to prevent hanging connections.
-		err := conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+		// Set a timeout for reading to prevent hanging connections.
+		err := conn.SetReadDeadline(time.Now().Add(IdleTimeout))
 		if err != nil {
 			fmt.Printf("Failed to set read deadline: %v\n", err)
 			return
@@ -162,7 +214,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 				fmt.Printf("Error parsing request: %v\n", err)
 				// Send a 400 Bad Request on parser errors
 				resp := http.NewResponse400()
-				if _, err := conn.Write(resp.Bytes()); err != nil {
+				if _, err := resp.WriteTo(conn); err != nil {
 					fmt.Printf("Failed to write parser error response: %v\n", err)
 				}
 			}
@@ -173,7 +225,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		if err != nil {
 			fmt.Printf("Request validation failed: %v\n", err)
 			resp := http.NewResponse400()
-			if _, err := conn.Write(resp.Bytes()); err != nil {
+			if _, err := resp.WriteTo(conn); err != nil {
 				fmt.Printf("Failed to write validation error response: %v\n", err)
 			}
 			return
@@ -182,15 +234,25 @@ func (s *Server) handleConnection(conn net.Conn) {
 		// Dispatch request to the router
 		resp := s.router.ServeHTTP(req)
 
-		n, err := conn.Write(resp.Bytes())
-		totalConnBytes += int64(n)
+		requestsServed++
+		wantsKeepAlive := req.WantsKeepAlive() && requestsServed < MaxRequestsPerConn
+
+		if wantsKeepAlive {
+			resp.Headers["Connection"] = "keep-alive"
+			resp.Headers["Keep-Alive"] = fmt.Sprintf("timeout=%d, max=%d", int(IdleTimeout.Seconds()), MaxRequestsPerConn-requestsServed)
+		} else {
+			resp.Headers["Connection"] = "close"
+		}
+
+		n, err := resp.WriteTo(conn)
+		totalConnBytes += n
 		if err != nil {
 			fmt.Printf("Error writing to connection: %v\n", err)
 			return
 		}
 
-		// Close connection if the client requested it
-		if req.Headers["connection"] == "close" {
+		// Close connection if keep-alive is not desired or max requests reached
+		if !wantsKeepAlive {
 			return
 		}
 	}

@@ -33,6 +33,7 @@ As the AI Orchestrator, you assume multiple specialized roles to ensure both the
 * Build incrementally following the exact project hierarchy.
 * Keep the repository organized and documentation synchronized.
 * Ensure the frontend experience respects the emotional timeline: Curiosity → Understanding → Exploration → Confidence → Admiration.
+* Ensure the frontend experience visually aligns with the 10-chapter "guided narrative" outlined in `README.md`.
 * Enforce UI constraints: Void Black canvases, deterministic linear motion, and Network Cyan strictly for active data/packets.
 
 **Never:**
@@ -92,12 +93,17 @@ Read only what is required. Keep every document focused on a single responsibili
 | Domain | File | Purpose |
 | --- | --- | --- |
 | **Orchestration** | `AGENTS.md` | Your core rules, roles, and instructions. |
+| **Entrypoint** | `README.md` | Project index, chapter guide, and quick start. |
 | **Roadmap** | `docs/phases.md` | The strict 10-Phase project roadmap and task hierarchy. |
 | **Aesthetics & UI** | `docs/design.md` | Component styling, motion rules, and visual tokens. |
 | **Progress** | `docs/PROJECT_STATE.md` | The current snapshot of completed and active tasks. |
 | **Architecture** | `docs/architecture.md` | Backend systems design and component interactions. |
 | **History** | `docs/decisions.md` | Context, trade-offs, and reasoning for major engineering choices. |
+| **Deployment** | `docs/deployment.md` | Instructions for shipping TitanHTTP. |
+| **Testing** | `docs/testing.md` | Testing philosophy and verification standards. |
+| **Performance** | `docs/benchmarking.md` | Performance engineering and telemetry metrics. |
 | **Presentation** | `docs/recruiter.md` | The guided narrative to build trust in 10 minutes. |
+| **Curriculum** | `.academy/README.md` | The university course and structured learning path map. |
 
 ---
 
@@ -107,7 +113,7 @@ Learning is permanent; chat is temporary. Whenever a new concept is introduced, 
 
 **Established `.academy/` Structure:**
 
-* `lessons/` (structured into modules: `01_go_fundamentals/`, `02_networking/`, `03_http_parsing/`, `04_concurrency/`, `05_routing/`, `06_production/`)
+* `lessons/` (structured into modules: `01_go_fundamentals/`, `02_networking/`, `03_http_parsing/`, `04_concurrency/`, `05_routing/`, `06_production/`, `07_advanced_backend/`, `08_performance/`, `09_showcase/`, `10_release/`)
 * `walkthroughs/` (milestone-specific implementation guides)
 * `glossary.md` (comprehensive definitions of networking, concurrency, and HTTP tokens)
 * `README.md` (curriculum maps and guided learning paths)

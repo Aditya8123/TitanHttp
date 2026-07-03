@@ -17,6 +17,7 @@ func main() {
 	// Mount global middlewares
 	srv.Router().Use(middleware.Logger)
 	srv.Router().Use(middleware.Recovery)
+	srv.Router().Use(middleware.Gzip)
 
 	// Register some basic routes to demonstrate the new Router
 	srv.Router().Get("/", func(req *http.Request) *http.Response {
@@ -63,8 +64,19 @@ func main() {
 		return resp
 	}))
 
-	if err := srv.Start(); err != nil {
-		fmt.Printf("Fatal error: %v\n", err)
-		os.Exit(1)
+	certFile := os.Getenv("TLS_CERT")
+	keyFile := os.Getenv("TLS_KEY")
+
+	if certFile != "" && keyFile != "" {
+		fmt.Printf("Starting in HTTPS mode using cert: %s\n", certFile)
+		if err := srv.StartTLS(certFile, keyFile); err != nil {
+			fmt.Printf("Fatal TLS error: %v\n", err)
+			os.Exit(1)
+		}
+	} else {
+		if err := srv.Start(); err != nil {
+			fmt.Printf("Fatal error: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }

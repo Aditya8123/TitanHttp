@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"strconv"
 )
 
@@ -26,7 +27,7 @@ const (
 )
 
 // Response represents an HTTP response to be sent to a client.
-// In HTTP/1.1, a response consists of a Status-Line, Headers, and an optional Body.
+// In HTTP/1.1, a response consists of a Status-Line, Headers, and an optional Body or Stream.
 type Response struct {
 	// Version is the HTTP protocol version (e.g., HTTP/1.1).
 	Version string
@@ -40,8 +41,11 @@ type Response struct {
 	// Headers stores the key-value pairs of the HTTP headers.
 	Headers map[string]string
 
-	// Body contains the payload of the response, if any.
+	// Body contains the payload of the response, if any (loaded in memory).
 	Body []byte
+
+	// Stream contains a reader for the response payload, enabling chunked or streaming transfer.
+	Stream io.Reader
 }
 
 // NewResponse creates a new Response with initialized maps and a default HTTP/1.1 version.
@@ -69,38 +73,115 @@ func StatusText(code StatusCode) string {
 	return statusText[code]
 }
 
-// Bytes serializes the Response object into a raw HTTP byte stream.
-func (r *Response) Bytes() []byte {
-	var b bytes.Buffer
+// WriteTo serializes the Response object directly into an io.Writer.
+// It supports streaming and automatic chunked transfer encoding for unknown lengths.
+func (r *Response) WriteTo(w io.Writer) (int64, error) {
+	var totalWritten int64
 
 	text := r.StatusText
 	if text == "" {
 		text = statusText[r.StatusCode]
 	}
 
-	// Status-Line
-	b.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Version, r.StatusCode, text))
+	// Calculate body size or chunked mode
+	_, hasContentLength := r.Headers["Content-Length"]
+	isChunked := r.Stream != nil && !hasContentLength
 
-	// Ensure Content-Length is set correctly based on the body payload
-	if len(r.Body) > 0 {
+	if len(r.Body) > 0 && !hasContentLength && r.Stream == nil {
 		r.Headers["Content-Length"] = strconv.Itoa(len(r.Body))
-	} else {
+	} else if len(r.Body) == 0 && r.Stream == nil && !hasContentLength {
 		r.Headers["Content-Length"] = "0"
 	}
 
+	if isChunked {
+		r.Headers["Transfer-Encoding"] = "chunked"
+	}
+
+	var headerBuf bytes.Buffer
+	// Status-Line
+	headerBuf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Version, r.StatusCode, text))
+
 	// Headers
 	for k, v := range r.Headers {
-		b.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
+		headerBuf.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
 	}
 
 	// Empty line signifying end of headers
-	b.WriteString("\r\n")
+	headerBuf.WriteString("\r\n")
 
-	// Body payload
-	if len(r.Body) > 0 {
-		b.Write(r.Body)
+	n, err := w.Write(headerBuf.Bytes())
+	totalWritten += int64(n)
+	if err != nil {
+		return totalWritten, err
 	}
 
+	// Body payload
+	if r.Stream != nil {
+		if isChunked {
+			buf := make([]byte, 8192)
+			for {
+				readBytes, err := r.Stream.Read(buf)
+				if readBytes > 0 {
+					chunkHeader := fmt.Sprintf("%x\r\n", readBytes)
+					n, wErr := w.Write([]byte(chunkHeader))
+					totalWritten += int64(n)
+					if wErr != nil {
+						return totalWritten, wErr
+					}
+
+					n, wErr = w.Write(buf[:readBytes])
+					totalWritten += int64(n)
+					if wErr != nil {
+						return totalWritten, wErr
+					}
+
+					n, wErr = w.Write([]byte("\r\n"))
+					totalWritten += int64(n)
+					if wErr != nil {
+						return totalWritten, wErr
+					}
+				}
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					return totalWritten, err
+				}
+			}
+			// Write the final zero-length chunk
+			n, wErr := w.Write([]byte("0\r\n\r\n"))
+			totalWritten += int64(n)
+			if wErr != nil {
+				return totalWritten, wErr
+			}
+		} else {
+			written, err := io.Copy(w, r.Stream)
+			totalWritten += written
+			if err != nil {
+				return totalWritten, err
+			}
+		}
+		
+		// If Stream is an io.Closer (like os.File), close it
+		if closer, ok := r.Stream.(io.Closer); ok {
+			closer.Close()
+		}
+	} else if len(r.Body) > 0 {
+		n, err := w.Write(r.Body)
+		totalWritten += int64(n)
+		if err != nil {
+			return totalWritten, err
+		}
+	}
+
+	return totalWritten, nil
+}
+
+// Bytes serializes the Response object into a raw HTTP byte stream.
+// Warning: This buffers the entire response in memory. Use WriteTo for large payloads.
+func (r *Response) Bytes() []byte {
+	var b bytes.Buffer
+	r.WriteTo(&b)
 	return b.Bytes()
 }
 

@@ -57,3 +57,17 @@ func (r *Request) Validate() error {
 
 	return nil
 }
+
+// WantsKeepAlive determines if the client wants to maintain a persistent connection.
+func (r *Request) WantsKeepAlive() bool {
+	connHeader := r.Headers["connection"]
+	
+	if r.Version == "HTTP/1.1" {
+		// HTTP/1.1 is keep-alive by default, unless "close" is specified.
+		return connHeader != "close"
+	}
+	
+	// HTTP/1.0 is close by default, unless "keep-alive" is explicitly specified.
+	return connHeader == "keep-alive"
+}
+

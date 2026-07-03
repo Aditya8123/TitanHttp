@@ -1,10 +1,10 @@
 package router
 
 import (
-	"io"
 	"mime"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
@@ -45,11 +45,12 @@ func (r *Router) Static(prefix, root string) {
 			// Other errors (e.g., permission denied)
 			return http.NewResponse500()
 		}
-		defer file.Close()
+		// file is intentionally NOT closed here. It is assigned to resp.Stream and will be closed by resp.WriteTo()
 
 		// Get file information to check if it's a directory
 		info, err := file.Stat()
 		if err != nil {
+			file.Close()
 			return http.NewResponse500()
 		}
 
@@ -58,28 +59,23 @@ func (r *Router) Static(prefix, root string) {
 			indexPath := filepath.Join(fullPath, "index.html")
 			indexFile, err := os.Open(indexPath)
 			if err != nil {
+				file.Close()
 				// If index.html doesn't exist or can't be opened, return 403 Forbidden
-				return http.NewResponse403() // Wait, NewResponse403 doesn't exist yet! We need to implement it. Let's just return a generic response or add it.
-				// For now I'll use a custom Response
+				return http.NewResponse403()
 			}
-			defer indexFile.Close()
-
+			
 			indexInfo, err := indexFile.Stat()
 			if err != nil || indexInfo.IsDir() {
+				file.Close()
+				indexFile.Close()
 				return http.NewResponse403()
 			}
 
 			// Replace file with indexFile
+			file.Close()
 			file = indexFile
 			fullPath = indexPath
-		}
-
-		// Read the entire file into memory
-		// Note: For very large files, a streaming approach would be better (Phase 6),
-		// but for now, we read it entirely into the []byte Response body.
-		body, err := io.ReadAll(file)
-		if err != nil {
-			return http.NewResponse500()
+			info = indexInfo
 		}
 
 		// Detect MIME type
@@ -93,7 +89,8 @@ func (r *Router) Static(prefix, root string) {
 		resp.StatusCode = http.StatusOK
 		resp.Headers["Content-Type"] = contentType
 		resp.Headers["Cache-Control"] = "public, max-age=3600"
-		resp.Body = body
+		resp.Headers["Content-Length"] = strconv.FormatInt(info.Size(), 10)
+		resp.Stream = file
 
 		return resp
 	})
