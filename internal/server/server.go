@@ -221,6 +221,14 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
+		// Populate network-level details on the Request
+		req.RemoteAddr = conn.RemoteAddr().String()
+		if _, isTLS := conn.(*tls.Conn); isTLS {
+			req.Scheme = "https"
+		} else {
+			req.Scheme = "http"
+		}
+
 		err = req.Validate()
 		if err != nil {
 			fmt.Printf("Request validation failed: %v\n", err)

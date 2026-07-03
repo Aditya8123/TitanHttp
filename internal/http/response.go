@@ -21,6 +21,7 @@ const (
 	StatusForbidden        StatusCode = 403
 	StatusNotFound         StatusCode = 404
 	StatusMethodNotAllowed StatusCode = 405
+	StatusTooManyRequests  StatusCode = 429
 
 	// 5xx Server Errors
 	StatusInternalServerError StatusCode = 500
@@ -64,6 +65,7 @@ var statusText = map[StatusCode]string{
 	StatusForbidden:           "Forbidden",
 	StatusNotFound:            "Not Found",
 	StatusMethodNotAllowed:    "Method Not Allowed",
+	StatusTooManyRequests:     "Too Many Requests",
 	StatusInternalServerError: "Internal Server Error",
 }
 
@@ -237,5 +239,21 @@ func NewResponse500() *Response {
 	resp := NewResponse()
 	resp.StatusCode = StatusInternalServerError
 	resp.Body = []byte("500 Internal Server Error\n")
+	return resp
+}
+
+// NewResponse503 returns a pre-configured 503 Service Unavailable response.
+func NewResponse503() *Response {
+	resp := NewResponse()
+	resp.StatusCode = 503
+	resp.StatusText = "Service Unavailable"
+	return resp
+}
+
+// NewResponse429 returns a pre-configured 429 Too Many Requests response.
+func NewResponse429() *Response {
+	resp := NewResponse()
+	resp.StatusCode = 429
+	resp.StatusText = "Too Many Requests"
 	return resp
 }

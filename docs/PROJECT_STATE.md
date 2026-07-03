@@ -8,14 +8,57 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 7 — Advanced Backend Features |
-| **Active Task** | Task 7.1 — Reverse Proxy |
-| **Last Completed Subtask** | Incremental support (Task 6.5) |
-| **Active Subtask** | Proxy requests |
-| **Next Subtask** | Response forwarding |
+| **Active Phase** | Phase 8 — Performance Engineering |
+| **Active Task** | Task 8.1 — Profiling |
+| **Last Completed Subtask** | Configuration (Task 7.4) |
+| **Active Subtask** | (Phase 8) Setup pprof |
+| **Next Subtask** | Memory analysis |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 6.5 (HTTP/2).
+> Updated at the completion of Task 7.4 (Rate Limiting).
+
+---
+
+## Phase 7 — Advanced Backend Features
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 7.1 — Reverse Proxy | ✅ Complete | 3 / 3 subtasks |
+| 7.2 — Load Balancer | ✅ Complete | 3 / 3 subtasks |
+| 7.3 — Caching | ✅ Complete | 3 / 3 subtasks |
+| 7.4 — Rate Limiting | ✅ Complete | 3 / 3 subtasks |
+
+### Task 7.4 — Rate Limiting
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Token bucket | ✅ |
+| 2 | Sliding window | ✅ |
+| 3 | Configuration | ✅ |
+
+### Task 7.3 — Caching
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Cache layer | ✅ |
+| 2 | Expiration | ✅ |
+| 3 | Validation | ✅ |
+
+### Task 7.2 — Load Balancer
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Backend pool | ✅ |
+| 2 | Round Robin | ✅ |
+| 3 | Health checks | ✅ |
+
+### Task 7.1 — Reverse Proxy
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Proxy requests | ✅ |
+| 2 | Response forwarding | ✅ |
+| 3 | Header management | ✅ |
 
 ---
 
@@ -28,14 +71,6 @@
 | 6.3 — Compression | ✅ Complete | 3 / 3 subtasks |
 | 6.4 — HTTPS | ✅ Complete | 3 / 3 subtasks |
 | 6.5 — HTTP/2 | ✅ Complete | 3 / 3 subtasks |
-
-### Task 7.1 — Reverse Proxy
-
-| # | Subtask | Status |
-| --- | --- | :---: |
-| 1 | Proxy requests | 🚧 In Progress |
-| 2 | Response forwarding | ⏳ Pending |
-| 3 | Header management | ⏳ Pending |
 
 ### Task 6.1 — Persistent Connections
 
@@ -346,3 +381,8 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented `middleware.Gzip()` that negotiates `Accept-Encoding: gzip`, filters by `Content-Type`, and dynamically streams compressed payloads via `io.Pipe()`, naturally falling back to chunked encoding. Task 6.3 — Compression complete!
 - Refactored server loop into `serve()` and introduced `StartTLS()` using `crypto/tls` and `tls.NewListener`. This allows the server to securely decrypt and encrypt traffic on the fly. Built an internal test certificate generator and added integration tests. Task 6.4 — HTTPS complete!
 - Researched HTTP/2 multiplexing, HPACK, and ALPN. Enabled ALPN negotiation in `StartTLS()` by advertising `"h2"`. Added an HTTP/2 connection stub `handleHTTP2()` which correctly parses the client preface and safely terminates the connection, laying the groundwork for a future binary parsing engine. Task 6.5 — HTTP/2 and Phase 6 — Production Features complete!
+- Implemented `Request.WriteTo` for request serialization and `http.ParseResponse` to parse backend HTTP responses. Developed `internal/proxy/reverse_proxy.go` handler, wiring up TCP dialing and zero-allocation body streaming using a custom `io.ReadCloser`. Task 7.1 — Proxy requests and Response forwarding subtasks complete!
+- Enhanced `http.Request` to capture `RemoteAddr` and `Scheme` during connection handling. Injected `X-Forwarded-For`, `X-Forwarded-Host`, and `X-Forwarded-Proto` headers into proxied requests in `reverse_proxy.go`. Task 7.1 — Reverse Proxy is now fully complete!
+- Implemented `proxy.LoadBalancer` that manages a `Backend` pool with a thread-safe `Round Robin` selection algorithm using atomic counters. Introduced Active Health Checks via background goroutines that ping backends periodically, enabling seamless failover when servers go offline. Task 7.2 — Load Balancer complete!
+- Implemented `cache.MemoryCache` and `middleware.CacheMiddleware`. The caching layer caches GET responses, parses `Cache-Control` (`max-age`, `no-cache`, `no-store`) for validation, and manages expiration via TTLs and a background sweeper goroutine. Task 7.3 — Caching complete!
+- Developed a robust `rate.Limiter` interface with two implementations: `TokenBucket` and `SlidingWindow`. Built `RateLimitMiddleware` to intercept and throttle requests dynamically based on IP. Both algorithms employ background sweeper goroutines for autonomous memory cleanup. Task 7.4 — Rate Limiting complete. **Phase 7 is fully complete!**
