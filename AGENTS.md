@@ -103,7 +103,6 @@ Read only what is required. Keep every document focused on a single responsibili
 | **Testing** | `docs/testing.md` | Testing philosophy and verification standards. |
 | **Performance** | `docs/benchmarking.md` | Performance engineering and telemetry metrics. |
 | **Presentation** | `docs/recruiter.md` | The guided narrative to build trust in 10 minutes. |
-| **Curriculum** | `.academy/README.md` | The university course and structured learning path map. |
 
 ---
 

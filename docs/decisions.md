@@ -116,4 +116,38 @@ We will enforce thread-safety using fine-grained synchronization primitives:
 - **Con:** Atomic primitives restrict complex state interactions (e.g., you cannot easily transactionally update two metrics at once without CAS loops or a Mutex).
 
 ---
+
+## ADR 007: Autonomous Background Sweepers for Resource Cleanup
+
+**Status:** Accepted
+
+### Context
+In Phase 7, we introduced stateful infrastructure layers: a Memory Cache and Rate Limiters (Token Bucket and Sliding Window). In a high-traffic environment (or under a DDoS attack), tracking thousands of unique IPs or caching thousands of responses can silently exhaust server RAM (Out of Memory).
+
+### Decision
+We will employ **Autonomous Background Sweepers** in these components. When initializing a Cache or Rate Limiter, a background goroutine is spawned with a `time.Ticker`. This routine periodically locks the state map, scans for expired TTLs or stale IPs, and `delete()`s them to reclaim memory.
+
+### Trade-offs & Consequences
+- **Pro:** Completely eliminates memory leaks caused by unbounded state accumulation.
+- **Pro:** The cleanup overhead is decoupled from the critical path of handling a client request (handlers don't have to pause to clean the whole map).
+- **Con:** Introduces hidden goroutines that must be accounted for during server shutdown to prevent leaks of the sweepers themselves (though acceptable for the global lifespan of limiters).
+
+---
+
+## ADR 008: Lazy Evaluation in Token Bucket Rate Limiting
+
+**Status:** Accepted
+
+### Context
+A naive implementation of a Token Bucket rate limiter spawns a background `time.Ticker` loop that iterates over every single IP in the bucket map and adds tokens every second. With 100,000 active IPs, this creates massive CPU overhead and locks the map constantly, freezing actual traffic.
+
+### Decision
+We will use **Lazy Evaluation** for token refills. Tokens are not actually refilled in the background. Instead, when a request arrives, the limiter calculates `(time.Now() - lastRefill) * rate`, adds the accumulated tokens to the bucket *at that exact moment*, and then processes the request.
+
+### Trade-offs & Consequences
+- **Pro:** O(1) CPU usage. Refilling costs practically zero CPU cycles because it only happens exactly when needed, mathematically.
+- **Pro:** Eliminates map-wide lock contention, allowing the rate limiter to scale to millions of IPs.
+- **Con:** The logic for time-delta math and token clamping is slightly more complex to test than a naive background adder.
+
+---
 > *"Code tells you how; comments tell you why."*

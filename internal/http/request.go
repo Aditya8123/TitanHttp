@@ -1,5 +1,11 @@
 package http
 
+import (
+	"bytes"
+	"fmt"
+	"io"
+)
+
 // Method represents an HTTP request method
 type Method string
 
@@ -36,6 +42,12 @@ type Request struct {
 
 	// Params stores dynamic path parameters extracted by the router (e.g., /users/:id).
 	Params map[string]string
+
+	// RemoteAddr is the network address of the client that sent the request.
+	RemoteAddr string
+
+	// Scheme is the protocol scheme (e.g., "http" or "https").
+	Scheme string
 }
 
 // NewRequest creates a new Request with initialized maps.
@@ -69,5 +81,40 @@ func (r *Request) WantsKeepAlive() bool {
 	
 	// HTTP/1.0 is close by default, unless "keep-alive" is explicitly specified.
 	return connHeader == "keep-alive"
+}
+
+// WriteTo serializes the Request object into a raw HTTP byte stream and writes it to w.
+// This is primarily used by the reverse proxy to forward requests to backend servers.
+func (r *Request) WriteTo(w io.Writer) (int64, error) {
+	var totalWritten int64
+	var buf bytes.Buffer
+
+	// Request-Line
+	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, r.Path, r.Version))
+
+	// Headers
+	for k, v := range r.Headers {
+		buf.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
+	}
+
+	// Empty line signifying end of headers
+	buf.WriteString("\r\n")
+
+	n, err := w.Write(buf.Bytes())
+	totalWritten += int64(n)
+	if err != nil {
+		return totalWritten, err
+	}
+
+	// Body
+	if len(r.Body) > 0 {
+		n, err = w.Write(r.Body)
+		totalWritten += int64(n)
+		if err != nil {
+			return totalWritten, err
+		}
+	}
+
+	return totalWritten, nil
 }
 

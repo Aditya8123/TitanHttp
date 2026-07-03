@@ -20,7 +20,7 @@ func ParseRequest(reader *bufio.Reader) (*Request, error) {
 	}
 
 	// 2. Parse headers
-	err = parseHeaders(reader, req)
+	err = parseHeaders(reader, req.Headers)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +75,8 @@ func parseRequestLine(reader *bufio.Reader, req *Request) error {
 	return nil
 }
 
-// parseHeaders reads the headers and adds them to the Request struct.
-func parseHeaders(reader *bufio.Reader, req *Request) error {
+// parseHeaders reads the headers and adds them to the provided headers map.
+func parseHeaders(reader *bufio.Reader, headers map[string]string) error {
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -108,7 +108,7 @@ func parseHeaders(reader *bufio.Reader, req *Request) error {
 			return ErrMalformedHeader
 		}
 
-		req.Headers[key] = value
+		headers[key] = value
 	}
 
 	return nil
@@ -139,6 +139,71 @@ func parseBody(reader *bufio.Reader, req *Request) error {
 	_, err = io.ReadFull(reader, req.Body)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ParseResponse reads from a bufio.Reader and constructs an HTTP Response.
+// It parses the Status-Line and Headers, and attaches the reader to Response.Stream
+// for zero-allocation body streaming.
+func ParseResponse(reader *bufio.Reader) (*Response, error) {
+	resp := NewResponse()
+
+	// 1. Parse the status line
+	err := parseStatusLine(reader, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Parse headers
+	err = parseHeaders(reader, resp.Headers)
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. For the response body, we leave it to the caller to stream via resp.Stream
+	// But we need to ensure it's available. We can just attach the reader.
+	resp.Stream = reader
+
+	return resp, nil
+}
+
+// parseStatusLine reads the first line and extracts Version, StatusCode, and StatusText.
+func parseStatusLine(reader *bufio.Reader, resp *Response) error {
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+
+	// HTTP lines must end with CRLF (\r\n)
+	if !strings.HasSuffix(line, "\r\n") {
+		return ErrMalformedRequest // We can reuse this or define ErrMalformedResponse
+	}
+
+	// Strip the CRLF
+	line = line[:len(line)-2]
+
+	// Split by space. Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+	parts := strings.SplitN(line, " ", 3)
+	if len(parts) < 2 {
+		return ErrMalformedRequest
+	}
+
+	resp.Version = parts[0]
+	
+	code, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return ErrMalformedRequest
+	}
+	resp.StatusCode = StatusCode(code)
+
+	if len(parts) == 3 {
+		resp.StatusText = parts[2]
+	}
+
+	if !strings.HasPrefix(resp.Version, "HTTP/") {
+		return ErrInvalidVersion
 	}
 
 	return nil

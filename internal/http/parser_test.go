@@ -141,7 +141,7 @@ func TestParseHeaders(t *testing.T) {
 			reader := bufio.NewReader(strings.NewReader(tt.input))
 			req := NewRequest()
 
-			err := parseHeaders(reader, req)
+			err := parseHeaders(reader, req.Headers)
 
 			if err != tt.expectedError {
 				t.Fatalf("expected error %v, got %v", tt.expectedError, err)
@@ -285,5 +285,49 @@ func TestRequestValidation(t *testing.T) {
 				t.Fatalf("expected error %v, got %v", tt.expectedError, err)
 			}
 		})
+	}
+}
+
+func TestParseResponse(t *testing.T) {
+	rawResponse := "HTTP/1.1 200 OK\r\n" +
+		"Content-Type: text/plain\r\n" +
+		"Content-Length: 5\r\n" +
+		"\r\n" +
+		"hello"
+
+	reader := bufio.NewReader(strings.NewReader(rawResponse))
+	resp, err := ParseResponse(reader)
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if resp.Version != "HTTP/1.1" {
+		t.Errorf("expected version HTTP/1.1, got %v", resp.Version)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("expected status code 200, got %v", resp.StatusCode)
+	}
+
+	if resp.StatusText != "OK" {
+		t.Errorf("expected status text 'OK', got %q", resp.StatusText)
+	}
+
+	if resp.Headers["content-type"] != "text/plain" {
+		t.Errorf("expected content-type 'text/plain', got %v", resp.Headers["content-type"])
+	}
+
+	if resp.Stream == nil {
+		t.Errorf("expected resp.Stream to be set")
+	} else {
+		// Read the body from the stream
+		body, err := io.ReadAll(resp.Stream)
+		if err != nil {
+			t.Fatalf("failed to read from stream: %v", err)
+		}
+		if string(body) != "hello" {
+			t.Errorf("expected body 'hello', got %q", string(body))
+		}
 	}
 }
