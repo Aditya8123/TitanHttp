@@ -9,16 +9,35 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 6 — Production Features |
-| **Active Task** | Task 6.1 — Persistent Connections |
-| **Last Completed Subtask** | Shared state (Task 5.3) |
-| **Active Subtask** | Keep-Alive |
-| **Next Subtask** | Connection reuse |
+| **Active Task** | Task 6.2 — Transfer Encoding |
+| **Last Completed Subtask** | Idle timeout (Task 6.1) |
+| **Active Subtask** | Chunked responses |
+| **Next Subtask** | Streaming |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 5.3 (Synchronization).
+> Updated at the completion of Task 6.1 (Persistent Connections).
 
 ---
 
+## Phase 6 — Production Features
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 6.1 — Persistent Connections | ✅ Complete | 3 / 3 subtasks |
+| 6.2 — Transfer Encoding | 🚧 In Progress | 0 / 3 subtasks |
+| 6.3 — Compression | ⏳ Pending | 0 / 3 subtasks |
+| 6.4 — HTTPS | ⏳ Pending | 0 / 3 subtasks |
+| 6.5 — HTTP/2 | ⏳ Pending | 0 / 3 subtasks |
+
+### Task 6.1 — Persistent Connections
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Keep-Alive | ✅ |
+| 2 | Connection reuse | ✅ |
+| 3 | Idle timeout | ✅ |
+
+---
 ## Phase 5 — Concurrency
 
 | Task | Status | Progress |
@@ -265,6 +284,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
 | `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
 | `walkthroughs/03_routing_engine.md` | Phase 4 walkthrough: radix tree router, parameter extraction, and wildcards |
+| `walkthroughs/04_concurrency.md` | Phase 5 walkthrough: goroutines, worker pools, synchronization, and race condition prevention |
 | `glossary.md` | Comprehensive 60+ term dictionary of networking, concurrency, and HTTP protocols |
 | `README.md` | Academy table of contents and curriculum maps |
 
@@ -312,3 +332,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Added `sync.RWMutex` to the Router to ensure thread-safe route registration and matching. Task 5.3 — Mutexes complete.
 - Embedded a lock-free `Metrics` struct into `Server` using `sync/atomic` for high-throughput tracking of requests and panics. Task 5.3 — Shared state complete.
 - Implemented `Shutdown(ctx)` utilizing channels (`s.done`) and WaitGroups (`workerPool.wg`) for graceful shutdown coordination, eliminating test data races with a `sync.Mutex` on the listener. Added tests with race detector. Task 5.3 — Channels and WaitGroups complete. Phase 5 — Concurrency is complete!
+- Implemented robust HTTP Keep-Alive in `server.go` with connection reuse tracking and 5-second idle timeouts. Added `WantsKeepAlive()` to `request.go` handling HTTP/1.0 and HTTP/1.1 defaults. Updated headers automatically. Task 6.1 — Persistent Connections is complete.

@@ -19,6 +19,11 @@ import (
 	"github.com/Aditya8123/TitanHttp/internal/router"
 )
 
+const (
+	MaxRequestsPerConn = 100
+	IdleTimeout        = 5 * time.Second
+)
+
 type Server struct {
 	addr       string
 	mu         sync.Mutex // Protects listener
@@ -142,11 +147,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 	}()
 
 	reader := bufio.NewReader(conn)
+	requestsServed := 0
 
 	// Connection loop: continuously read from the socket until EOF or error.
 	for {
-		// Set a 5-second timeout for reading to prevent hanging connections.
-		err := conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+		// Set a timeout for reading to prevent hanging connections.
+		err := conn.SetReadDeadline(time.Now().Add(IdleTimeout))
 		if err != nil {
 			fmt.Printf("Failed to set read deadline: %v\n", err)
 			return
@@ -182,6 +188,16 @@ func (s *Server) handleConnection(conn net.Conn) {
 		// Dispatch request to the router
 		resp := s.router.ServeHTTP(req)
 
+		requestsServed++
+		wantsKeepAlive := req.WantsKeepAlive() && requestsServed < MaxRequestsPerConn
+
+		if wantsKeepAlive {
+			resp.Headers["Connection"] = "keep-alive"
+			resp.Headers["Keep-Alive"] = fmt.Sprintf("timeout=%d, max=%d", int(IdleTimeout.Seconds()), MaxRequestsPerConn-requestsServed)
+		} else {
+			resp.Headers["Connection"] = "close"
+		}
+
 		n, err := conn.Write(resp.Bytes())
 		totalConnBytes += int64(n)
 		if err != nil {
@@ -189,8 +205,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-		// Close connection if the client requested it
-		if req.Headers["connection"] == "close" {
+		// Close connection if keep-alive is not desired or max requests reached
+		if !wantsKeepAlive {
 			return
 		}
 	}
