@@ -8,6 +8,7 @@ package server
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -73,6 +74,34 @@ func (s *Server) Start() error {
 	s.listener = l
 	s.mu.Unlock()
 
+	return s.serve()
+}
+
+// StartTLS opens a TCP socket and wraps it in a TLS listener.
+func (s *Server) StartTLS(certFile, keyFile string) error {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return fmt.Errorf("failed to load key pair: %w", err)
+	}
+
+	config := &tls.Config{Certificates: []tls.Certificate{cert}}
+
+	l, err := net.Listen("tcp", s.addr)
+	if err != nil {
+		return fmt.Errorf("failed to bind to address %s: %w", s.addr, err)
+	}
+
+	tlsListener := tls.NewListener(l, config)
+
+	s.mu.Lock()
+	s.listener = tlsListener
+	s.mu.Unlock()
+
+	return s.serve()
+}
+
+// serve contains the core connection acceptance loop.
+func (s *Server) serve() error {
 	fmt.Printf("TitanHTTP Server successfully started.\n")
 	fmt.Printf("Listening on %s...\n", s.Addr())
 

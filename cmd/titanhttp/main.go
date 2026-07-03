@@ -64,8 +64,19 @@ func main() {
 		return resp
 	}))
 
-	if err := srv.Start(); err != nil {
-		fmt.Printf("Fatal error: %v\n", err)
-		os.Exit(1)
+	certFile := os.Getenv("TLS_CERT")
+	keyFile := os.Getenv("TLS_KEY")
+
+	if certFile != "" && keyFile != "" {
+		fmt.Printf("Starting in HTTPS mode using cert: %s\n", certFile)
+		if err := srv.StartTLS(certFile, keyFile); err != nil {
+			fmt.Printf("Fatal TLS error: %v\n", err)
+			os.Exit(1)
+		}
+	} else {
+		if err := srv.Start(); err != nil {
+			fmt.Printf("Fatal error: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }

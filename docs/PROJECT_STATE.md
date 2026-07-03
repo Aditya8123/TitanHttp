@@ -9,13 +9,13 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 6 — Production Features |
-| **Active Task** | Task 6.4 — HTTPS |
-| **Last Completed Subtask** | Negotiation (Task 6.3) |
-| **Active Subtask** | TLS Handshake |
-| **Next Subtask** | Certificates |
+| **Active Task** | Task 6.5 — HTTP/2 |
+| **Last Completed Subtask** | Certificates (Task 6.4) |
+| **Active Subtask** | Protocol overview |
+| **Next Subtask** | Implementation research |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 6.3 (Compression).
+> Updated at the completion of Task 6.4 (HTTPS).
 
 ---
 
@@ -26,8 +26,8 @@
 | 6.1 — Persistent Connections | ✅ Complete | 3 / 3 subtasks |
 | 6.2 — Transfer Encoding | ✅ Complete | 3 / 3 subtasks |
 | 6.3 — Compression | ✅ Complete | 3 / 3 subtasks |
-| 6.4 — HTTPS | 🚧 In Progress | 0 / 3 subtasks |
-| 6.5 — HTTP/2 | ⏳ Pending | 0 / 3 subtasks |
+| 6.4 — HTTPS | ✅ Complete | 3 / 3 subtasks |
+| 6.5 — HTTP/2 | 🚧 In Progress | 0 / 3 subtasks |
 
 ### Task 6.1 — Persistent Connections
 
@@ -336,3 +336,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Refactored `Response` struct to support `Stream io.Reader` instead of buffering `Body []byte`. Implemented `WriteTo()` to stream directly to TCP connections, supporting large payloads without memory exhaustion.
 - Implemented `Transfer-Encoding: chunked` generation for streams with unknown `Content-Length`. Task 6.2 — Transfer Encoding complete!
 - Implemented `middleware.Gzip()` that negotiates `Accept-Encoding: gzip`, filters by `Content-Type`, and dynamically streams compressed payloads via `io.Pipe()`, naturally falling back to chunked encoding. Task 6.3 — Compression complete!
+- Refactored server loop into `serve()` and introduced `StartTLS()` using `crypto/tls` and `tls.NewListener`. This allows the server to securely decrypt and encrypt traffic on the fly. Built an internal test certificate generator and added integration tests. Task 6.4 — HTTPS complete!
