@@ -339,17 +339,7 @@
 
 ---
 
-## Task 8.2 — Optimization
-
-### Subtasks
-
-* Reduce allocations
-* Improve parser
-* Optimize routing
-
----
-
-## Task 8.3 — Benchmarking
+## Task 8.2 — Benchmarking
 
 ### Subtasks
 
@@ -357,6 +347,16 @@
 * Stress testing
 * Load testing
 * Comparative benchmarks
+
+---
+
+## Task 8.3 — Optimization
+
+### Subtasks
+
+* Reduce allocations
+* Improve parser
+* Optimize routing
 
 ---
 

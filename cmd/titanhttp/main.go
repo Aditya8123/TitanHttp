@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	nethttp "net/http"
+	_ "net/http/pprof"
 	"os"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
@@ -11,6 +14,12 @@ import (
 
 func main() {
 	fmt.Println("Initializing TitanHTTP Server...")
+
+	// Start pprof debug server in background
+	go func() {
+		log.Println("Starting pprof debug server on localhost:6060")
+		log.Println(nethttp.ListenAndServe("localhost:6060", nil))
+	}()
 
 	srv := server.NewServer(":8080")
 

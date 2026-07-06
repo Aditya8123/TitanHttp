@@ -9,13 +9,13 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 8 — Performance Engineering |
-| **Active Task** | Task 8.1 — Profiling |
-| **Last Completed Subtask** | Configuration (Task 7.4) |
-| **Active Subtask** | (Phase 8) Setup pprof |
-| **Next Subtask** | Memory analysis |
+| **Active Task** | Task 8.2 — Benchmarking |
+| **Last Completed Subtask** | Goroutine profiling (Task 8.1) |
+| **Active Subtask** | (Phase 8) Micro benchmarks |
+| **Next Subtask** | Stress testing |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 7.4 (Rate Limiting).
+> Updated at the completion of Task 8.1 (Profiling).
 
 ---
 
@@ -323,6 +323,8 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | `lessons/06_production/03_rate_limiting.md` | Token bucket, sliding window algorithms, RateLimit headers, proxy IP extraction (XFF) |
 | `lessons/06_production/04_observability.md` | Structured slog logging, Prometheus scraping format, P99 histograms, trace IDs, health checks |
 | `lessons/06_production/05_load_balancing.md` | Reverse proxy forwarding, round robin, least connections, IP sticky sessions, health checks |
+| **Module 8 — Performance Engineering** | |
+| `lessons/08_performance/01_profiling.md` | Setting up pprof, CPU profiling, memory allocation analysis, and goroutine leak detection |
 | **Walkthroughs & Reference** | |
 | `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
 | `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
@@ -386,3 +388,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented `proxy.LoadBalancer` that manages a `Backend` pool with a thread-safe `Round Robin` selection algorithm using atomic counters. Introduced Active Health Checks via background goroutines that ping backends periodically, enabling seamless failover when servers go offline. Task 7.2 — Load Balancer complete!
 - Implemented `cache.MemoryCache` and `middleware.CacheMiddleware`. The caching layer caches GET responses, parses `Cache-Control` (`max-age`, `no-cache`, `no-store`) for validation, and manages expiration via TTLs and a background sweeper goroutine. Task 7.3 — Caching complete!
 - Developed a robust `rate.Limiter` interface with two implementations: `TokenBucket` and `SlidingWindow`. Built `RateLimitMiddleware` to intercept and throttle requests dynamically based on IP. Both algorithms employ background sweeper goroutines for autonomous memory cleanup. Task 7.4 — Rate Limiting complete. **Phase 7 is fully complete!**
+- Configured `net/http/pprof` in `cmd/titanhttp/main.go` on an auxiliary admin port (`localhost:6060`) to enable safe CPU, memory, and goroutine profiling. Added educational lesson in `.academy/lessons/08_performance/01_profiling.md`. Task 8.1 — Profiling complete (3/3 subtasks).
