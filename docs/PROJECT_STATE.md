@@ -9,10 +9,10 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 8 — Performance Engineering |
-| **Active Task** | Task 8.2 — Benchmarking |
-| **Last Completed Subtask** | Goroutine profiling (Task 8.1) |
+| **Active Task** | Task 8.3 — Core Component Benchmarks |
+| **Last Completed Subtask** | Result persistence (Task 8.2) |
 | **Active Subtask** | (Phase 8) Micro benchmarks |
-| **Next Subtask** | Stress testing |
+| **Next Subtask** | Memory & Allocations |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Task 8.1 (Profiling).
@@ -389,3 +389,4 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Implemented `cache.MemoryCache` and `middleware.CacheMiddleware`. The caching layer caches GET responses, parses `Cache-Control` (`max-age`, `no-cache`, `no-store`) for validation, and manages expiration via TTLs and a background sweeper goroutine. Task 7.3 — Caching complete!
 - Developed a robust `rate.Limiter` interface with two implementations: `TokenBucket` and `SlidingWindow`. Built `RateLimitMiddleware` to intercept and throttle requests dynamically based on IP. Both algorithms employ background sweeper goroutines for autonomous memory cleanup. Task 7.4 — Rate Limiting complete. **Phase 7 is fully complete!**
 - Configured `net/http/pprof` in `cmd/titanhttp/main.go` on an auxiliary admin port (`localhost:6060`) to enable safe CPU, memory, and goroutine profiling. Added educational lesson in `.academy/lessons/08_performance/01_profiling.md`. Task 8.1 — Profiling complete (3/3 subtasks).
+- Formally restructured Phase 8 in `docs/phases.md` to introduce a massive 15-point Benchmarking & Performance Measurement Framework. Built out `benchmarks/` storage directories and implemented comprehensive `Makefile` automation targets for execution and result persistence. Task 8.2 — Benchmark Infrastructure & Storage complete (3/3 subtasks).

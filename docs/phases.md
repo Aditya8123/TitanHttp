@@ -339,18 +339,46 @@
 
 ---
 
-## Task 8.2 — Benchmarking
+## Task 8.2 — Benchmark Infrastructure & Storage
+
+### Subtasks
+
+* Directory structure
+* Makefile automation
+* Result persistence
+
+---
+
+## Task 8.3 — Core Component Benchmarks
 
 ### Subtasks
 
 * Micro benchmarks
-* Stress testing
-* Load testing
-* Comparative benchmarks
+* Memory & Allocations
+* Concurrency & Lock contention
 
 ---
 
-## Task 8.3 — Optimization
+## Task 8.4 — Advanced Load & Stress Testing
+
+### Subtasks
+
+* Latency & Throughput testing
+* Stress testing
+* Soak testing
+
+---
+
+## Task 8.5 — Profiling & Regression
+
+### Subtasks
+
+* Automated profile collection
+* Regression tracking (benchstat)
+
+---
+
+## Task 8.6 — Optimization
 
 ### Subtasks
 
