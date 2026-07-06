@@ -325,6 +325,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | `lessons/06_production/05_load_balancing.md` | Reverse proxy forwarding, round robin, least connections, IP sticky sessions, health checks |
 | **Module 8 — Performance Engineering** | |
 | `lessons/08_performance/01_profiling.md` | Setting up pprof, CPU profiling, memory allocation analysis, and goroutine leak detection |
+| `lessons/08_performance/02_benchmarking.md` | Writing micro benchmarks, b.N, ResetTimer, ReportAllocs, RunParallel, and benchstat |
 | **Walkthroughs & Reference** | |
 | `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
 | `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |

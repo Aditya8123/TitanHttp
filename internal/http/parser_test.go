@@ -331,3 +331,50 @@ func TestParseResponse(t *testing.T) {
 		}
 	}
 }
+
+// --- Benchmarks ---
+
+func BenchmarkParseRequestLine(b *testing.B) {
+	reqLine := "GET /api/v1/users/12345 HTTP/1.1\r\n"
+	req := NewRequest()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		reader := bufio.NewReader(strings.NewReader(reqLine))
+		_ = parseRequestLine(reader, req)
+	}
+}
+
+func BenchmarkParseHeaders(b *testing.B) {
+	headersRaw := "Host: localhost:8080\r\nUser-Agent: curl/7.81.0\r\nAccept: application/json\r\nConnection: keep-alive\r\n\r\n"
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		reader := bufio.NewReader(strings.NewReader(headersRaw))
+		headers := make(map[string]string)
+		_ = parseHeaders(reader, headers)
+	}
+}
+
+func BenchmarkParseRequestFull_Parallel(b *testing.B) {
+	rawRequest := "POST /api/upload HTTP/1.1\r\n" +
+		"Host: localhost:8080\r\n" +
+		"Content-Length: 15\r\n" +
+		"Content-Type: application/json\r\n" +
+		"\r\n" +
+		`{"key":"value"}`
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			reader := bufio.NewReader(strings.NewReader(rawRequest))
+			_, _ = ParseRequest(reader)
+		}
+	})
+}

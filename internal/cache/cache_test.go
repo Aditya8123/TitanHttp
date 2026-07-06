@@ -47,3 +47,44 @@ func TestMemoryCache_Expiration(t *testing.T) {
 		t.Error("Expected cache miss for immediately expired item")
 	}
 }
+
+// --- Benchmarks ---
+
+func BenchmarkCache_Hit(b *testing.B) {
+	c := NewMemoryCache()
+	resp := http.NewResponse200()
+	c.Set("/popular", resp, 0)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = c.Get("/popular")
+	}
+}
+
+func BenchmarkCache_Miss(b *testing.B) {
+	c := NewMemoryCache()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = c.Get("/missing")
+	}
+}
+
+func BenchmarkCache_Parallel(b *testing.B) {
+	c := NewMemoryCache()
+	resp := http.NewResponse200()
+	c.Set("/popular", resp, 0)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, _ = c.Get("/popular")
+		}
+	})
+}

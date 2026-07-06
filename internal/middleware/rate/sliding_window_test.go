@@ -37,3 +37,20 @@ func TestSlidingWindow(t *testing.T) {
 		t.Error("Expected request from new IP to be allowed")
 	}
 }
+
+// --- Benchmarks ---
+
+func BenchmarkSlidingWindow_Allow(b *testing.B) {
+	// High capacity to benchmark slice appends under load
+	sw := NewSlidingWindow(1000000, 10*time.Second)
+	ip := "192.168.1.1"
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			sw.Allow(ip)
+		}
+	})
+}

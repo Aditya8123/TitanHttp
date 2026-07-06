@@ -38,3 +38,20 @@ func TestTokenBucket(t *testing.T) {
 		t.Error("Expected fifth request to be rejected")
 	}
 }
+
+// --- Benchmarks ---
+
+func BenchmarkTokenBucket_Allow(b *testing.B) {
+	// High capacity so we don't just benchmark the "rejected" path
+	tb := NewTokenBucket(1000000, 1000000.0)
+	ip := "192.168.1.1"
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tb.Allow(ip)
+		}
+	})
+}

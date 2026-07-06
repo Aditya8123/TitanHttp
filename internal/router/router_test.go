@@ -105,3 +105,64 @@ func TestRouter_MethodAndParamRouting(t *testing.T) {
 		t.Errorf("Wildcard params not injected correctly. Got %v, want %v", reqWild.Params, expectedWildParams)
 	}
 }
+
+// --- Benchmarks ---
+
+func setupBenchmarkRouter() *Router {
+	r := NewRouter()
+	r.Get("/hello", func(req *http.Request) *http.Response { return nil })
+	r.Get("/users/:id", func(req *http.Request) *http.Response { return nil })
+	r.Get("/static/*filepath", func(req *http.Request) *http.Response { return nil })
+	return r
+}
+
+func BenchmarkRouterStatic(b *testing.B) {
+	r := setupBenchmarkRouter()
+	req := &http.Request{Method: http.MethodGet, Path: "/hello", Params: make(map[string]string)}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = r.ServeHTTP(req)
+	}
+}
+
+func BenchmarkRouterParams(b *testing.B) {
+	r := setupBenchmarkRouter()
+	req := &http.Request{Method: http.MethodGet, Path: "/users/12345", Params: make(map[string]string)}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = r.ServeHTTP(req)
+	}
+}
+
+func BenchmarkRouterWildcard(b *testing.B) {
+	r := setupBenchmarkRouter()
+	req := &http.Request{Method: http.MethodGet, Path: "/static/css/main.css", Params: make(map[string]string)}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = r.ServeHTTP(req)
+	}
+}
+
+func BenchmarkRouter_Parallel(b *testing.B) {
+	r := setupBenchmarkRouter()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			// create a new req per goroutine to avoid map races
+			localReq := &http.Request{Method: http.MethodGet, Path: "/users/999", Params: make(map[string]string)}
+			_ = r.ServeHTTP(localReq)
+		}
+	})
+}
