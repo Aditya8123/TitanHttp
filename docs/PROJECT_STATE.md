@@ -9,10 +9,10 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 8 — Performance Engineering |
-| **Active Task** | Task 8.3 — Core Component Benchmarks |
-| **Last Completed Subtask** | Result persistence (Task 8.2) |
-| **Active Subtask** | (Phase 8) Micro benchmarks |
-| **Next Subtask** | Memory & Allocations |
+| **Active Task** | Task 8.5 — Profiling & Regression |
+| **Last Completed Subtask** | Soak testing (Task 8.4) |
+| **Active Subtask** | (Phase 8) Automated profile collection |
+| **Next Subtask** | Regression tracking |
 
 > Note: This file is a living document tracking progress.
 > Updated at the completion of Task 8.1 (Profiling).
@@ -391,3 +391,5 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Developed a robust `rate.Limiter` interface with two implementations: `TokenBucket` and `SlidingWindow`. Built `RateLimitMiddleware` to intercept and throttle requests dynamically based on IP. Both algorithms employ background sweeper goroutines for autonomous memory cleanup. Task 7.4 — Rate Limiting complete. **Phase 7 is fully complete!**
 - Configured `net/http/pprof` in `cmd/titanhttp/main.go` on an auxiliary admin port (`localhost:6060`) to enable safe CPU, memory, and goroutine profiling. Added educational lesson in `.academy/lessons/08_performance/01_profiling.md`. Task 8.1 — Profiling complete (3/3 subtasks).
 - Formally restructured Phase 8 in `docs/phases.md` to introduce a massive 15-point Benchmarking & Performance Measurement Framework. Built out `benchmarks/` storage directories and implemented comprehensive `Makefile` automation targets for execution and result persistence. Task 8.2 — Benchmark Infrastructure & Storage complete (3/3 subtasks).
+- Implemented core Go micro-benchmarks for the HTTP parser, Router, Rate Limiters (`TokenBucket`, `SlidingWindow`), and MemoryCache. Created `.academy` lesson `02_benchmarking.md` and successfully captured baseline metrics with `benchstat` readiness. Task 8.3 — Core Component Benchmarks complete (3/3 subtasks).
+- Standardized on `bombardier` for robust external load generation. Wrote automation scripts (`load_test.ps1`, `stress_test.ps1`, `soak_test.ps1`) to capture RPS, P90/P99 latency, and throughput. Hooked up execution to Makefile and verified against live server endpoints. Task 8.4 — Advanced Load & Stress Testing complete (3/3 subtasks).

@@ -45,6 +45,27 @@ func main() {
 		return resp
 	})
 
+	srv.Router().Get("/ping", func(req *http.Request) *http.Response {
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "text/plain"
+		resp.Body = []byte("pong")
+		return resp
+	})
+
+	srv.Router().Get("/heavy", func(req *http.Request) *http.Response {
+		// Simulate a memory-heavy allocation to test GC pressure
+		var data []byte
+		for i := 0; i < 10000; i++ {
+			data = append(data, []byte("junk_data_")...)
+		}
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "text/plain"
+		resp.Body = []byte(fmt.Sprintf("Allocated %d bytes", len(data)))
+		return resp
+	})
+
 	srv.Router().Get("/users/:name", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK

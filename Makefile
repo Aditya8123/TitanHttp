@@ -1,4 +1,4 @@
-.PHONY: all build run test lint fmt clean dev bench-micro bench-component bench-load bench-stress bench-soak profile-cpu profile-heap bench-all
+.PHONY: all build run test lint fmt clean dev bench-micro bench-component bench-load bench-stress bench-soak profile-cpu profile-heap bench-all install-tools
 
 # Variables
 BINARY_NAME=titanhttp
@@ -37,6 +37,11 @@ clean:
 
 # --- Benchmarking Framework ---
 
+install-tools:
+	@echo "Installing bombardier load testing tool..."
+	go install github.com/codesenberg/bombardier@latest
+	@echo "Bombardier installed successfully to your GOPATH/bin."
+
 bench-all: bench-micro bench-component
 
 bench-micro:
@@ -50,15 +55,15 @@ bench-component:
 
 bench-load:
 	@echo "Running Load Tests..."
-	@echo "Load tests require an external tool (e.g. wrk) and will be implemented in a future task"
+	powershell -File ./scripts/bench/load_test.ps1
 
 bench-stress:
 	@echo "Running Stress Tests..."
-	@echo "Stress tests will be implemented in a future task"
+	powershell -File ./scripts/bench/stress_test.ps1
 
 bench-soak:
 	@echo "Running Soak Tests..."
-	@echo "Soak tests will be implemented in a future task"
+	powershell -File ./scripts/bench/soak_test.ps1
 
 profile-cpu:
 	@echo "Capturing CPU Profile (30s)..."
