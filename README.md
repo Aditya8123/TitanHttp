@@ -14,18 +14,50 @@ We deliberately avoid using Go's standard `net/http` for core server functionali
 
 ## 📊 Performance Benchmarks
 
-TitanHTTP was rigorously profiled against Go's standard `net/http` library under simulated high-throughput and C10K scenarios. By utilizing zero-allocation parsing, a custom radix-tree router, and a bounded thread-safe worker pool, the architecture yields significant performance gains.
+TitanHTTP was built for raw, data-driven optimizations, profiling, regression testing, and security hardening. By utilizing zero-allocation parsing, a thread-safe custom radix-tree router, and a bounded worker-pool concurrency model, TitanHTTP is benchmarked to significantly outpace Go's standard library `net/http` under heavy loads and C10K scenarios.
 
-| Profile | TitanHTTP | `net/http` | Improvement |
+| Profile / Workload | TitanHTTP | Go `net/http` | Performance Delta |
 | :--- | :--- | :--- | :--- |
-| **Max Throughput** | **151,316 req/s** | 117,401 req/s | **+28.9%** |
-| **Routing Speed** | **129,746 req/s** | 98,216 req/s | **+32.1%** |
-| **Large Payloads** | **60,352 req/s** | 42,695 req/s | **+41.4%** |
-| **Connection Churn** | **3,568 req/s** | 1,969 req/s | **+81.1%** |
-| **P99 Latency (C10K)**| **4.75 ms** | 14.56 ms | **-67.4%** |
-| **Memory Leaks** | **0 MB** | 0 MB | **Stable** |
+| **Max Raw Throughput** | **151,316 req/s** | 117,401 req/s | **+28.9% (Winner)** |
+| **Radix-Tree Routing** | **129,746 req/s** | 98,216 req/s | **+32.1% (Winner)** |
+| **Large Payload Handling** | **60,352 req/s** | 42,695 req/s | **+41.4% (Winner)** |
+| **Connection Churn** (`Connection: close`) | **3,568 req/s** | 1,969 req/s | **+81.1% (Winner)** |
+| **P99 Latency (C10K - 200 conns)** | **4.75 ms** | 14.56 ms | **-67.4% (Winner)** |
+| **Memory Leak Profile** | **0 MB Leaked** | 0 MB Leaked | **Stable (after 500K requests)** |
 
-> *Tests executed natively via `bombardier` handling massive concurrent loads. Full results, including framework comparisons (Gin, Fiber, Chi) and security tests, are available in [benchmarking.md](./docs/benchmarking.md).*
+### 🛠️ Key Technical Achievements & Optimizations
+
+1. **Zero-Allocation Request Parsing & Cache Hits:**
+   - Isolated and tuned memory boundaries in parsing (`internal/http/parser.go`), achieving near-zero heap allocations per request using optimized array slicing and byte buffers.
+2. **Decoupled Metric Telemetry:**
+   - Refactored `internal/server/metrics.go` to decouple connection opened/closed states from raw request counts. This ensures telemetry remains 100% accurate during Keep-Alive streams and parallel tests.
+3. **Automated Profiling & Regression Tracking:**
+   - Integrated native `pprof` automated capture cycles (CPU, Heap, Goroutine profiles) and `benchstat` analysis directly into the test suite.
+4. **Cinematic Orchestrator (`bench.ps1`):**
+   - Engineered a unified, multi-dimensional test suite executing micro-benchmarks, framework comparisons (Gin, Fiber, Chi), Keep-Alive scaling, compliance checks, and DoS attacks.
+   - Outputs telemetry metrics in clean Markdown tables and persistent JSON formats (`unified_baseline.json`) to serve as baseline inputs for the upcoming Showcase dashboard.
+
+### 🛡️ Security & RFC Compliance Validation
+
+- **Compliance Suite:** `20 / 20` test cases passed (includes Method validation, Content-Length checks, Keep-Alive, and Range requests).
+- **Security Hardening:** `8 / 8` test cases passed. TitanHTTP gracefully degrades and defends against Slowloris, Slow POST, header floods, oversized headers, and **CL-TE Request Smuggling** exploits.
+
+### ⚡ Running Benchmarks
+
+TitanHTTP comes with a **Unified Cinematic Benchmark Suite** that runs micro-benchmarks, framework comparisons, throughput stress tests, and compliance/security scenarios.
+
+To execute the entire performance engine suite locally:
+```powershell
+powershell -File ./scripts/bench/bench.ps1 -RunMode A
+```
+
+Individual modes can also be selected interactively by running the orchestrator without arguments:
+```powershell
+powershell -File ./scripts/bench/bench.ps1
+```
+
+> *Full results, including framework comparisons (Gin, Fiber, Chi) and security tests, are available in [benchmarking.md](./docs/benchmarking.md).*
+
 
 ## 📖 Experience Chapters
 
