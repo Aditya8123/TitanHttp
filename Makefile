@@ -40,18 +40,22 @@ clean:
 install-tools:
 	@echo "Installing bombardier load testing tool..."
 	go install github.com/codesenberg/bombardier@latest
-	@echo "Bombardier installed successfully to your GOPATH/bin."
+	@echo "Installing benchstat for regression analysis..."
+	go install golang.org/x/perf/cmd/benchstat@latest
+	@echo "Tools installed successfully to your GOPATH/bin."
 
 bench-all: bench-micro bench-component
 
 bench-micro:
 	@echo "Running Micro Benchmarks..."
-	go test -bench=. -benchmem ./internal/... > benchmarks/micro/micro_latest.bench
-	@echo "Results saved to benchmarks/micro/micro_latest.bench"
+	go test -bench="." -benchmem ./internal/... > benchmarks/results/micro/micro_latest.bench
+	@echo "Generating CPU/Memory profiles for internal/http..."
+	go test -bench="." -benchmem -cpuprofile=benchmarks/profiles/micro_cpu.prof -memprofile=benchmarks/profiles/micro_mem.prof ./internal/http
+	@echo "Results saved to benchmarks/results/micro/micro_latest.bench and profiles to benchmarks/profiles/"
 
 bench-component:
 	@echo "Running Component Benchmarks..."
-	@echo "Component benchmarks will be added here" > benchmarks/component/component_latest.bench
+	go test -bench="." -benchmem -run=^$$ ./internal/server/... > benchmarks/results/component/component_latest.bench
 
 bench-load:
 	@echo "Running Load Tests..."
@@ -68,9 +72,17 @@ bench-soak:
 profile-cpu:
 	@echo "Capturing CPU Profile (30s)..."
 	go tool pprof -raw http://localhost:6060/debug/pprof/profile?seconds=30 > benchmarks/profiles/cpu_latest.pprof
-	@echo "Saved CPU profile to benchmarks/profiles/cpu_latest.pprof"
+	@echo "Generating CPU SVG graph..."
+	go tool pprof -svg benchmarks/profiles/cpu_latest.pprof > benchmarks/profiles/cpu_latest.svg
+	@echo "Saved CPU profile and SVG to benchmarks/profiles/"
 
 profile-heap:
 	@echo "Capturing Heap Profile..."
 	go tool pprof -raw http://localhost:6060/debug/pprof/heap > benchmarks/profiles/heap_latest.pprof
-	@echo "Saved Heap profile to benchmarks/profiles/heap_latest.pprof"
+	@echo "Generating Heap SVG graph..."
+	go tool pprof -svg benchmarks/profiles/heap_latest.pprof > benchmarks/profiles/heap_latest.svg
+	@echo "Saved Heap profile and SVG to benchmarks/profiles/"
+
+profile-hotspots:
+	@echo "Analyzing top 20 CPU hotspots..."
+	go tool pprof -top -cum -nodecount=20 benchmarks/profiles/cpu_latest.pprof

@@ -77,14 +77,21 @@ func BenchmarkCache_Miss(b *testing.B) {
 func BenchmarkCache_Parallel(b *testing.B) {
 	c := NewMemoryCache()
 	resp := http.NewResponse200()
-	c.Set("/popular", resp, 0)
+	// Create 100 popular routes to test shard distribution
+	keys := make([]string, 100)
+	for i := 0; i < 100; i++ {
+		keys[i] = "/popular/" + string(rune('a'+i%26))
+		c.Set(keys[i], resp, 0)
+	}
 
 	b.ResetTimer()
 	b.ReportAllocs()
 
 	b.RunParallel(func(pb *testing.PB) {
+		i := 0
 		for pb.Next() {
-			_, _ = c.Get("/popular")
+			_, _ = c.Get(keys[i%100])
+			i++
 		}
 	})
 }

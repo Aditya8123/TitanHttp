@@ -8,14 +8,86 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 8 — Performance Engineering |
-| **Active Task** | Task 8.5 — Profiling & Regression |
-| **Last Completed Subtask** | Soak testing (Task 8.4) |
-| **Active Subtask** | (Phase 8) Automated profile collection |
-| **Next Subtask** | Regression tracking |
+| **Active Phase** | Phase 9 — Showcase Platform |
+| **Active Task** | Task 9.1 — Portfolio Website |
+| **Last Completed Subtask** | Prepare recruiter presentation data |
+| **Active Subtask** | Landing page |
+| **Next Subtask** | Feature showcase |
 
 > Note: This file is a living document tracking progress.
-> Updated at the completion of Task 8.1 (Profiling).
+> Updated to reflect the completion of Phase 8 and initialization of Phase 9.
+
+---
+
+## Phase 8 — Performance Engineering
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 8.1 — Profiling | ✅ Complete | 3 / 3 subtasks |
+| 8.2 — Benchmark Infra | ✅ Complete | 3 / 3 subtasks |
+| 8.3 — Core Benchmarks | ✅ Complete | 3 / 3 subtasks |
+| 8.4 — Load/Stress Testing | ✅ Complete | 3 / 3 subtasks |
+| 8.5 — Regression Tracking | ✅ Complete | 2 / 2 subtasks |
+| 8.6 — Benchmarking & Optimization | ✅ Complete | 5 / 5 subtasks |
+| 8.7 — Benchmark Analysis & Extraction | ✅ Complete | 4 / 4 subtasks |
+
+### Task 8.7 — Benchmark Analysis & Extraction
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Analyze benchmarks for faults and OS limits | ✅ |
+| 2 | Verify telemetry data and metric accuracy | ✅ |
+| 3 | Extract baseline stats for Showcase Platform | ✅ |
+| 4 | Prepare recruiter presentation data | ✅ |
+
+### Task 8.6 — Comprehensive Benchmarking & Optimization
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Reduce allocations & optimize routing | ✅ |
+| 2 | Advanced edge cases (large payload, slow client) | ✅ |
+| 3 | Final optimizations (worker pooling, I/O) | ✅ |
+| 4 | Comprehensive Benchmark Suite | ✅ |
+| 5 | Export visual pprof graphs (PDF) | ✅ |
+
+### Task 8.5 — Profiling & Regression
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Automated profile collection | ✅ |
+| 2 | Regression tracking (benchstat) | ✅ |
+
+### Task 8.4 — Advanced Load & Stress Testing
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Latency & Throughput testing | ✅ |
+| 2 | Stress testing | ✅ |
+| 3 | Soak testing | ✅ |
+
+### Task 8.3 — Core Component Benchmarks
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Micro benchmarks | ✅ |
+| 2 | Memory & Allocations | ✅ |
+| 3 | Concurrency & Lock contention | ✅ |
+
+### Task 8.2 — Benchmark Infrastructure & Storage
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Directory structure | ✅ |
+| 2 | Makefile automation | ✅ |
+| 3 | Result persistence | ✅ |
+
+### Task 8.1 — Profiling
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | CPU profiling | ✅ |
+| 2 | Memory profiling | ✅ |
+| 3 | Goroutine profiling | ✅ |
 
 ---
 
@@ -79,6 +151,38 @@
 | 1 | Keep-Alive | ✅ |
 | 2 | Connection reuse | ✅ |
 | 3 | Idle timeout | ✅ |
+
+### Task 6.2 — Transfer Encoding
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Chunked responses | ✅ |
+| 2 | Streaming | ✅ |
+| 3 | Large payloads | ✅ |
+
+### Task 6.3 — Compression
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Gzip | ✅ |
+| 2 | Negotiation | ✅ |
+| 3 | Benchmarks | ✅ |
+
+### Task 6.4 — HTTPS
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | TLS certificates | ✅ |
+| 2 | Secure listener | ✅ |
+| 3 | HTTPS configuration | ✅ |
+
+### Task 6.5 — HTTP/2
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Protocol overview | ✅ |
+| 2 | Implementation research | ✅ |
+| 3 | Incremental support | ✅ |
 
 ---
 ## Phase 5 — Concurrency
@@ -326,6 +430,8 @@ _Local-only (gitignored). Populated as concepts are introduced._
 | **Module 8 — Performance Engineering** | |
 | `lessons/08_performance/01_profiling.md` | Setting up pprof, CPU profiling, memory allocation analysis, and goroutine leak detection |
 | `lessons/08_performance/02_benchmarking.md` | Writing micro benchmarks, b.N, ResetTimer, ReportAllocs, RunParallel, and benchstat |
+| `lessons/08_performance/03_performance_analysis.md` | Offline profiling with pprof and regression tracking using benchstat |
+| `lessons/08_performance/04_optimization.md` | Idiomatic Go optimization techniques: sync.Pool, zero-alloc routing, memory allocation reduction |
 | **Walkthroughs & Reference** | |
 | `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
 | `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
@@ -393,3 +499,7 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Formally restructured Phase 8 in `docs/phases.md` to introduce a massive 15-point Benchmarking & Performance Measurement Framework. Built out `benchmarks/` storage directories and implemented comprehensive `Makefile` automation targets for execution and result persistence. Task 8.2 — Benchmark Infrastructure & Storage complete (3/3 subtasks).
 - Implemented core Go micro-benchmarks for the HTTP parser, Router, Rate Limiters (`TokenBucket`, `SlidingWindow`), and MemoryCache. Created `.academy` lesson `02_benchmarking.md` and successfully captured baseline metrics with `benchstat` readiness. Task 8.3 — Core Component Benchmarks complete (3/3 subtasks).
 - Standardized on `bombardier` for robust external load generation. Wrote automation scripts (`load_test.ps1`, `stress_test.ps1`, `soak_test.ps1`) to capture RPS, P90/P99 latency, and throughput. Hooked up execution to Makefile and verified against live server endpoints. Task 8.4 — Advanced Load & Stress Testing complete (3/3 subtasks).
+- Installed `benchstat` and automated CPU/Heap profile extraction directly into the `Makefile` benchmark targets. Wrote `compare.ps1` for rapid regression tracking and published `.academy` lesson `03_performance_analysis.md`. Task 8.5 — Profiling & Regression complete (2/2 subtasks).
+- **Rewrote the benchmark suite** to unify all testing into `compare_suite.ps1`. This suite directly compares TitanHTTP vs `net/http` across 9 parameters (Throughput, Latency percentiles, CPU, Memory, Static Files, Connections, Payload, Keep-Alive, Routing) generating live tabular metrics. Task 8.9 complete (7/7 subtasks). Phase 8 fully complete!
+- Decoupled connection telemetry from request telemetry in `internal/server/metrics.go` to correctly track metrics during HTTP Keep-Alive streaming. Added unit tests for Keep-Alive metrics. Task 8.7 Subtask 2 complete!
+- Exported JSON baseline stats from the `unified_comparison.ps1` benchmark suite and prepared the `recruiter.md` presentation document with hard performance data. Task 8.7 complete. **Phase 8 is fully complete!**

@@ -86,7 +86,8 @@ func TestNode_InsertAndSearch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler, params := root.search(tt.searchPath)
+			params := make(map[string]string)
+			handler := root.search(tt.searchPath, params)
 
 			if tt.wantMatch && handler == nil {
 				t.Errorf("search(%q) expected match, got nil handler", tt.searchPath)
@@ -95,8 +96,12 @@ func TestNode_InsertAndSearch(t *testing.T) {
 				t.Errorf("search(%q) expected NO match, got handler", tt.searchPath)
 			}
 
-			if tt.wantMatch && !reflect.DeepEqual(params, tt.wantParams) {
-				t.Errorf("search(%q) params = %v, want %v", tt.searchPath, params, tt.wantParams)
+			if tt.wantMatch {
+				if len(tt.wantParams) == 0 && len(params) == 0 {
+					// empty map is acceptable for zero-allocation
+				} else if !reflect.DeepEqual(params, tt.wantParams) {
+					t.Errorf("search(%q) params = %v, want %v", tt.searchPath, params, tt.wantParams)
+				}
 			}
 		})
 	}

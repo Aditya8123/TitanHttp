@@ -99,3 +99,58 @@ func TestServer_Metrics(t *testing.T) {
 		t.Errorf("Expected 0 active connections after shutdown, got %d", active)
 	}
 }
+
+func TestServer_MetricsKeepAlive(t *testing.T) {
+	srv := NewServer("127.0.0.1:0")
+	
+	srv.Router().Get("/ping", func(req *http.Request) *http.Response {
+		return http.NewResponse200()
+	})
+
+	go srv.Start()
+	time.Sleep(50 * time.Millisecond)
+
+	addr := srv.Addr()
+
+	// Establish a single Keep-Alive connection
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		t.Fatalf("Failed to dial: %v", err)
+	}
+
+	// Send 3 requests over the same connection
+	reqStr := "GET /ping HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n"
+	for i := 0; i < 3; i++ {
+		_, err := conn.Write([]byte(reqStr))
+		if err != nil {
+			t.Fatalf("Failed to write request %d: %v", i, err)
+		}
+		
+		// Read response
+		buf := make([]byte, 1024)
+		conn.Read(buf)
+	}
+
+	// Wait for metrics to update
+	time.Sleep(50 * time.Millisecond)
+
+	// activeConns should be 1, totalRequests should be 3
+	if active := srv.metrics.activeConns.Load(); active != 1 {
+		t.Errorf("Expected 1 active connection, got %d", active)
+	}
+	if reqs := srv.metrics.totalRequests.Load(); reqs != 3 {
+		t.Errorf("Expected 3 total requests, got %d", reqs)
+	}
+
+	conn.Close()
+
+	// Shut down server
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	srv.Shutdown(ctx)
+
+	// activeConns should be 0
+	if active := srv.metrics.activeConns.Load(); active != 0 {
+		t.Errorf("Expected 0 active connections after shutdown, got %d", active)
+	}
+}

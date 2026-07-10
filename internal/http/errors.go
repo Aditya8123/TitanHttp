@@ -26,4 +26,19 @@ var (
 
 	// ErrMissingHostHeader is returned when an HTTP/1.1 request lacks the mandatory Host header.
 	ErrMissingHostHeader = errors.New("HTTP/1.1 requests must include a Host header")
+
+	// ErrConflictingHeaders is returned when the request contains conflicting headers (e.g., Content-Length and Transfer-Encoding).
+	ErrConflictingHeaders = errors.New("conflicting HTTP headers")
+
+	// ErrNotImplemented is returned for features not yet supported (e.g., chunked encoding).
+	ErrNotImplemented = errors.New("not implemented")
+
+	// ErrURITooLong is returned when the requested URI exceeds buffer limits.
+	ErrURITooLong = errors.New("URI too long")
+
+	// ErrMethodNotAllowed is returned when an invalid or unsupported method is used.
+	ErrMethodNotAllowed = errors.New("method not allowed")
+
+	// ErrDuplicateHeader is returned when duplicate critical headers (like Content-Length) are found.
+	ErrDuplicateHeader = errors.New("duplicate critical header")
 )

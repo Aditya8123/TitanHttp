@@ -95,3 +95,37 @@ func TestMiddlewareShortCircuit(t *testing.T) {
 		t.Errorf("Expected body 'Short Circuit', got '%s'", string(resp.Body))
 	}
 }
+
+// --- Benchmarks ---
+
+func dummyMiddleware(next Handler) Handler {
+	return func(req *http.Request) *http.Response {
+		// simulate some very light work
+		_ = req.Method
+		return next(req)
+	}
+}
+
+func BenchmarkMiddlewareChain_10Layers(b *testing.B) {
+	baseHandler := func(req *http.Request) *http.Response {
+		return http.NewResponse()
+	}
+
+	middlewares := make([]Middleware, 10)
+	for i := 0; i < 10; i++ {
+		middlewares[i] = dummyMiddleware
+	}
+
+	chain := Chain(middlewares...)
+	finalHandler := chain(baseHandler)
+
+	req := http.NewRequest()
+	req.Method = http.MethodGet
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = finalHandler(req)
+	}
+}

@@ -378,13 +378,26 @@
 
 ---
 
-## Task 8.6 — Optimization
+## Task 8.6 — Comprehensive Benchmarking & Optimization
 
 ### Subtasks
 
-* Reduce allocations
-* Improve parser
-* Optimize routing
+* Reduce allocations & optimize routing
+* Advanced edge cases (large payload, slow client)
+* Final optimizations (worker pooling, I/O)
+* Comprehensive Benchmark Suite (JSON, Middleware, Scalability, Framework comparisons)
+* Export visual pprof graphs (PDF)
+
+---
+
+## Task 8.7 — Benchmark Analysis & Extraction
+
+### Subtasks
+
+* Analyze benchmarks for faults and OS limits
+* Verify telemetry data and metric accuracy
+* Extract baseline stats for Showcase Platform
+* Prepare presentation data
 
 ---
 

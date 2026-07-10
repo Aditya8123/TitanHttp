@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"sync"
 )
 
 // Method represents an HTTP request method
@@ -50,12 +51,45 @@ type Request struct {
 	Scheme string
 }
 
-// NewRequest creates a new Request with initialized maps.
-func NewRequest() *Request {
-	return &Request{
-		Headers: make(map[string]string),
-		Params:  make(map[string]string),
+var requestPool = sync.Pool{
+	New: func() interface{} {
+		return &Request{
+			Headers: make(map[string]string),
+			Params:  make(map[string]string),
+		}
+	},
+}
+
+// AcquireRequest fetches a clean Request object from the pool.
+func AcquireRequest() *Request {
+	req := requestPool.Get().(*Request)
+	// Maps are already allocated, just make sure they are empty.
+	// (Usually done on release, but safe to do here).
+	return req
+}
+
+// ReleaseRequest cleans up the Request object and returns it to the pool.
+func ReleaseRequest(req *Request) {
+	req.Method = ""
+	req.Path = ""
+	req.Version = ""
+	req.Body = nil
+	req.RemoteAddr = ""
+	req.Scheme = ""
+
+	for k := range req.Headers {
+		delete(req.Headers, k)
 	}
+	for k := range req.Params {
+		delete(req.Params, k)
+	}
+
+	requestPool.Put(req)
+}
+
+// NewRequest creates a new Request (deprecated for internal routing, use AcquireRequest).
+func NewRequest() *Request {
+	return AcquireRequest()
 }
 
 // Validate checks if the parsed request conforms to protocol requirements.
@@ -64,6 +98,13 @@ func (r *Request) Validate() error {
 	if r.Version == "HTTP/1.1" {
 		if _, ok := r.Headers["host"]; !ok {
 			return ErrMissingHostHeader
+		}
+	}
+
+	// Prevent HTTP Request Smuggling (CL-TE)
+	if _, hasCL := r.Headers["content-length"]; hasCL {
+		if _, hasTE := r.Headers["transfer-encoding"]; hasTE {
+			return ErrConflictingHeaders
 		}
 	}
 

@@ -6,6 +6,8 @@ import (
 	nethttp "net/http"
 	_ "net/http/pprof"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
 	"github.com/Aditya8123/TitanHttp/internal/middleware"
@@ -21,11 +23,27 @@ func main() {
 		log.Println(nethttp.ListenAndServe("localhost:6060", nil))
 	}()
 
-	srv := server.NewServer(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		if os.Getenv("TLS_CERT") != "" {
+			port = "8443"
+		} else {
+			port = "8080"
+		}
+	}
+	
+	srv := server.NewServer(":" + port)
+	if timeoutEnv := os.Getenv("IDLE_TIMEOUT"); timeoutEnv != "" {
+		if d, err := time.ParseDuration(timeoutEnv); err == nil {
+			srv.IdleTimeout = d
+			fmt.Printf("Configured idle timeout from environment: %v\n", d)
+		}
+	}
 
 	// Mount global middlewares
-	srv.Router().Use(middleware.Logger)
+	// srv.Router().Use(middleware.Logger) // Disabled for benchmarking to avoid stdout mutex blocking
 	srv.Router().Use(middleware.Recovery)
+	srv.Router().Use(middleware.Range)
 	srv.Router().Use(middleware.Gzip)
 
 	// Register some basic routes to demonstrate the new Router
@@ -53,16 +71,23 @@ func main() {
 		return resp
 	})
 
+	srv.Router().Post("/json", func(req *http.Request) *http.Response {
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "application/json"
+		resp.Body = []byte(`{"status":"success"}`)
+		return resp
+	})
+
+	// Pre-generate a 100KB payload for the heavy route to accurately test network I/O
+	// instead of memory allocation bottlenecks.
+	heavyPayload := []byte(strings.Repeat("junk_data_", 10000))
+
 	srv.Router().Get("/heavy", func(req *http.Request) *http.Response {
-		// Simulate a memory-heavy allocation to test GC pressure
-		var data []byte
-		for i := 0; i < 10000; i++ {
-			data = append(data, []byte("junk_data_")...)
-		}
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
 		resp.Headers["Content-Type"] = "text/plain"
-		resp.Body = []byte(fmt.Sprintf("Allocated %d bytes", len(data)))
+		resp.Body = heavyPayload
 		return resp
 	})
 
@@ -76,9 +101,17 @@ func main() {
 
 	srv.Router().Get("/static/*filepath", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
+		filepath := "public/" + req.Params["filepath"]
+		data, err := os.ReadFile(filepath)
+		if err != nil {
+			resp.StatusCode = http.StatusNotFound
+			resp.Headers["Content-Type"] = "text/plain"
+			resp.Body = []byte("404 File Not Found\n")
+			return resp
+		}
 		resp.StatusCode = http.StatusOK
 		resp.Headers["Content-Type"] = "text/plain"
-		resp.Body = []byte(fmt.Sprintf("Serving static file: %s\n", req.Params["filepath"]))
+		resp.Body = data
 		return resp
 	})
 

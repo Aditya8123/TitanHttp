@@ -2,9 +2,9 @@ package http
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"strconv"
+	"sync"
 )
 
 // StatusCode represents an HTTP response status code
@@ -12,8 +12,9 @@ type StatusCode int
 
 const (
 	// 2xx Success
-	StatusOK      StatusCode = 200
-	StatusCreated StatusCode = 201
+	StatusOK             StatusCode = 200
+	StatusCreated        StatusCode = 201
+	StatusPartialContent StatusCode = 206
 
 	// 4xx Client Errors
 	StatusBadRequest       StatusCode = 400
@@ -21,10 +22,12 @@ const (
 	StatusForbidden        StatusCode = 403
 	StatusNotFound         StatusCode = 404
 	StatusMethodNotAllowed StatusCode = 405
+	StatusURITooLong       StatusCode = 414
 	StatusTooManyRequests  StatusCode = 429
 
 	// 5xx Server Errors
 	StatusInternalServerError StatusCode = 500
+	StatusNotImplemented      StatusCode = 501
 )
 
 // Response represents an HTTP response to be sent to a client.
@@ -49,24 +52,52 @@ type Response struct {
 	Stream io.Reader
 }
 
-// NewResponse creates a new Response with initialized maps and a default HTTP/1.1 version.
-func NewResponse() *Response {
-	return &Response{
-		Version: "HTTP/1.1",
-		Headers: make(map[string]string),
+var responsePool = sync.Pool{
+	New: func() interface{} {
+		return &Response{
+			Version: "HTTP/1.1",
+			Headers: make(map[string]string),
+		}
+	},
+}
+
+// AcquireResponse fetches a clean Response object from the pool.
+func AcquireResponse() *Response {
+	resp := responsePool.Get().(*Response)
+	resp.Version = "HTTP/1.1"
+	return resp
+}
+
+// ReleaseResponse cleans up the Response object and returns it to the pool.
+func ReleaseResponse(resp *Response) {
+	resp.StatusCode = 0
+	resp.StatusText = ""
+	resp.Body = nil
+	resp.Stream = nil
+	for k := range resp.Headers {
+		delete(resp.Headers, k)
 	}
+	responsePool.Put(resp)
+}
+
+// NewResponse creates a new Response (deprecated for internal routing, use AcquireResponse).
+func NewResponse() *Response {
+	return AcquireResponse()
 }
 
 var statusText = map[StatusCode]string{
 	StatusOK:                  "OK",
 	StatusCreated:             "Created",
+	StatusPartialContent:      "Partial Content",
 	StatusBadRequest:          "Bad Request",
 	StatusUnauthorized:        "Unauthorized",
 	StatusForbidden:           "Forbidden",
 	StatusNotFound:            "Not Found",
 	StatusMethodNotAllowed:    "Method Not Allowed",
+	StatusURITooLong:          "URI Too Long",
 	StatusTooManyRequests:     "Too Many Requests",
 	StatusInternalServerError: "Internal Server Error",
+	StatusNotImplemented:      "Not Implemented",
 }
 
 // StatusText returns a text for the HTTP status code. It returns the empty
@@ -100,32 +131,53 @@ func (r *Response) WriteTo(w io.Writer) (int64, error) {
 	}
 
 	var headerBuf bytes.Buffer
-	// Status-Line
-	headerBuf.WriteString(fmt.Sprintf("%s %d %s\r\n", r.Version, r.StatusCode, text))
+	// Status-Line: HTTP/1.1 200 OK\r\n
+	headerBuf.WriteString(r.Version)
+	headerBuf.WriteByte(' ')
+	headerBuf.WriteString(strconv.Itoa(int(r.StatusCode)))
+	headerBuf.WriteByte(' ')
+	headerBuf.WriteString(text)
+	headerBuf.WriteString("\r\n")
 
 	// Headers
 	for k, v := range r.Headers {
-		headerBuf.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
+		headerBuf.WriteString(k)
+		headerBuf.WriteString(": ")
+		headerBuf.WriteString(v)
+		headerBuf.WriteString("\r\n")
 	}
 
 	// Empty line signifying end of headers
 	headerBuf.WriteString("\r\n")
 
+	// Write headers to the wire first
 	n, err := w.Write(headerBuf.Bytes())
 	totalWritten += int64(n)
 	if err != nil {
 		return totalWritten, err
 	}
 
-	// Body payload
+	// Write the body directly to the wire, avoiding bytes.Buffer copy allocation
+	if r.Stream == nil && len(r.Body) > 0 {
+		nBody, errBody := w.Write(r.Body)
+		totalWritten += int64(nBody)
+		if errBody != nil {
+			return totalWritten, errBody
+		}
+	}
+
+	// Stream payload
 	if r.Stream != nil {
 		if isChunked {
 			buf := make([]byte, 8192)
 			for {
 				readBytes, err := r.Stream.Read(buf)
 				if readBytes > 0 {
-					chunkHeader := fmt.Sprintf("%x\r\n", readBytes)
-					n, wErr := w.Write([]byte(chunkHeader))
+					// chunkHeader
+					headerBuf.Reset()
+					headerBuf.WriteString(strconv.FormatInt(int64(readBytes), 16))
+					headerBuf.WriteString("\r\n")
+					n, wErr := w.Write(headerBuf.Bytes())
 					totalWritten += int64(n)
 					if wErr != nil {
 						return totalWritten, wErr
@@ -157,22 +209,16 @@ func (r *Response) WriteTo(w io.Writer) (int64, error) {
 				return totalWritten, wErr
 			}
 		} else {
-			written, err := io.Copy(w, r.Stream)
-			totalWritten += written
-			if err != nil {
-				return totalWritten, err
+			n2, err2 := io.Copy(w, r.Stream)
+			totalWritten += n2
+			if err2 != nil {
+				return totalWritten, err2
 			}
 		}
-		
+
 		// If Stream is an io.Closer (like os.File), close it
 		if closer, ok := r.Stream.(io.Closer); ok {
 			closer.Close()
-		}
-	} else if len(r.Body) > 0 {
-		n, err := w.Write(r.Body)
-		totalWritten += int64(n)
-		if err != nil {
-			return totalWritten, err
 		}
 	}
 
@@ -253,7 +299,23 @@ func NewResponse503() *Response {
 // NewResponse429 returns a pre-configured 429 Too Many Requests response.
 func NewResponse429() *Response {
 	resp := NewResponse()
-	resp.StatusCode = 429
-	resp.StatusText = "Too Many Requests"
+	resp.StatusCode = StatusTooManyRequests
+	resp.Body = []byte("429 Too Many Requests\n")
+	return resp
+}
+
+// NewResponse414 generates a standard 414 URI Too Long response.
+func NewResponse414() *Response {
+	resp := NewResponse()
+	resp.StatusCode = StatusURITooLong
+	resp.Body = []byte("414 URI Too Long\n")
+	return resp
+}
+
+// NewResponse501 generates a standard 501 Not Implemented response.
+func NewResponse501() *Response {
+	resp := NewResponse()
+	resp.StatusCode = StatusNotImplemented
+	resp.Body = []byte("501 Not Implemented\n")
 	return resp
 }

@@ -68,7 +68,7 @@ func TestGzipMiddleware(t *testing.T) {
 				Headers: make(map[string]string),
 			}
 			if tt.acceptEncoding != "" {
-				req.Headers["Accept-Encoding"] = tt.acceptEncoding
+				req.Headers["accept-encoding"] = tt.acceptEncoding
 			}
 
 			// Execute
