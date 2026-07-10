@@ -62,9 +62,10 @@ func TestCacheMiddleware_Validation(t *testing.T) {
 		resp := http.NewResponse200()
 		resp.Body = []byte("Validated")
 		
-		if req.Path == "/no-store" {
+		switch req.Path {
+		case "/no-store":
 			resp.Headers["cache-control"] = "no-store"
-		} else if req.Path == "/max-age" {
+		case "/max-age":
 			resp.Headers["cache-control"] = "max-age=60"
 		}
 		

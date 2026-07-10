@@ -13,15 +13,19 @@ type Metrics struct {
 	panicCount    atomic.Int32
 }
 
-// RequestStarted should be called when a new connection begins processing.
-func (m *Metrics) RequestStarted() {
-	m.totalRequests.Add(1)
+// ConnectionOpened should be called when a new connection begins processing.
+func (m *Metrics) ConnectionOpened() {
 	m.activeConns.Add(1)
 }
 
-// RequestFinished should be called when a connection completes, providing the bytes processed.
-func (m *Metrics) RequestFinished(bytes int64) {
+// ConnectionClosed should be called when a connection completes.
+func (m *Metrics) ConnectionClosed() {
 	m.activeConns.Add(-1)
+}
+
+// RequestServed should be called when an HTTP request completes, providing the bytes processed.
+func (m *Metrics) RequestServed(bytes int64) {
+	m.totalRequests.Add(1)
 	m.totalBytes.Add(bytes)
 }
 

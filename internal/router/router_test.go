@@ -39,7 +39,7 @@ func TestRouter_MethodAndParamRouting(t *testing.T) {
 	})
 
 	// Test 1: Hit existing GET route
-	reqGet := &http.Request{Method: http.MethodGet, Path: "/hello"}
+	reqGet := &http.Request{Method: http.MethodGet, Path: "/hello", Params: make(map[string]string)}
 	resp1 := r.ServeHTTP(reqGet)
 	if resp1.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200 for GET /hello, got %d", resp1.StatusCode)
@@ -49,21 +49,21 @@ func TestRouter_MethodAndParamRouting(t *testing.T) {
 	}
 
 	// Test 2: Hit existing POST route
-	reqPost := &http.Request{Method: http.MethodPost, Path: "/hello"}
+	reqPost := &http.Request{Method: http.MethodPost, Path: "/hello", Params: make(map[string]string)}
 	resp2 := r.ServeHTTP(reqPost)
 	if resp2.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200 for POST /hello, got %d", resp2.StatusCode)
 	}
 
 	// Test 3: Hit existing path with unregistered method (should 405)
-	reqPut := &http.Request{Method: http.MethodPut, Path: "/hello"}
+	reqPut := &http.Request{Method: http.MethodPut, Path: "/hello", Params: make(map[string]string)}
 	resp3 := r.ServeHTTP(reqPut)
 	if resp3.StatusCode != http.StatusMethodNotAllowed {
 		t.Errorf("Expected status 405 for PUT /hello, got %d", resp3.StatusCode)
 	}
 
 	// Test 4: Hit non-existent path (should 404)
-	reqMissing := &http.Request{Method: http.MethodGet, Path: "/missing"}
+	reqMissing := &http.Request{Method: http.MethodGet, Path: "/missing", Params: make(map[string]string)}
 	resp4 := r.ServeHTTP(reqMissing)
 	if resp4.StatusCode != http.StatusNotFound {
 		t.Errorf("Expected status 404 for /missing, got %d", resp4.StatusCode)
@@ -104,4 +104,65 @@ func TestRouter_MethodAndParamRouting(t *testing.T) {
 	if !reflect.DeepEqual(reqWild.Params, expectedWildParams) {
 		t.Errorf("Wildcard params not injected correctly. Got %v, want %v", reqWild.Params, expectedWildParams)
 	}
+}
+
+// --- Benchmarks ---
+
+func setupBenchmarkRouter() *Router {
+	r := NewRouter()
+	r.Get("/hello", func(req *http.Request) *http.Response { return nil })
+	r.Get("/users/:id", func(req *http.Request) *http.Response { return nil })
+	r.Get("/static/*filepath", func(req *http.Request) *http.Response { return nil })
+	return r
+}
+
+func BenchmarkRouterStatic(b *testing.B) {
+	r := setupBenchmarkRouter()
+	req := &http.Request{Method: http.MethodGet, Path: "/hello", Params: make(map[string]string)}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = r.ServeHTTP(req)
+	}
+}
+
+func BenchmarkRouterParams(b *testing.B) {
+	r := setupBenchmarkRouter()
+	req := &http.Request{Method: http.MethodGet, Path: "/users/12345", Params: make(map[string]string)}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = r.ServeHTTP(req)
+	}
+}
+
+func BenchmarkRouterWildcard(b *testing.B) {
+	r := setupBenchmarkRouter()
+	req := &http.Request{Method: http.MethodGet, Path: "/static/css/main.css", Params: make(map[string]string)}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = r.ServeHTTP(req)
+	}
+}
+
+func BenchmarkRouter_Parallel(b *testing.B) {
+	r := setupBenchmarkRouter()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			// create a new req per goroutine to avoid map races
+			localReq := &http.Request{Method: http.MethodGet, Path: "/users/999", Params: make(map[string]string)}
+			_ = r.ServeHTTP(localReq)
+		}
+	})
 }

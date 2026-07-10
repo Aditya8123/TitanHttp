@@ -47,3 +47,51 @@ func TestMemoryCache_Expiration(t *testing.T) {
 		t.Error("Expected cache miss for immediately expired item")
 	}
 }
+
+// --- Benchmarks ---
+
+func BenchmarkCache_Hit(b *testing.B) {
+	c := NewMemoryCache()
+	resp := http.NewResponse200()
+	c.Set("/popular", resp, 0)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = c.Get("/popular")
+	}
+}
+
+func BenchmarkCache_Miss(b *testing.B) {
+	c := NewMemoryCache()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = c.Get("/missing")
+	}
+}
+
+func BenchmarkCache_Parallel(b *testing.B) {
+	c := NewMemoryCache()
+	resp := http.NewResponse200()
+	// Create 100 popular routes to test shard distribution
+	keys := make([]string, 100)
+	for i := 0; i < 100; i++ {
+		keys[i] = "/popular/" + string(rune('a'+i%26))
+		c.Set(keys[i], resp, 0)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	b.RunParallel(func(pb *testing.PB) {
+		i := 0
+		for pb.Next() {
+			_, _ = c.Get(keys[i%100])
+			i++
+		}
+	})
+}

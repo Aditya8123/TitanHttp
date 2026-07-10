@@ -339,24 +339,65 @@
 
 ---
 
-## Task 8.2 — Optimization
+## Task 8.2 — Benchmark Infrastructure & Storage
 
 ### Subtasks
 
-* Reduce allocations
-* Improve parser
-* Optimize routing
+* Directory structure
+* Makefile automation
+* Result persistence
 
 ---
 
-## Task 8.3 — Benchmarking
+## Task 8.3 — Core Component Benchmarks
 
 ### Subtasks
 
 * Micro benchmarks
+* Memory & Allocations
+* Concurrency & Lock contention
+
+---
+
+## Task 8.4 — Advanced Load & Stress Testing
+
+### Subtasks
+
+* Latency & Throughput testing
 * Stress testing
-* Load testing
-* Comparative benchmarks
+* Soak testing
+
+---
+
+## Task 8.5 — Profiling & Regression
+
+### Subtasks
+
+* Automated profile collection
+* Regression tracking (benchstat)
+
+---
+
+## Task 8.6 — Comprehensive Benchmarking & Optimization
+
+### Subtasks
+
+* Reduce allocations & optimize routing
+* Advanced edge cases (large payload, slow client)
+* Final optimizations (worker pooling, I/O)
+* Comprehensive Benchmark Suite (JSON, Middleware, Scalability, Framework comparisons)
+* Export visual pprof graphs (PDF)
+
+---
+
+## Task 8.7 — Benchmark Analysis & Extraction
+
+### Subtasks
+
+* Analyze benchmarks for faults and OS limits
+* Verify telemetry data and metric accuracy
+* Extract baseline stats for Showcase Platform
+* Prepare presentation data
 
 ---
 

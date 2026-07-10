@@ -42,3 +42,11 @@ coverage.html
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ── Benchmarking ─────────────────────────────────────────────
+/benchmarks/data/
+/benchmarks/logs/
+/benchmarks/reports/
+/benchmarks/profiles/
+*.prof
+*.bench

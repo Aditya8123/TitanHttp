@@ -2,6 +2,7 @@ package http
 
 import (
 	"bufio"
+	"bytes"
 	"io"
 	"strconv"
 	"strings"
@@ -16,74 +17,116 @@ func ParseRequest(reader *bufio.Reader) (*Request, error) {
 	// 1. Parse the request line
 	err := parseRequestLine(reader, req)
 	if err != nil {
+		ReleaseRequest(req)
 		return nil, err
 	}
 
 	// 2. Parse headers
 	err = parseHeaders(reader, req.Headers)
 	if err != nil {
+		ReleaseRequest(req)
 		return nil, err
 	}
 
+	// If Expect: 100-continue is set, we defer body parsing to the server layer
+	// which will send a 100 Continue response before proceeding.
+	if req.Headers["expect"] == "100-continue" {
+		return req, nil
+	}
+
 	// 3. Parse body
-	err = parseBody(reader, req)
+	err = ParseBody(reader, req)
 	if err != nil {
+		ReleaseRequest(req)
 		return nil, err
 	}
 
 	return req, nil
 }
 
-// parseRequestLine reads the first line and extracts Method, Path, and Version.
 func parseRequestLine(reader *bufio.Reader, req *Request) error {
-	line, err := reader.ReadString('\n')
+	line, err := reader.ReadSlice('\n')
 	if err != nil {
+		if err == bufio.ErrBufferFull {
+			return ErrURITooLong
+		}
 		return err
 	}
 
 	// HTTP lines must end with CRLF (\r\n)
-	if !strings.HasSuffix(line, "\r\n") {
+	if len(line) < 2 || line[len(line)-2] != '\r' || line[len(line)-1] != '\n' {
 		return ErrMalformedRequest
 	}
 
 	// Strip the CRLF
 	line = line[:len(line)-2]
 
-	// Split by space. Request-Line = Method SP Request-URI SP HTTP-Version CRLF
-	parts := strings.Split(line, " ")
-	if len(parts) != 3 {
+	// Request-Line = Method SP Request-URI SP HTTP-Version CRLF
+	idx1 := bytes.IndexByte(line, ' ')
+	if idx1 == -1 {
 		return ErrMalformedRequest
 	}
-
-	req.Method = Method(parts[0])
-	req.Path = parts[1]
-	req.Version = parts[2]
-
-	// Basic validation
-	if req.Method == "" {
+	methodBytes := line[:idx1]
+	if bytes.Equal(methodBytes, []byte("GET")) {
+		req.Method = MethodGet
+	} else if bytes.Equal(methodBytes, []byte("POST")) {
+		req.Method = MethodPost
+	} else if bytes.Equal(methodBytes, []byte("PUT")) {
+		req.Method = MethodPut
+	} else if bytes.Equal(methodBytes, []byte("DELETE")) {
+		req.Method = MethodDelete
+	} else if bytes.Equal(methodBytes, []byte("OPTIONS")) {
+		req.Method = MethodOptions
+	} else if bytes.Equal(methodBytes, []byte("HEAD")) {
+		req.Method = MethodHead
+	} else if bytes.Equal(methodBytes, []byte("PATCH")) {
+		req.Method = MethodPatch
+	} else {
 		return ErrInvalidMethod
 	}
 
-	if req.Path == "" || !strings.HasPrefix(req.Path, "/") {
-		return ErrInvalidURI
+	idx2 := bytes.IndexByte(line[idx1+1:], ' ')
+	if idx2 == -1 {
+		return ErrMalformedRequest
+	}
+	idx2 += idx1 + 1
+
+	req.Path = string(line[idx1+1 : idx2])
+
+	versionBytes := line[idx2+1:]
+	if bytes.Equal(versionBytes, []byte("HTTP/1.1")) {
+		req.Version = "HTTP/1.1"
+	} else if bytes.Equal(versionBytes, []byte("HTTP/1.0")) {
+		req.Version = "HTTP/1.0"
+	} else {
+		return ErrInvalidVersion
 	}
 
-	if !strings.HasPrefix(req.Version, "HTTP/") {
-		return ErrInvalidVersion
+	// Basic validation
+	if req.Path == "" || !strings.HasPrefix(req.Path, "/") {
+		return ErrInvalidURI
 	}
 
 	return nil
 }
 
-// parseHeaders reads the headers and adds them to the provided headers map.
+const MaxHeadersCount = 100
+
 func parseHeaders(reader *bufio.Reader, headers map[string]string) error {
+	var hasChunked bool
+	headerCount := 0
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := reader.ReadSlice('\n')
 		if err != nil {
 			return err
 		}
 
-		if !strings.HasSuffix(line, "\r\n") {
+		headerCount++
+		if headerCount > MaxHeadersCount {
+			return ErrMalformedHeader // Or a specific ErrTooManyHeaders
+		}
+
+		if len(line) < 2 || line[len(line)-2] != '\r' || line[len(line)-1] != '\n' {
 			return ErrMalformedHeader
 		}
 
@@ -91,31 +134,77 @@ func parseHeaders(reader *bufio.Reader, headers map[string]string) error {
 		line = line[:len(line)-2]
 
 		// An empty line signifies the end of headers
-		if line == "" {
+		if len(line) == 0 {
 			break
 		}
 
-		// Split by the first colon
-		parts := strings.SplitN(line, ":", 2)
-		if len(parts) != 2 {
+		idx := bytes.IndexByte(line, ':')
+		if idx == -1 {
 			return ErrMalformedHeader
 		}
 
-		key := strings.ToLower(strings.TrimSpace(parts[0]))
-		value := strings.TrimSpace(parts[1])
+		keyBytes := bytes.TrimSpace(line[:idx])
+		// Lowercase the key in-place to avoid strings.ToLower allocations
+		for i := 0; i < len(keyBytes); i++ {
+			if keyBytes[i] >= 'A' && keyBytes[i] <= 'Z' {
+				keyBytes[i] += 'a' - 'A'
+			}
+		}
 
-		if key == "" {
+		if len(keyBytes) == 0 {
 			return ErrMalformedHeader
 		}
 
-		headers[key] = value
+		valueBytes := bytes.TrimSpace(line[idx+1:])
+		
+		var keyStr string
+		switch {
+		case bytes.Equal(keyBytes, []byte("host")):
+			keyStr = "host"
+		case bytes.Equal(keyBytes, []byte("user-agent")):
+			keyStr = "user-agent"
+		case bytes.Equal(keyBytes, []byte("accept")):
+			keyStr = "accept"
+		case bytes.Equal(keyBytes, []byte("connection")):
+			keyStr = "connection"
+		case bytes.Equal(keyBytes, []byte("content-length")):
+			keyStr = "content-length"
+			if _, exists := headers[keyStr]; exists {
+				return ErrDuplicateHeader
+			}
+		case bytes.Equal(keyBytes, []byte("content-type")):
+			keyStr = "content-type"
+		case bytes.Equal(keyBytes, []byte("accept-encoding")):
+			keyStr = "accept-encoding"
+		case bytes.Equal(keyBytes, []byte("authorization")):
+			keyStr = "authorization"
+		case bytes.Equal(keyBytes, []byte("transfer-encoding")):
+			keyStr = "transfer-encoding"
+			if bytes.Contains(bytes.ToLower(valueBytes), []byte("chunked")) {
+				hasChunked = true
+			}
+		default:
+			keyStr = string(keyBytes)
+		}
+
+		headers[keyStr] = string(valueBytes)
+	}
+
+	if _, hasCL := headers["content-length"]; hasCL {
+		if _, hasTE := headers["transfer-encoding"]; hasTE {
+			return ErrConflictingHeaders
+		}
+	}
+
+	if hasChunked {
+		return ErrNotImplemented
 	}
 
 	return nil
 }
 
-// parseBody reads the request body based on Content-Length.
-func parseBody(reader *bufio.Reader, req *Request) error {
+// ParseBody reads the request body based on Content-Length.
+func ParseBody(reader *bufio.Reader, req *Request) error {
 	contentLengthStr, ok := req.Headers["content-length"]
 	if !ok {
 		// No body to parse
@@ -153,12 +242,14 @@ func ParseResponse(reader *bufio.Reader) (*Response, error) {
 	// 1. Parse the status line
 	err := parseStatusLine(reader, resp)
 	if err != nil {
+		ReleaseResponse(resp)
 		return nil, err
 	}
 
 	// 2. Parse headers
 	err = parseHeaders(reader, resp.Headers)
 	if err != nil {
+		ReleaseResponse(resp)
 		return nil, err
 	}
 
@@ -169,38 +260,42 @@ func ParseResponse(reader *bufio.Reader) (*Response, error) {
 	return resp, nil
 }
 
-// parseStatusLine reads the first line and extracts Version, StatusCode, and StatusText.
 func parseStatusLine(reader *bufio.Reader, resp *Response) error {
-	line, err := reader.ReadString('\n')
+	line, err := reader.ReadSlice('\n')
 	if err != nil {
 		return err
 	}
 
 	// HTTP lines must end with CRLF (\r\n)
-	if !strings.HasSuffix(line, "\r\n") {
+	if len(line) < 2 || line[len(line)-2] != '\r' || line[len(line)-1] != '\n' {
 		return ErrMalformedRequest // We can reuse this or define ErrMalformedResponse
 	}
 
 	// Strip the CRLF
 	line = line[:len(line)-2]
 
-	// Split by space. Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
-	parts := strings.SplitN(line, " ", 3)
-	if len(parts) < 2 {
+	// Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+	idx1 := bytes.IndexByte(line, ' ')
+	if idx1 == -1 {
 		return ErrMalformedRequest
 	}
+	resp.Version = string(line[:idx1])
 
-	resp.Version = parts[0]
-	
-	code, err := strconv.Atoi(parts[1])
+	idx2 := bytes.IndexByte(line[idx1+1:], ' ')
+	var codeStr string
+	if idx2 == -1 {
+		codeStr = string(line[idx1+1:])
+	} else {
+		idx2 += idx1 + 1
+		codeStr = string(line[idx1+1 : idx2])
+		resp.StatusText = string(line[idx2+1:])
+	}
+
+	code, err := strconv.Atoi(codeStr)
 	if err != nil {
 		return ErrMalformedRequest
 	}
 	resp.StatusCode = StatusCode(code)
-
-	if len(parts) == 3 {
-		resp.StatusText = parts[2]
-	}
 
 	if !strings.HasPrefix(resp.Version, "HTTP/") {
 		return ErrInvalidVersion

@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"io"
 	"strings"
+	"sync"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
 	"github.com/Aditya8123/TitanHttp/internal/router"
@@ -24,6 +25,12 @@ var CompressibleTypes = map[string]bool{
 	"text/css; charset=utf-8":   true,
 }
 
+var gzipWriterPool = sync.Pool{
+	New: func() interface{} {
+		return gzip.NewWriter(nil)
+	},
+}
+
 // Gzip is a middleware that dynamically compresses the response payload
 // using gzip if the client supports it and the content type is compressible.
 func Gzip(next router.Handler) router.Handler {
@@ -31,7 +38,7 @@ func Gzip(next router.Handler) router.Handler {
 		resp := next(req)
 
 		// 1. Negotiation: Check if client accepts gzip
-		acceptEncoding := req.Headers["Accept-Encoding"]
+		acceptEncoding := req.Headers["accept-encoding"]
 		if !strings.Contains(acceptEncoding, "gzip") {
 			return resp
 		}
@@ -56,9 +63,11 @@ func Gzip(next router.Handler) router.Handler {
 		resp.Headers["Content-Encoding"] = "gzip"
 		delete(resp.Headers, "Content-Length")
 
-		// 4. Wrap the response in an io.Pipe and gzip.Writer
+		// 4. Wrap the response in an io.Pipe and pooled gzip.Writer
 		pr, pw := io.Pipe()
-		gw := gzip.NewWriter(pw)
+		
+		gw := gzipWriterPool.Get().(*gzip.Writer)
+		gw.Reset(pw)
 
 		// Capture original body and stream to prevent data races
 		origStream := resp.Stream
@@ -71,7 +80,10 @@ func Gzip(next router.Handler) router.Handler {
 		// Spawn a background goroutine to stream compressed data to the pipe
 		go func() {
 			defer pw.Close()
-			defer gw.Close()
+			defer func() {
+				gw.Close()
+				gzipWriterPool.Put(gw)
+			}()
 
 			if origStream != nil {
 				io.Copy(gw, origStream)

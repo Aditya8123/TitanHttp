@@ -47,3 +47,31 @@ func TestResponseHelpers(t *testing.T) {
 		t.Errorf("Expected 500 status, got %d", resp500.StatusCode)
 	}
 }
+
+// --- Benchmarks ---
+
+type devNullWriter struct{}
+
+func (w devNullWriter) Write(p []byte) (n int, err error) {
+	return len(p), nil
+}
+
+func BenchmarkResponseWriteTo_LargePayload(b *testing.B) {
+	payload := make([]byte, 1024*1024) // 1MB payload
+	for i := range payload {
+		payload[i] = 'a'
+	}
+
+	resp := NewResponse()
+	resp.StatusCode = StatusOK
+	resp.Headers["Content-Type"] = "text/plain"
+	resp.Body = payload
+
+	writer := devNullWriter{}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = resp.WriteTo(writer)
+	}
+}

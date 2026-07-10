@@ -66,17 +66,19 @@ func (r *Router) ServeHTTP(req *http.Request) *http.Response {
 
 // serveHTTP is the core routing logic that matches paths and extracts parameters.
 func (r *Router) serveHTTP(req *http.Request) *http.Response {
+	if req.Params == nil {
+		req.Params = make(map[string]string)
+	}
+
 	r.mu.RLock()
 	tree, methodExists := r.trees[req.Method]
 	var handler Handler
-	var params map[string]string
 	if methodExists {
-		handler, params = tree.search(req.Path)
+		handler = tree.search(req.Path, req.Params)
 	}
 	r.mu.RUnlock()
 
 	if handler != nil {
-		req.Params = params
 		return handler(req)
 	}
 
@@ -84,7 +86,7 @@ func (r *Router) serveHTTP(req *http.Request) *http.Response {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	for _, mTree := range r.trees {
-		handler, _ := mTree.search(req.Path)
+		handler := mTree.search(req.Path, req.Params)
 		if handler != nil {
 			return http.NewResponse405()
 		}

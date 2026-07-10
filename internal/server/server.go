@@ -13,37 +13,48 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 	"sync"
 	"time"
+	"runtime"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
 	"github.com/Aditya8123/TitanHttp/internal/router"
 )
 
 const (
-	MaxRequestsPerConn = 100
-	IdleTimeout        = 5 * time.Second
+	DefaultIdleTimeout = 30 * time.Second
 )
 
+var readerPool = sync.Pool{
+	New: func() interface{} {
+		return bufio.NewReaderSize(nil, 4096)
+	},
+}
+
 type Server struct {
-	addr       string
-	mu         sync.Mutex // Protects listener
-	listener   net.Listener
-	router     *router.Router
-	workerPool *WorkerPool
-	metrics    *Metrics
-	done       chan struct{}
+	addr         string
+	mu           sync.Mutex // Protects listener
+	listener     net.Listener
+	router       *router.Router
+	metrics      *Metrics
+	done         chan struct{}
+	activeConnWg sync.WaitGroup
+	IdleTimeout  time.Duration
+	MaxWorkers   int
+	workerQueue  chan net.Conn
 }
 
 func NewServer(addr string) *Server {
 	s := &Server{
-		addr:    addr,
-		router:  router.NewRouter(),
-		metrics: &Metrics{},
-		done:    make(chan struct{}),
+		addr:        addr,
+		router:      router.NewRouter(),
+		metrics:     &Metrics{},
+		done:        make(chan struct{}),
+		IdleTimeout: DefaultIdleTimeout,
+		MaxWorkers:  10000,
+		workerQueue: make(chan net.Conn, 10000),
 	}
-	// Initialize the worker pool with 100 workers and a queue size of 1024
-	s.workerPool = NewWorkerPool(100, 1024, s.handleConnection)
 	return s
 }
 
@@ -74,6 +85,8 @@ func (s *Server) Start() error {
 	s.listener = l
 	s.mu.Unlock()
 
+	s.startWorkerPool()
+
 	return s.serve()
 }
 
@@ -86,7 +99,7 @@ func (s *Server) StartTLS(certFile, keyFile string) error {
 
 	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
-		NextProtos:   []string{"h2", "http/1.1"},
+		NextProtos:   []string{"http/1.1"},
 	}
 
 	l, err := net.Listen("tcp", s.addr)
@@ -100,16 +113,14 @@ func (s *Server) StartTLS(certFile, keyFile string) error {
 	s.listener = tlsListener
 	s.mu.Unlock()
 
+	s.startWorkerPool()
+
 	return s.serve()
 }
 
-// serve contains the core connection acceptance loop.
 func (s *Server) serve() error {
 	fmt.Printf("TitanHTTP Server successfully started.\n")
 	fmt.Printf("Listening on %s...\n", s.Addr())
-
-	// Start the worker pool before accepting connections
-	s.workerPool.Start()
 
 	// Start the background metrics reporter
 	go func() {
@@ -125,46 +136,74 @@ func (s *Server) serve() error {
 		}
 	}()
 
-	// The main connection accept loop.
-	// This blocks waiting for new connections.
-	for {
-		s.mu.Lock()
-		l := s.listener
-		s.mu.Unlock()
-		
-		if l == nil {
-			return nil
-		}
+	s.mu.Lock()
+	l := s.listener
+	s.mu.Unlock()
 
-		conn, err := l.Accept()
-		if err != nil {
-			select {
-			case <-s.done:
-				return nil // server is shutting down
-			default:
-				if errors.Is(err, net.ErrClosed) {
-					return nil // Listener closed during shutdown
+	if l == nil {
+		return nil
+	}
+
+	// The main connection accept loop (Multi-Acceptor Model).
+	// We spawn multiple goroutines to call Accept() concurrently.
+	// This drastically increases the rate at which we drain the OS TCP Backlog,
+	// preventing "target machine actively refused it" errors during C10K bursts.
+	acceptors := 4 // Optimal for generic multi-core systems without excessive contention
+	
+	for i := 0; i < acceptors; i++ {
+		go func() {
+			for {
+				conn, err := l.Accept()
+				if err != nil {
+					select {
+					case <-s.done:
+						return // server is shutting down
+					default:
+						if errors.Is(err, net.ErrClosed) {
+							return // Listener closed during shutdown
+						}
+						// Silently ignore accept errors during burst shutdown
+						if !strings.Contains(err.Error(), "use of closed network connection") {
+							fmt.Printf("Error accepting connection: %v\n", err)
+						}
+						continue
+					}
 				}
-				fmt.Printf("Error accepting connection: %v\n", err)
-				continue
-			}
-		}
 
-		// Submit the connection to the worker pool instead of spawning a new goroutine
-		s.workerPool.Submit(conn)
+				// Increment active connections before dispatching to prevent shutdown races
+				s.activeConnWg.Add(1)
+
+				// Dispatch to the worker pool. If the pool is full, this will block,
+				// applying backpressure to the TCP accept loop to prevent memory explosion.
+				s.workerQueue <- conn
+			}
+		}()
+	}
+
+	// Block the main thread until shutdown is triggered
+	<-s.done
+	return nil
+}
+
+func (s *Server) startWorkerPool() {
+	for i := 0; i < s.MaxWorkers; i++ {
+		go func() {
+			for conn := range s.workerQueue {
+				s.handleConnection(conn)
+			}
+		}()
 	}
 }
 
-// handleConnection processes an individual client connection.
 func (s *Server) handleConnection(conn net.Conn) {
 	// Defers are executed when the surrounding function returns (LIFO order).
-	// We close the connection last.
+	// We close the connection last, and signal the WaitGroup.
+	defer s.activeConnWg.Done()
 	defer conn.Close()
 
-	var totalConnBytes int64
-	s.metrics.RequestStarted()
+	s.metrics.ConnectionOpened()
 	defer func() {
-		s.metrics.RequestFinished(totalConnBytes)
+		s.metrics.ConnectionClosed()
 	}()
 
 	// Recover from panics to isolate connection failures and prevent server crashes.
@@ -172,9 +211,17 @@ func (s *Server) handleConnection(conn net.Conn) {
 		if r := recover(); r != nil {
 			s.metrics.PanicRecovered()
 			fmt.Printf("Critical: Connection panic recovered: %v\n", r)
+			importDebug := "runtime/debug" // to ensure we can print
+			_ = importDebug
+			// Print stack trace directly instead of importing
+			fmt.Printf("Stack trace:\n%s\n", string(func() []byte {
+				buf := make([]byte, 10240)
+				n := runtime.Stack(buf, false)
+				return buf[:n]
+			}()))
 			resp := http.NewResponse500()
 			n, _ := resp.WriteTo(conn)
-			totalConnBytes += n
+			s.metrics.RequestServed(n)
 		}
 	}()
 
@@ -192,41 +239,81 @@ func (s *Server) handleConnection(conn net.Conn) {
 		}
 	}
 
-	reader := bufio.NewReader(conn)
+	r := readerPool.Get().(*bufio.Reader)
+	r.Reset(conn)
+	defer readerPool.Put(r)
+
 	requestsServed := 0
 
 	// Connection loop: continuously read from the socket until EOF or error.
 	for {
-		// Set a timeout for reading to prevent hanging connections.
-		err := conn.SetReadDeadline(time.Now().Add(IdleTimeout))
-		if err != nil {
-			fmt.Printf("Failed to set read deadline: %v\n", err)
-			return
+		// Set an idle timeout while waiting for the client to send the next request.
+		if s.IdleTimeout > 0 {
+			err := conn.SetReadDeadline(time.Now().Add(s.IdleTimeout))
+			if err != nil {
+				fmt.Printf("Failed to set read deadline: %v\n", err)
+				return
+			}
 		}
 
-		req, err := http.ParseRequest(reader)
+		req, err := http.ParseRequest(r)
+		
+		// Clear the read deadline while processing the request so long handlers aren't killed
+		if s.IdleTimeout > 0 {
+			conn.SetReadDeadline(time.Time{})
+		}
 		if err != nil {
 			if err == io.EOF {
 				// Silently handle normal disconnects to avoid log noise in concurrent environments.
 			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 				// Silently handle read timeouts to avoid log noise.
+			} else if strings.Contains(err.Error(), "forcibly closed") || strings.Contains(err.Error(), "connection reset") {
+				// Silently handle abrupt client disconnects (e.g., bombardier shutting down)
 			} else {
 				fmt.Printf("Error parsing request: %v\n", err)
-				// Send a 400 Bad Request on parser errors
-				resp := http.NewResponse400()
-				if _, err := resp.WriteTo(conn); err != nil {
-					fmt.Printf("Failed to write parser error response: %v\n", err)
+				// Send specific HTTP errors on parser errors
+				var resp *http.Response
+				switch {
+				case errors.Is(err, http.ErrURITooLong):
+					resp = http.NewResponse414()
+				case errors.Is(err, http.ErrNotImplemented):
+					resp = http.NewResponse501()
+				case errors.Is(err, http.ErrMethodNotAllowed):
+					resp = http.NewResponse405()
+				case errors.Is(err, http.ErrInvalidMethod):
+					resp = http.NewResponse400()
+				default:
+					resp = http.NewResponse400()
+				}
+				if _, wErr := resp.WriteTo(conn); wErr != nil {
+					fmt.Printf("Failed to write parser error response: %v\n", wErr)
 				}
 			}
 			return
 		}
 
 		// Populate network-level details on the Request
-		req.RemoteAddr = conn.RemoteAddr().String()
+		if addr := conn.RemoteAddr(); addr != nil {
+			req.RemoteAddr = addr.String()
+		} else {
+			req.RemoteAddr = "127.0.0.1:0"
+		}
+		
 		if _, isTLS := conn.(*tls.Conn); isTLS {
 			req.Scheme = "https"
 		} else {
 			req.Scheme = "http"
+		}
+
+		if req.Headers["expect"] == "100-continue" {
+			if _, wErr := conn.Write([]byte("HTTP/1.1 100 Continue\r\n\r\n")); wErr != nil {
+				return
+			}
+			if err := http.ParseBody(r, req); err != nil {
+				resp := http.NewResponse400()
+				resp.WriteTo(conn)
+				return
+			}
 		}
 
 		err = req.Validate()
@@ -243,19 +330,37 @@ func (s *Server) handleConnection(conn net.Conn) {
 		resp := s.router.ServeHTTP(req)
 
 		requestsServed++
-		wantsKeepAlive := req.WantsKeepAlive() && requestsServed < MaxRequestsPerConn
+		wantsKeepAlive := req.WantsKeepAlive()
 
 		if wantsKeepAlive {
 			resp.Headers["Connection"] = "keep-alive"
-			resp.Headers["Keep-Alive"] = fmt.Sprintf("timeout=%d, max=%d", int(IdleTimeout.Seconds()), MaxRequestsPerConn-requestsServed)
+			if s.IdleTimeout > 0 {
+				resp.Headers["Keep-Alive"] = fmt.Sprintf("timeout=%d", int(s.IdleTimeout.Seconds()))
+			}
 		} else {
 			resp.Headers["Connection"] = "close"
 		}
 
 		n, err := resp.WriteTo(conn)
-		totalConnBytes += n
+		s.metrics.RequestServed(n)
+
+		// Return pooled objects to reduce GC pressure
+		http.ReleaseRequest(req)
+		if resp != nil {
+			http.ReleaseResponse(resp)
+		}
+
 		if err != nil {
-			fmt.Printf("Error writing to connection: %v\n", err)
+			errStr := err.Error()
+			// Silently ignore normal benchmark disconnections
+			if !strings.Contains(errStr, "aborted by the software") &&
+				!strings.Contains(errStr, "forcibly closed") &&
+				!strings.Contains(errStr, "connection reset") &&
+				!strings.Contains(errStr, "broken pipe") &&
+				!strings.Contains(errStr, "closed pipe") &&
+				!strings.Contains(errStr, "use of closed") {
+				fmt.Printf("Error writing to connection: %v\n", err)
+			}
 			return
 		}
 
@@ -270,7 +375,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 func (s *Server) Shutdown(ctx context.Context) error {
 	// Signal all loops to stop
 	close(s.done)
-	
+
 	// Close listener to unblock Accept()
 	s.mu.Lock()
 	if s.listener != nil {
@@ -278,10 +383,10 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	}
 	s.mu.Unlock()
 
-	// Wait for worker pool to drain, racing against ctx.Done()
+	// Wait for active connections to drain, racing against ctx.Done()
 	stopCh := make(chan struct{})
 	go func() {
-		s.workerPool.Stop()
+		s.activeConnWg.Wait()
 		close(stopCh)
 	}()
 

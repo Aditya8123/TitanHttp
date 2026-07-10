@@ -50,13 +50,30 @@ func (n *node) insert(pattern string, handler Handler) {
 	curr.handler = handler
 }
 
-// search finds a handler for the given path, capturing any parameters along the way.
-func (n *node) search(path string) (handler Handler, params map[string]string) {
-	segments := splitPath(path)
-	params = make(map[string]string)
-
+// search finds a handler for the given path, capturing any parameters along the way into the provided params map.
+func (n *node) search(searchPath string, params map[string]string) Handler {
 	curr := n
-	for i, segment := range segments {
+
+	// Skip leading slashes
+	for len(searchPath) > 0 && searchPath[0] == '/' {
+		searchPath = searchPath[1:]
+	}
+
+	for len(searchPath) > 0 {
+		var segment string
+		idx := strings.IndexByte(searchPath, '/')
+		if idx == -1 {
+			segment = searchPath
+			searchPath = ""
+		} else {
+			segment = searchPath[:idx]
+			searchPath = searchPath[idx+1:]
+			// Skip consecutive slashes
+			for len(searchPath) > 0 && searchPath[0] == '/' {
+				searchPath = searchPath[1:]
+			}
+		}
+
 		// First try to find an exact match
 		child := curr.matchExactChild(segment)
 		if child == nil {
@@ -67,11 +84,15 @@ func (n *node) search(path string) (handler Handler, params map[string]string) {
 				child = curr.matchWildChild()
 				if child == nil {
 					// No match found
-					return nil, nil
+					return nil
 				}
-				// Wildcard matched! Consume the rest of the segments.
-				params[child.paramKey] = strings.Join(segments[i:], "/")
-				return child.handler, params
+				// Wildcard matched! Consume the rest of the path.
+				if len(searchPath) > 0 {
+					params[child.paramKey] = segment + "/" + searchPath
+				} else {
+					params[child.paramKey] = segment
+				}
+				return child.handler
 			}
 			// Capture the parameter value
 			params[child.paramKey] = segment
@@ -85,11 +106,11 @@ func (n *node) search(path string) (handler Handler, params map[string]string) {
 		wildChild := curr.matchWildChild()
 		if wildChild != nil {
 			params[wildChild.paramKey] = ""
-			return wildChild.handler, params
+			return wildChild.handler
 		}
 	}
 
-	return curr.handler, params
+	return curr.handler
 }
 
 // matchExactChild looks for a child node with the exact path segment.
