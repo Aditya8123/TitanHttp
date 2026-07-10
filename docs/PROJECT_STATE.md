@@ -9,13 +9,32 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 9 — Showcase Platform |
-| **Active Task** | Task 9.1 — Portfolio Website |
-| **Last Completed Subtask** | Prepare recruiter presentation data |
-| **Active Subtask** | Landing page |
-| **Next Subtask** | Feature showcase |
+| **Active Task** | Task 9.1 — Showcase Foundation |
+| **Last Completed Subtask** | Project Setup & Styling |
+| **Active Subtask** | Main Navigation & Chapter Routing |
+| **Next Subtask** | Landing Page Implementation |
 
 > Note: This file is a living document tracking progress.
 > Updated to reflect the completion of Phase 8 and initialization of Phase 9.
+
+---
+
+## Phase 9 — Showcase Platform
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 9.1 — Showcase Foundation | 🚧 In Progress | 1 / 3 subtasks |
+| 9.2 — Networking Chapters | ⏳ Pending | 0 / 4 subtasks |
+| 9.3 — HTTP Core Chapters | ⏳ Pending | 0 / 3 subtasks |
+| 9.4 — Production & Completion Chapters | ⏳ Pending | 0 / 3 subtasks |
+
+### Task 9.1 — Showcase Foundation
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Project Setup & Styling (Glassmorphism, Void Black) | ✅ |
+| 2 | Main Navigation & Chapter Routing | 🚧 |
+| 3 | Landing Page Implementation | ⏳ |
 
 ---
 
@@ -503,3 +522,5 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - **Rewrote the benchmark suite** to unify all testing into `compare_suite.ps1`. This suite directly compares TitanHTTP vs `net/http` across 9 parameters (Throughput, Latency percentiles, CPU, Memory, Static Files, Connections, Payload, Keep-Alive, Routing) generating live tabular metrics. Task 8.9 complete (7/7 subtasks). Phase 8 fully complete!
 - Decoupled connection telemetry from request telemetry in `internal/server/metrics.go` to correctly track metrics during HTTP Keep-Alive streaming. Added unit tests for Keep-Alive metrics. Task 8.7 Subtask 2 complete!
 - Exported JSON baseline stats from the `unified_comparison.ps1` benchmark suite and prepared the `recruiter.md` presentation document with hard performance data. Task 8.7 complete. **Phase 8 is fully complete!**
+- Restructured Phase 9 roadmap to focus entirely on a narrative-driven, 3D Showcase Platform, replacing the API Playground and Live Dashboard approaches.
+- Initialized React/Vite project for the Showcase Platform, configuring Tailwind, CSS tokens, and basic WebGL/Three.js dependencies. Task 9.1 — Project Setup & Styling is complete!
