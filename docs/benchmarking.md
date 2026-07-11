@@ -87,29 +87,29 @@ The following metrics were generated automatically by our benchmarking suite run
 Compared against popular Go frameworks (Gin, Fiber, Chi) handling a simple `/ping` route via `benchstat`:
 
 ```text
-              │             sec/op                     │
-NetHTTP-16                                      179.2n ± 16%
-Gin-16                                          239.6n ± 16%
-Chi-16                                          623.2n ±  8%
-Fiber-16                                        12.28µ ±  7%
-TitanHTTP-16                                    358.2n ±  8%
-geomean                                         651.9n
+               │             sec/op                     │
+TitanHTTP-16                                     66.51n ± 78%
+Gin-16                                           110.2n ± 66%
+NetHTTP-16                                       180.9n ± 52%
+Chi-16                                           496.3n ± 37%
+Fiber-16                                        11.254µ ± 31%
+geomean                                          374.9n
 
-              │                     B/op                      │
-NetHTTP-16                                        4.000 ± 0%
-Gin-16                                            48.00 ± 0%
-Chi-16                                            372.0 ± 0%
-Fiber-16                                        5.462Ki ± 0%
-TitanHTTP-16                                      148.0 ± 0%
-geomean                                           142.7
+               │                     B/op                      │
+TitanHTTP-16                                      4.000 ±  0%
+NetHTTP-16                                        4.000 ±  0%
+Gin-16                                            48.00 ±  0%
+Chi-16                                            372.0 ±  0%
+Fiber-16                                        5.467Ki ±  0%
+geomean                                           69.31
 
-              │                   allocs/op                   │
-NetHTTP-16                                        1.000 ± 0%
-Gin-16                                            1.000 ± 0%
-Chi-16                                            3.000 ± 0%
-Fiber-16                                          21.00 ± 0%
-TitanHTTP-16                                      3.000 ± 0%
-geomean                                           2.853
+               │                   allocs/op                   │
+TitanHTTP-16                                      1.000 ±  0%
+NetHTTP-16                                        1.000 ±  0%
+Gin-16                                            1.000 ±  0%
+Chi-16                                            3.000 ±  0%
+Fiber-16                                          21.00 ±  0%
+geomean                                           2.290
 ```
 
 ### 3. Compliance and Security

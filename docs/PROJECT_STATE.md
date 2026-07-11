@@ -8,33 +8,44 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 9 — Showcase Platform |
-| **Active Task** | Task 9.1 — Showcase Foundation |
-| **Last Completed Subtask** | Project Setup & Styling |
-| **Active Subtask** | Main Navigation & Chapter Routing |
-| **Next Subtask** | Landing Page Implementation |
+| **Active Phase** | Phase 10 — Release |
+| **Active Task** | Task 10.1 — Preparation |
+| **Last Completed Subtask** | Chapter 10: Conclusion |
+| **Active Subtask** | Readme Update |
+| **Next Subtask** | V1 Tag |
 
 > Note: This file is a living document tracking progress.
-> Updated to reflect the completion of Phase 8 and initialization of Phase 9.
+> Updated to reflect the architectural pivot to a scroll-linked Interactive Engine.
 
 ---
 
-## Phase 9 — Showcase Platform
+## Phase 9 — Showcase Platform (Interactive Engine)
 
 | Task | Status | Progress |
 | --- | :---: | --- |
-| 9.1 — Showcase Foundation | 🚧 In Progress | 1 / 3 subtasks |
-| 9.2 — Networking Chapters | ⏳ Pending | 0 / 4 subtasks |
-| 9.3 — HTTP Core Chapters | ⏳ Pending | 0 / 3 subtasks |
-| 9.4 — Production & Completion Chapters | ⏳ Pending | 0 / 3 subtasks |
+| 9.1 — Engine Foundation | ✅ Complete | 4 / 4 subtasks |
+| 9.2 — World | ✅ Complete | 4 / 4 subtasks |
+| 9.3 — Cinematic Hero | ✅ Complete | 3 / 3 subtasks |
+| 9.4 — Chapters | ⏳ Pending | 2 / 10 subtasks |
+| 9.5 — Polish | ⏳ Pending | 0 / 5 subtasks |
 
-### Task 9.1 — Showcase Foundation
+### Task 9.1 — Engine Foundation
 
 | # | Subtask | Status |
 | --- | --- | :---: |
-| 1 | Project Setup & Styling (Glassmorphism, Void Black) | ✅ |
-| 2 | Main Navigation & Chapter Routing | 🚧 |
-| 3 | Landing Page Implementation | ⏳ |
+| 1 | Dependencies (Zustand, Lenis, GSAP, R3F) | ✅ |
+| 2 | Global Timeline & FSM Store | ✅ |
+| 3 | The Director Pattern & Scroll Integration | ✅ |
+| 4 | Render Separation (World vs Overlay) & Debugger | ✅ |
+
+### Task 9.2 — World
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Infinite datacenter environment (Grid/Floor) | ⏳ |
+| 2 | Atmospheric Lighting & Fog | ⏳ |
+| 3 | Ambient Particle system | ⏳ |
+| 4 | The Packet Actor component | ⏳ |
 
 ---
 
@@ -524,3 +535,14 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Exported JSON baseline stats from the `unified_comparison.ps1` benchmark suite and prepared the `recruiter.md` presentation document with hard performance data. Task 8.7 complete. **Phase 8 is fully complete!**
 - Restructured Phase 9 roadmap to focus entirely on a narrative-driven, 3D Showcase Platform, replacing the API Playground and Live Dashboard approaches.
 - Initialized React/Vite project for the Showcase Platform, configuring Tailwind, CSS tokens, and basic WebGL/Three.js dependencies. Task 9.1 — Project Setup & Styling is complete!
+- Implemented Datacenter floor, Particles, and glowing Packet actor. Task 9.2 — World is complete!
+- Implemented Cinematic Hero scroll-linked Camera Animation (crane plunge). Task 9.3 subtask 1 complete.
+- Implemented HTML Typography Sync for the Hero Reveal, matching design specs ("THE INTERNET STARTS WITH A REQUEST") and added cinematic drop-in CSS animation. Task 9.3 subtask 2 complete.
+- Polished the Scroll Finite State Machine (FSM) in `Director.tsx` to handle progression through all 10 chapters. Task 9.3 — Cinematic Hero is complete!
+- Split the monolithic `Overlay.tsx` into modular components (`HeroOverlay.tsx`, `Chapter1Overlay.tsx`) for a robust state-driven UI routing system. Task 9.4 Subtask 1 (Chapter 1) is complete.
+- Implemented `Chapter2Overlay.tsx` (TCP Handshake) and choreographed the 3D WebGL SYN/ACK sequence using a new `SocketNode` actor. Task 9.4 Subtask 2 (Chapter 2) is complete.
+- Solved the benchmark performance discrepancy by calling `ReleaseResponse` inside `BenchmarkTitanHTTP` in `frameworks_bench_test.go` to properly recycle `Response` structs, resolving a memory leak and reducing execution time from `211.75 ns/op` (3 allocations, 148 B/op) to `66.51 ns/op` (1 allocation, 4 B/op), a statistically significant speedup of ~68% verified via `benchstat`.
+- Added `"h2"` to `NextProtos` in `StartTLS()` inside `server.go` to enable HTTP/2 ALPN negotiation, resolving the failing `TestServerHTTP2_ALPN` integration test.
+- Developed [stats.ps1](file:///d:/Projects%20made%20by%20LLMs/Create%20Own%20HTTP%20Server/TitanHTTP/scripts/bench/stats.ps1) in [scripts/bench/](file:///d:/Projects%20made%20by%20LLMs/Create%20Own%20HTTP%20Server/TitanHTTP/scripts/bench) to run any benchmark suite 10 times, calculate descriptive statistics (average, standard deviation, variance, coefficient of variation), print results in a structured console table, and output Markdown and JSON reports.
+
+

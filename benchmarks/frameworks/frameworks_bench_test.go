@@ -99,6 +99,7 @@ func BenchmarkTitanHTTP(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = r.ServeHTTP(req)
+		resp := r.ServeHTTP(req)
+		thttp.ReleaseResponse(resp)
 	}
 }

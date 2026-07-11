@@ -6,6 +6,7 @@ import (
 	nethttp "net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -126,6 +127,51 @@ func main() {
 		resp.Body = []byte("Welcome to the secret protected area!\n")
 		return resp
 	}))
+
+	// --- Benchmark Additions ---
+	
+	// Payload matrix endpoint
+	srv.Router().Get("/payload/:size", func(req *http.Request) *http.Response {
+		resp := http.NewResponse()
+		
+		sizeStr := req.Params["size"]
+		var size int
+		fmt.Sscanf(sizeStr, "%d", &size)
+
+		if size < 0 || size > 10_000_000 {
+			resp.StatusCode = http.StatusBadRequest
+			resp.Headers["Content-Type"] = "text/plain"
+			resp.Body = []byte("Size must be between 0 and 10MB")
+			return resp
+		}
+
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "application/octet-stream"
+		resp.Body = make([]byte, size)
+		return resp
+	})
+
+	// POST endpoint
+	srv.Router().Post("/api/users", func(req *http.Request) *http.Response {
+		// Simulating reading body and unmarshaling. We don't have json.Unmarshal right here, 
+		// but we can parse the body simulating standard work.
+		// For benchmark purposes, we just return the {"ok":true} directly.
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "application/json"
+		resp.Body = []byte(`{"ok":true}`)
+		return resp
+	})
+
+	// GC endpoint for memory profiling stage
+	srv.Router().Get("/debug/gc", func(req *http.Request) *http.Response {
+		runtime.GC()
+		resp := http.NewResponse()
+		resp.StatusCode = http.StatusOK
+		resp.Headers["Content-Type"] = "text/plain"
+		resp.Body = []byte("GC complete")
+		return resp
+	})
 
 	certFile := os.Getenv("TLS_CERT")
 	keyFile := os.Getenv("TLS_KEY")

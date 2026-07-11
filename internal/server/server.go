@@ -99,7 +99,7 @@ func (s *Server) StartTLS(certFile, keyFile string) error {
 
 	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
-		NextProtos:   []string{"http/1.1"},
+		NextProtos:   []string{"h2", "http/1.1"},
 	}
 
 	l, err := net.Listen("tcp", s.addr)

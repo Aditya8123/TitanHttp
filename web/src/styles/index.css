@@ -1,0 +1,91 @@
+:root {
+  /* Colors */
+  --color-void-black: #000000;
+  --color-obsidian: #0f1011;
+  --color-carbon: #090a0b;
+  --color-frosted-graphite: rgba(46, 46, 46, 0.3);
+  --color-bone: #f5f5f7;
+  --color-paper-white: #ffffff;
+  --color-steel-mid: #7d7d7d;
+  --color-network-cyan: #00d9ff;
+  --color-packet-violet: #847dff;
+
+  /* Typography */
+  --font-lambotype: 'LamboType', 'Barlow Condensed', sans-serif;
+  --font-lyon-display: 'Lyon Display', 'Playfair Display', serif;
+  --font-suisse-intl: 'Suisse Int\'l', 'Inter', sans-serif;
+  --font-jetbrains-mono: 'JetBrains Mono', monospace;
+  --font-roboto-mono: 'Roboto Mono', monospace;
+
+  /* Motion */
+  --motion-fast: 250ms;
+  --motion-base: 400ms;
+  --motion-slow: 800ms;
+  --motion-cinematic: 1600ms;
+  --ease-mechanical: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --ease-linear: linear;
+
+  /* Spacing & Layout */
+  --spacing-8: 8px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-40: 40px;
+  --spacing-80: 80px;
+  --spacing-160: 160px;
+  
+  /* Border Radius */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-glass: 16px;
+  --radius-pill: 1440px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--color-void-black);
+    color: var(--color-paper-white);
+    font-family: var(--font-suisse-intl);
+    margin: 0;
+    padding: 0;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+@keyframes dropIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-text-reveal {
+  opacity: 0;
+  animation: dropIn var(--motion-cinematic) var(--ease-mechanical) forwards;
+  animation-delay: 200ms;
+}
+
+/* Improve text contrast over bright backgrounds */
+section h2 {
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.8);
+}
+
+section p {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 4px 20px rgba(0, 0, 0, 0.7);
+  font-weight: 500;
+}
+
+section div {
+  /* Subtle shadow for the CHAPTER label and other text */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}

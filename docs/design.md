@@ -172,12 +172,11 @@ Motion is the core educational tool of TitanHTTP. Nothing simply appears; everyt
 * **No elastic easing.** (Backend engineering is deterministic, not bouncy).
 * **3D as Functional Depth:** 3D elements are used to separate layers of architecture (e.g., physical infrastructure vs. logical routing) or to demonstrate state transitions, never just for visual flair.
 
-### 3D Transitions & Animations (WebGL / Three.js)
+### 2D Transitions & Animations (Cinematic Image Parallax)
 
-* **Volumetric Parallax:** Scroll-linked WebGL canvases provide true spatial depth. Foreground UI (glassmorphism) floats above deep, volumetric point-cloud representations of data structures.
-* **Cinematic Camera Choreography:** Camera movements (Z-axis plunging, slow isometric panning) must feel like a heavy, precision drone moving through a server farm. Use easing functions that mimic physical mass, avoiding lightweight CSS "spring" physics.
-* **Exploded Architecture (Z-Space):** Deconstruct HTTP requests by exploding headers, method, and body along the Z-axis, allowing the user's camera to fly *through* the parsed data.
-* **Shader-Driven State Morphing:** Transition states using custom GLSL shaders (e.g., noise-driven particle dispersal when a connection drops, or a light-sweep when a packet is successfully routed).
+*   **Cinematic Image Parallax:** Instead of WebGL, the site utilizes massive, high-resolution dark-mode images (e.g., fiber optics, server racks, datacenters) with `background-attachment: fixed` or explicit scroll-linked parallax to provide immense depth. Foreground UI (glassmorphism) floats above these images.
+*   **Typography Overlays:** Large, stark typography (LamboType) is overlaid on dark cinematic backgrounds, creating a striking contrast.
+*   **CSS-Driven State Morphing:** Transition states and diagrams (like TCP) use CSS transitions, SVGs, and intersection observers to trigger clean, deterministic animations when scrolled into view.
 
 ### Durations
 
@@ -185,8 +184,8 @@ Motion is the core educational tool of TitanHTTP. Nothing simply appears; everyt
 | --- | --- | --- | --- |
 | fast | 250ms | `--motion-250` | Hover states, micro-interactions, button transitions |
 | base | 400ms | `--motion-400` | Component expansions, terminal typing speed per line |
-| slow | 800ms | `--motion-800` | Packet flow across a section, architecture diagram highlighting |
-| cinematic | 1600ms | `--motion-1600` | Full section unveils, hero text fade-ins, 3D camera pans |
+| slow | 800ms | `--motion-800` | Diagram animations, packet flow across a section |
+| cinematic | 1600ms | `--motion-1600` | Full section unveils, hero text fade-ins |
 
 ### Sound
 
@@ -213,9 +212,9 @@ TitanHTTP is organized not by isolated components, but by narrative flows.
 
 **↓ Section: TCP Handshake**
 
-* **Component:** Timeline Canvas (Pure Black, 100vw).
-* **Component:** SYN / ACK Packets (Network Cyan, moving 800ms).
-* **Component:** Socket Node (Glowing interaction point).
+* **Component:** Cinematic Parallax Background (Dark networking imagery).
+* **Component:** CSS/SVG Animation (SYN / ACK Packets moving between Client and Server nodes).
+* **Component:** Glassmorphic Info Strip (Explaining the state).
 
 **↓ Section: The Parser**
 
@@ -231,15 +230,15 @@ TitanHTTP is organized not by isolated components, but by narrative flows.
 
 ## Components
 
-### Cinematic Hero Stage (3D)
+### Cinematic Hero Stage (Image Parallax)
 
-Pure Black HTML canvas overlaying a deep WebGL scene. A slow-moving, volumetric particle system simulates fiber-optic data flow in Z-space, vanishing into infinite darkness. Subtle depth-of-field (bokeh) blurs the deepest nodes. No navbar initially. A single sentence drops in, stark and massive in LamboType 120px:
+A massive, full-screen, high-resolution dark image of abstract internet infrastructure (e.g., fiber optics). The image scales slowly (`transform: scale(1.05)`) on load. A global sticky frosted-glass navigation bar sits at the top. A single sentence drops in, stark and massive in LamboType 120px:
 
 **THE INTERNET**
 **STARTS**
 **WITH A REQUEST**
 
-A glowing 3D Network Cyan sphere (the packet) emerges from the depth of field, piercing the 2D plane of the screen, and begins a scroll-linked plunge downward into the architecture (`Browser ↓ TCP ↓ Socket ↓ TitanHTTP`).
+A glowing scroll indicator prompts the user to move downward into the architecture.
 
 ### Floating Metrics Dashboard
 
