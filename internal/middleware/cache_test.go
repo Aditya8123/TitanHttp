@@ -64,9 +64,9 @@ func TestCacheMiddleware_Validation(t *testing.T) {
 		
 		switch req.Path {
 		case "/no-store":
-			resp.Headers["cache-control"] = "no-store"
+			resp.Headers.Set("cache-control", "no-store")
 		case "/max-age":
-			resp.Headers["cache-control"] = "max-age=60"
+			resp.Headers.Set("cache-control", "max-age=60")
 		}
 		
 		return resp
@@ -94,7 +94,7 @@ func TestCacheMiddleware_Validation(t *testing.T) {
 		t.Errorf("Expected callCount to be 3 for max-age, got %d", callCount)
 	}
 
-	req2.Headers["cache-control"] = "no-cache"
+	req2.Headers.Set("cache-control", "no-cache")
 	handler(req2) // Miss (bypasses cache) (callCount=4)
 	if callCount != 4 {
 		t.Errorf("Expected callCount to be 4 after bypass, got %d", callCount)

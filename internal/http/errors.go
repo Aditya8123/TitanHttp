@@ -41,4 +41,7 @@ var (
 
 	// ErrDuplicateHeader is returned when duplicate critical headers (like Content-Length) are found.
 	ErrDuplicateHeader = errors.New("duplicate critical header")
+
+	// ErrHeaderFieldsTooLarge is returned when a header line exceeds buffer limits or too many headers are sent.
+	ErrHeaderFieldsTooLarge = errors.New("request header fields too large")
 )

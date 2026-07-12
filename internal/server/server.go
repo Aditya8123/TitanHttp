@@ -41,6 +41,7 @@ type Server struct {
 	done         chan struct{}
 	activeConnWg sync.WaitGroup
 	IdleTimeout  time.Duration
+	ReadTimeout  time.Duration
 	MaxWorkers   int
 	workerQueue  chan net.Conn
 }
@@ -52,6 +53,7 @@ func NewServer(addr string) *Server {
 		metrics:     &Metrics{},
 		done:        make(chan struct{}),
 		IdleTimeout: DefaultIdleTimeout,
+		ReadTimeout: 10 * time.Second,
 		MaxWorkers:  10000,
 		workerQueue: make(chan net.Conn, 10000),
 	}
@@ -247,10 +249,19 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	// Connection loop: continuously read from the socket until EOF or error.
 	for {
-		// Set an idle timeout while waiting for the client to send the next request.
-		if s.IdleTimeout > 0 {
-			err := conn.SetReadDeadline(time.Now().Add(s.IdleTimeout))
+		// Set request context for cancellation
+		reqCtx, cancel := context.WithCancel(context.Background())
+		
+		// Apply ReadTimeout for the first request, and IdleTimeout for subsequent keep-alive requests.
+		timeout := s.ReadTimeout
+		if requestsServed > 0 {
+			timeout = s.IdleTimeout
+		}
+
+		if timeout > 0 {
+			err := conn.SetReadDeadline(time.Now().Add(timeout))
 			if err != nil {
+				cancel()
 				fmt.Printf("Failed to set read deadline: %v\n", err)
 				return
 			}
@@ -259,10 +270,11 @@ func (s *Server) handleConnection(conn net.Conn) {
 		req, err := http.ParseRequest(r)
 		
 		// Clear the read deadline while processing the request so long handlers aren't killed
-		if s.IdleTimeout > 0 {
+		if timeout > 0 {
 			conn.SetReadDeadline(time.Time{})
 		}
 		if err != nil {
+			cancel() // Cancel context on parse error
 			if err == io.EOF {
 				// Silently handle normal disconnects to avoid log noise in concurrent environments.
 			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
@@ -276,6 +288,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 				switch {
 				case errors.Is(err, http.ErrURITooLong):
 					resp = http.NewResponse414()
+				case errors.Is(err, http.ErrHeaderFieldsTooLarge):
+					resp = http.NewResponse431()
 				case errors.Is(err, http.ErrNotImplemented):
 					resp = http.NewResponse501()
 				case errors.Is(err, http.ErrMethodNotAllowed):
@@ -292,6 +306,9 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
+		// Inject cancellation context into the request
+		req.WithContext(reqCtx)
+
 		// Populate network-level details on the Request
 		if addr := conn.RemoteAddr(); addr != nil {
 			req.RemoteAddr = addr.String()
@@ -305,13 +322,15 @@ func (s *Server) handleConnection(conn net.Conn) {
 			req.Scheme = "http"
 		}
 
-		if req.Headers["expect"] == "100-continue" {
+		if req.Headers.Get("expect") == "100-continue" {
 			if _, wErr := conn.Write([]byte("HTTP/1.1 100 Continue\r\n\r\n")); wErr != nil {
+				cancel()
 				return
 			}
 			if err := http.ParseBody(r, req); err != nil {
 				resp := http.NewResponse400()
 				resp.WriteTo(conn)
+				cancel()
 				return
 			}
 		}
@@ -323,6 +342,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			if _, err := resp.WriteTo(conn); err != nil {
 				fmt.Printf("Failed to write validation error response: %v\n", err)
 			}
+			cancel()
 			return
 		}
 
@@ -333,12 +353,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 		wantsKeepAlive := req.WantsKeepAlive()
 
 		if wantsKeepAlive {
-			resp.Headers["Connection"] = "keep-alive"
+			resp.Headers.Set("Connection", "keep-alive")
 			if s.IdleTimeout > 0 {
-				resp.Headers["Keep-Alive"] = fmt.Sprintf("timeout=%d", int(s.IdleTimeout.Seconds()))
+				resp.Headers.Set("Keep-Alive", fmt.Sprintf("timeout=%d", int(s.IdleTimeout.Seconds())))
 			}
 		} else {
-			resp.Headers["Connection"] = "close"
+			resp.Headers.Set("Connection", "close")
 		}
 
 		n, err := resp.WriteTo(conn)
@@ -351,6 +371,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		}
 
 		if err != nil {
+			cancel() // Cancel on write failure
 			errStr := err.Error()
 			// Silently ignore normal benchmark disconnections
 			if !strings.Contains(errStr, "aborted by the software") &&
@@ -366,8 +387,11 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 		// Close connection if keep-alive is not desired or max requests reached
 		if !wantsKeepAlive {
+			cancel()
 			return
 		}
+
+		cancel() // Cancel context after successful completion of request
 	}
 }
 

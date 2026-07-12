@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"sync"
@@ -34,9 +35,8 @@ type Request struct {
 	// Version is the HTTP protocol version (e.g., HTTP/1.1).
 	Version string
 
-	// Headers stores the key-value pairs of the HTTP headers.
-	// HTTP headers are case-insensitive, but we typically store them in a canonical format.
-	Headers map[string]string
+	// Headers stores the parsed HTTP headers using a zero-allocation slice-backed structure.
+	Headers Header
 
 	// Body contains the payload of the request, if any.
 	Body []byte
@@ -49,12 +49,31 @@ type Request struct {
 
 	// Scheme is the protocol scheme (e.g., "http" or "https").
 	Scheme string
+
+	// ctx is the context for this request, used for cancellation signaling.
+	ctx context.Context
+}
+
+// Context returns the request's context.
+func (r *Request) Context() context.Context {
+	if r.ctx != nil {
+		return r.ctx
+	}
+	return context.Background()
+}
+
+// WithContext returns a shallow copy of r with its context changed to ctx.
+func (r *Request) WithContext(ctx context.Context) *Request {
+	if ctx == nil {
+		panic("nil context")
+	}
+	r.ctx = ctx
+	return r
 }
 
 var requestPool = sync.Pool{
 	New: func() interface{} {
 		return &Request{
-			Headers: make(map[string]string),
 			Params:  make(map[string]string),
 		}
 	},
@@ -63,8 +82,7 @@ var requestPool = sync.Pool{
 // AcquireRequest fetches a clean Request object from the pool.
 func AcquireRequest() *Request {
 	req := requestPool.Get().(*Request)
-	// Maps are already allocated, just make sure they are empty.
-	// (Usually done on release, but safe to do here).
+	// Reset maps that we re-use
 	return req
 }
 
@@ -76,10 +94,10 @@ func ReleaseRequest(req *Request) {
 	req.Body = nil
 	req.RemoteAddr = ""
 	req.Scheme = ""
+	req.ctx = nil
 
-	for k := range req.Headers {
-		delete(req.Headers, k)
-	}
+	req.Headers.Reset()
+	
 	for k := range req.Params {
 		delete(req.Params, k)
 	}
@@ -96,14 +114,14 @@ func NewRequest() *Request {
 func (r *Request) Validate() error {
 	// HTTP/1.1 requires a Host header (RFC 2616, Section 14.23)
 	if r.Version == "HTTP/1.1" {
-		if _, ok := r.Headers["host"]; !ok {
+		if r.Headers.Get("host") == "" {
 			return ErrMissingHostHeader
 		}
 	}
 
 	// Prevent HTTP Request Smuggling (CL-TE)
-	if _, hasCL := r.Headers["content-length"]; hasCL {
-		if _, hasTE := r.Headers["transfer-encoding"]; hasTE {
+	if r.Headers.Get("content-length") != "" {
+		if r.Headers.Get("transfer-encoding") != "" {
 			return ErrConflictingHeaders
 		}
 	}
@@ -113,7 +131,7 @@ func (r *Request) Validate() error {
 
 // WantsKeepAlive determines if the client wants to maintain a persistent connection.
 func (r *Request) WantsKeepAlive() bool {
-	connHeader := r.Headers["connection"]
+	connHeader := r.Headers.Get("connection")
 	
 	if r.Version == "HTTP/1.1" {
 		// HTTP/1.1 is keep-alive by default, unless "close" is specified.
@@ -134,8 +152,8 @@ func (r *Request) WriteTo(w io.Writer) (int64, error) {
 	buf.WriteString(fmt.Sprintf("%s %s %s\r\n", r.Method, r.Path, r.Version))
 
 	// Headers
-	for k, v := range r.Headers {
-		buf.WriteString(fmt.Sprintf("%s: %s\r\n", k, v))
+	for _, entry := range r.Headers.Entries() {
+		buf.WriteString(fmt.Sprintf("%s: %s\r\n", entry.Key(), entry.Value()))
 	}
 
 	// Empty line signifying end of headers

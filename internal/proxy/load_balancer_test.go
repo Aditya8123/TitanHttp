@@ -35,7 +35,7 @@ func TestLoadBalancer_BackendPool(t *testing.T) {
 	req.Method = titanhttp.MethodGet
 	req.Path = "/"
 	req.Version = "HTTP/1.1"
-	req.Headers["host"] = target1
+	req.Headers.Set("host", target1)
 
 	// With Round Robin, current starts at 0. First call adds 1 -> idx 1 (backend2)
 	// Second call adds 1 -> idx 2 % 2 = 0 (backend1).
@@ -47,7 +47,7 @@ func TestLoadBalancer_BackendPool(t *testing.T) {
 		if resp.StatusCode != 200 {
 			t.Fatalf("Req %d: Expected 200, got %d", i, resp.StatusCode)
 		}
-		if got := resp.Headers["x-backend-id"]; got != expected {
+		if got := resp.Headers.Get("x-backend-id"); got != expected {
 			t.Errorf("Req %d: Expected to hit backend %s, got %v", i, expected, got)
 		}
 
@@ -91,7 +91,7 @@ func TestLoadBalancer_HealthCheckFailover(t *testing.T) {
 	req.Method = titanhttp.MethodGet
 	req.Path = "/"
 	req.Version = "HTTP/1.1"
-	req.Headers["host"] = target2
+	req.Headers.Set("host", target2)
 
 	// Should hit backend 2 repeatedly
 	for i := 0; i < 3; i++ {
@@ -99,8 +99,8 @@ func TestLoadBalancer_HealthCheckFailover(t *testing.T) {
 		if resp.StatusCode != 200 {
 			t.Fatalf("Expected 200, got %d", resp.StatusCode)
 		}
-		if resp.Headers["x-backend-id"] != "2" {
-			t.Errorf("Expected to hit backend 2, got %v", resp.Headers["x-backend-id"])
+		if resp.Headers.Get("x-backend-id") != "2" {
+			t.Errorf("Expected to hit backend 2, got %v", resp.Headers.Get("x-backend-id"))
 		}
 	}
 }

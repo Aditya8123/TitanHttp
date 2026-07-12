@@ -114,8 +114,8 @@ function Run-Comparison {
     param ($Name, $Path, $ArgsStr, $Iterations, $Category, $Scheme="http")
     
     Write-Host "`n--- Testing $Name ---" -ForegroundColor Yellow
-    Warmup -Url "$Scheme://localhost:8080$Path"
-    Warmup -Url "$Scheme://localhost:8081$Path"
+    Warmup -Url "${Scheme}://localhost:8080$Path"
+    Warmup -Url "${Scheme}://localhost:8081$Path"
     
     $tRpsList = [System.Collections.Generic.List[double]]::new()
     $tP50List = [System.Collections.Generic.List[double]]::new()
@@ -133,11 +133,11 @@ function Run-Comparison {
         Write-Host "     [Run $i/$Iterations] $Name..." -NoNewline
         # Alternate order to avoid systemic bias
         if ($i % 2 -eq 1) {
-            $t = Run-BombardierSingle -Url "$Scheme://localhost:8080$Path" -ArgsStr $ArgsStr
-            $n = Run-BombardierSingle -Url "$Scheme://localhost:8081$Path" -ArgsStr $ArgsStr
+            $t = Run-BombardierSingle -Url "${Scheme}://localhost:8080$Path" -ArgsStr $ArgsStr
+            $n = Run-BombardierSingle -Url "${Scheme}://localhost:8081$Path" -ArgsStr $ArgsStr
         } else {
-            $n = Run-BombardierSingle -Url "$Scheme://localhost:8081$Path" -ArgsStr $ArgsStr
-            $t = Run-BombardierSingle -Url "$Scheme://localhost:8080$Path" -ArgsStr $ArgsStr
+            $n = Run-BombardierSingle -Url "${Scheme}://localhost:8081$Path" -ArgsStr $ArgsStr
+            $t = Run-BombardierSingle -Url "${Scheme}://localhost:8080$Path" -ArgsStr $ArgsStr
         }
         $tRpsList.Add($t.Rps); $tP50List.Add($t.P50); $tP95List.Add($t.P95); $tP99List.Add($t.P99); $tMbList.Add($t.ThroughputMB)
         $nRpsList.Add($n.Rps); $nP50List.Add($n.P50); $nP95List.Add($n.P95); $nP99List.Add($n.P99); $nMbList.Add($n.ThroughputMB)
@@ -186,6 +186,8 @@ function Run-Comparison {
 # STAGE 1: Standard Tests
 # ---------------------------------------------------------
 Write-Host "`n>>> [ STAGE 1 ] Starting Standard HTTP Servers..." -ForegroundColor Green
+Stop-Process -Name titanhttp_bench -Force -ErrorAction SilentlyContinue
+Stop-Process -Name nethttp_bench -Force -ErrorAction SilentlyContinue
 $TitanProcess = Start-Process -FilePath ".\bin\titanhttp_bench.exe" -PassThru -NoNewWindow -RedirectStandardOutput "benchmarks/logs/titan_bench.log" -RedirectStandardError "benchmarks/logs/titan_bench_err.log"
 $NetHttpProcess = Start-Process -FilePath ".\bin\nethttp_bench.exe" -PassThru -NoNewWindow -RedirectStandardOutput "benchmarks/logs/nethttp_bench.log" -RedirectStandardError "benchmarks/logs/nethttp_bench_err.log"
 Start-Sleep -Seconds 4
@@ -240,13 +242,16 @@ Run-Comparison -Name "Connection Churn" -Path "/ping" -ArgsStr "-c 100 -d 5s -H 
 # STAGE 6: Memory & CPU Profiling (Skip Warmup)
 # ---------------------------------------------------------
 Write-Host "`n>>> [ STAGE 6 ] Memory & CPU Leak Detector (pprof)..." -ForegroundColor Green
+
+$ErrorActionPreference = "Continue"
+
 Write-Host "1. Forcing GC before capturing baselines..."
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8080/debug/gc" -ErrorAction SilentlyContinue | Out-Null
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8081/debug/gc" -ErrorAction SilentlyContinue | Out-Null
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8080/debug/gc" -ErrorAction SilentlyContinue | Out-Null } catch {}
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8081/debug/gc" -ErrorAction SilentlyContinue | Out-Null } catch {}
 
 Write-Host "2. Capturing Baseline Heaps..."
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6060/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_titan_baseline.pprof"
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6061/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_nethttp_baseline.pprof"
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6060/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_titan_baseline.pprof" -ErrorAction SilentlyContinue } catch {}
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6061/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_nethttp_baseline.pprof" -ErrorAction SilentlyContinue } catch {}
 
 Write-Host "3. Blasting 500k requests and capturing CPU profile simultaneously..."
 # We run Bombardier and simultaneously grab a 10s CPU profile
@@ -254,19 +259,21 @@ $j1 = Start-Process -FilePath "bombardier" -ArgumentList "-c 125 -n 500000 http:
 $j2 = Start-Process -FilePath "bombardier" -ArgumentList "-c 125 -n 500000 http://localhost:8081/ping" -NoNewWindow -PassThru -RedirectStandardOutput "benchmarks/logs/bombardier_nethttp_mem.log"
 
 # Capture 10 second CPU profile while blast runs
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6060/debug/pprof/profile?seconds=10" -OutFile "benchmarks/profiles/cpu_titan.pprof" -ErrorAction SilentlyContinue | Out-Null
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6061/debug/pprof/profile?seconds=10" -OutFile "benchmarks/profiles/cpu_nethttp.pprof" -ErrorAction SilentlyContinue | Out-Null
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6060/debug/pprof/profile?seconds=10" -OutFile "benchmarks/profiles/cpu_titan.pprof" -ErrorAction SilentlyContinue | Out-Null } catch {}
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6061/debug/pprof/profile?seconds=10" -OutFile "benchmarks/profiles/cpu_nethttp.pprof" -ErrorAction SilentlyContinue | Out-Null } catch {}
 
 $j1.WaitForExit()
 $j2.WaitForExit()
 
 Write-Host "4. Forcing GC before capturing end profiles..."
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8080/debug/gc" -ErrorAction SilentlyContinue | Out-Null
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8081/debug/gc" -ErrorAction SilentlyContinue | Out-Null
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8080/debug/gc" -ErrorAction SilentlyContinue | Out-Null } catch {}
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:8081/debug/gc" -ErrorAction SilentlyContinue | Out-Null } catch {}
 
 Write-Host "5. Capturing End Heaps..."
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6060/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_titan_end.pprof"
-Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6061/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_nethttp_end.pprof"
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6060/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_titan_end.pprof" -ErrorAction SilentlyContinue } catch {}
+try { Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:6061/debug/pprof/heap" -OutFile "benchmarks/profiles/heap_nethttp_end.pprof" -ErrorAction SilentlyContinue } catch {}
+
+$ErrorActionPreference = "Stop"
 
 $titanDiff = go tool pprof -text -base "benchmarks/profiles/heap_titan_baseline.pprof" "benchmarks/profiles/heap_titan_end.pprof"
 $nethttpDiff = go tool pprof -text -base "benchmarks/profiles/heap_nethttp_baseline.pprof" "benchmarks/profiles/heap_nethttp_end.pprof"

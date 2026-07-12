@@ -31,7 +31,7 @@ func TestServerTLS(t *testing.T) {
 	srv.Router().Get("/secure", func(req *titanhttp.Request) *titanhttp.Response {
 		resp := titanhttp.NewResponse()
 		resp.StatusCode = titanhttp.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = []byte("Secure Payload")
 		return resp
 	})
@@ -78,5 +78,6 @@ func TestServerTLS(t *testing.T) {
 	}
 
 	// 4. Clean shutdown
+	client.CloseIdleConnections()
 	srv.Shutdown(context.Background())
 }

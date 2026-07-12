@@ -86,38 +86,32 @@ func TestParseHeaders(t *testing.T) {
 	tests := []struct {
 		name          string
 		input         string
-		expectedError error
-		expectedReq   *Request
+		expectedError   error
+		expectedHeaders map[string]string
 	}{
 		{
 			name:          "Valid headers",
 			input:         "Host: localhost:8080\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
 			expectedError: nil,
-			expectedReq: &Request{
-				Headers: map[string]string{
-					"host":       "localhost:8080",
-					"user-agent": "curl/7.81.0",
-					"accept":     "*/*",
-				},
+			expectedHeaders: map[string]string{
+				"host":       "localhost:8080",
+				"user-agent": "curl/7.81.0",
+				"accept":     "*/*",
 			},
 		},
 		{
 			name:          "Headers with extra whitespace",
 			input:         "   Content-Type   :   application/json   \r\n\r\n",
 			expectedError: nil,
-			expectedReq: &Request{
-				Headers: map[string]string{
-					"content-type": "application/json",
-				},
+			expectedHeaders: map[string]string{
+				"content-type": "application/json",
 			},
 		},
 		{
 			name:          "No headers",
 			input:         "\r\n",
 			expectedError: nil,
-			expectedReq: &Request{
-				Headers: map[string]string{},
-			},
+			expectedHeaders: map[string]string{},
 		},
 		{
 			name:          "Missing CRLF",
@@ -141,20 +135,20 @@ func TestParseHeaders(t *testing.T) {
 			reader := bufio.NewReader(strings.NewReader(tt.input))
 			req := NewRequest()
 
-			err := parseHeaders(reader, req.Headers)
+			err := parseHeaders(reader, &req.Headers)
 
 			if err != tt.expectedError {
 				t.Fatalf("expected error %v, got %v", tt.expectedError, err)
 			}
 
 			if tt.expectedError == nil {
-				if len(req.Headers) != len(tt.expectedReq.Headers) {
-					t.Fatalf("expected %d headers, got %d", len(tt.expectedReq.Headers), len(req.Headers))
+				if len(req.Headers.Entries()) != len(tt.expectedHeaders) {
+					t.Fatalf("expected %d headers, got %d", len(tt.expectedHeaders), len(req.Headers.Entries()))
 				}
 
-				for k, expectedVal := range tt.expectedReq.Headers {
-					val, ok := req.Headers[k]
-					if !ok {
+				for k, expectedVal := range tt.expectedHeaders {
+					val := req.Headers.Get(k)
+					if val == "" {
 						t.Errorf("missing expected header %q", k)
 					}
 					if val != expectedVal {
@@ -228,7 +222,9 @@ func TestParseBody(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := bufio.NewReader(strings.NewReader(tt.input))
 			req := NewRequest()
-			req.Headers = tt.headers
+			for k, v := range tt.headers {
+				req.Headers.Set(k, v)
+			}
 
 			err := ParseBody(reader, req)
 
@@ -278,7 +274,9 @@ func TestRequestValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := NewRequest()
 			req.Version = tt.version
-			req.Headers = tt.headers
+			for k, v := range tt.headers {
+				req.Headers.Set(k, v)
+			}
 
 			err := req.Validate()
 			if err != tt.expectedError {
@@ -314,8 +312,8 @@ func TestParseResponse(t *testing.T) {
 		t.Errorf("expected status text 'OK', got %q", resp.StatusText)
 	}
 
-	if resp.Headers["content-type"] != "text/plain" {
-		t.Errorf("expected content-type 'text/plain', got %v", resp.Headers["content-type"])
+	if resp.Headers.Get("content-type") != "text/plain" {
+		t.Errorf("expected content-type 'text/plain', got %v", resp.Headers.Get("content-type"))
 	}
 
 	if resp.Stream == nil {
@@ -363,8 +361,8 @@ func BenchmarkParseHeaders(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		sr.Reset(headersRaw)
 		reader.Reset(sr)
-		headers := make(map[string]string)
-		_ = parseHeaders(reader, headers)
+		var headers Header
+		_ = parseHeaders(reader, &headers)
 	}
 }
 
@@ -382,7 +380,7 @@ func BenchmarkParseBody_Large(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		sr.Reset(bodyContent)
 		reader.Reset(sr)
-		req.Headers["Content-Length"] = "1048576" // 1MB
+		req.Headers.Set("Content-Length", "1048576") // 1MB
 		_ = ParseBody(reader, req)
 	}
 }

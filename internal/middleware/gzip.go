@@ -38,19 +38,19 @@ func Gzip(next router.Handler) router.Handler {
 		resp := next(req)
 
 		// 1. Negotiation: Check if client accepts gzip
-		acceptEncoding := req.Headers["accept-encoding"]
+		acceptEncoding := req.Headers.Get("accept-encoding")
 		if !strings.Contains(acceptEncoding, "gzip") {
 			return resp
 		}
 
 		// 2. Filter by Content-Type
-		contentType := resp.Headers["Content-Type"]
+		contentType := resp.Headers.Get("Content-Type")
 		if !CompressibleTypes[contentType] {
 			return resp
 		}
 
 		// Prevent double-compression
-		if resp.Headers["Content-Encoding"] != "" {
+		if resp.Headers.Get("Content-Encoding") != "" {
 			return resp
 		}
 
@@ -60,8 +60,8 @@ func Gzip(next router.Handler) router.Handler {
 		}
 
 		// 3. Prepare headers for chunked streaming
-		resp.Headers["Content-Encoding"] = "gzip"
-		delete(resp.Headers, "Content-Length")
+		resp.Headers.Set("Content-Encoding", "gzip")
+		resp.Headers.Del("Content-Length")
 
 		// 4. Wrap the response in an io.Pipe and pooled gzip.Writer
 		pr, pw := io.Pipe()

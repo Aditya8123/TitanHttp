@@ -11,9 +11,9 @@ func TestRequest_WriteTo(t *testing.T) {
 	req.Method = MethodPost
 	req.Path = "/api/test"
 	req.Version = "HTTP/1.1"
-	req.Headers["Host"] = "localhost:8080"
-	req.Headers["Content-Type"] = "application/json"
-	req.Headers["Content-Length"] = "17"
+	req.Headers.Set("Host", "localhost:8080")
+	req.Headers.Set("Content-Type", "application/json")
+	req.Headers.Set("Content-Length", "17")
 	req.Body = []byte(`{"message":"hi"}`)
 
 	var buf bytes.Buffer
@@ -34,16 +34,16 @@ func TestRequest_WriteTo(t *testing.T) {
 		t.Errorf("Request line is incorrect, got: %s", output)
 	}
 
-	if !strings.Contains(output, "Host: localhost:8080\r\n") {
-		t.Errorf("Missing or incorrect Host header")
+	if !strings.Contains(output, "host: localhost:8080") {
+		t.Errorf("Missing or incorrect Host header: \n%s", output)
 	}
 
-	if !strings.Contains(output, "Content-Type: application/json\r\n") {
-		t.Errorf("Missing or incorrect Content-Type header")
+	if !strings.Contains(output, "content-type: application/json") {
+		t.Errorf("Missing or incorrect Content-Type header: \n%s", output)
 	}
 
-	if !strings.Contains(output, "Content-Length: 17\r\n") {
-		t.Errorf("Missing or incorrect Content-Length header")
+	if !strings.Contains(output, "content-length: 17") {
+		t.Errorf("Missing or incorrect Content-Length header: \n%s", output)
 	}
 
 	if !strings.HasSuffix(output, "\r\n\r\n{\"message\":\"hi\"}") {

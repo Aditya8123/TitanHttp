@@ -30,7 +30,7 @@ func setupRealisticRouter() *router.Router {
 		b, _ := json.Marshal(products)
 		res := titanhttp.NewResponse()
 		res.StatusCode = titanhttp.StatusOK
-		res.Headers["Content-Type"] = "application/json"
+		res.Headers.Set("Content-Type", "application/json")
 		res.Body = b
 		return res
 	})
@@ -40,7 +40,7 @@ func setupRealisticRouter() *router.Router {
 		b, _ := json.Marshal(p)
 		res := titanhttp.NewResponse()
 		res.StatusCode = titanhttp.StatusOK
-		res.Headers["Content-Type"] = "application/json"
+		res.Headers.Set("Content-Type", "application/json")
 		res.Body = b
 		return res
 	})
@@ -53,7 +53,7 @@ func setupRealisticRouter() *router.Router {
 
 		res := titanhttp.NewResponse()
 		res.StatusCode = titanhttp.StatusCreated
-		res.Headers["Content-Type"] = "application/json"
+		res.Headers.Set("Content-Type", "application/json")
 		// Echo back
 		res.Body = bodyBytes
 		return res

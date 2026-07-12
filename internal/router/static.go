@@ -87,9 +87,9 @@ func (r *Router) Static(prefix, root string) {
 		// Construct a successful HTTP response
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = contentType
-		resp.Headers["Cache-Control"] = "public, max-age=3600"
-		resp.Headers["Content-Length"] = strconv.FormatInt(info.Size(), 10)
+		resp.Headers.Set("Content-Type", contentType)
+		resp.Headers.Set("Cache-Control", "public, max-age=3600")
+		resp.Headers.Set("Content-Length", strconv.FormatInt(info.Size(), 10))
 		resp.Stream = file
 
 		return resp

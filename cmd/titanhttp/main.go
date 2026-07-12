@@ -51,7 +51,7 @@ func main() {
 	srv.Router().Get("/", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = []byte("Welcome to TitanHTTP!\n")
 		return resp
 	})
@@ -59,7 +59,7 @@ func main() {
 	srv.Router().Get("/hello", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = []byte("Hello from the new Router!\n")
 		return resp
 	})
@@ -67,7 +67,7 @@ func main() {
 	srv.Router().Get("/ping", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = []byte("pong")
 		return resp
 	})
@@ -75,7 +75,7 @@ func main() {
 	srv.Router().Post("/json", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "application/json"
+		resp.Headers.Set("Content-Type", "application/json")
 		resp.Body = []byte(`{"status":"success"}`)
 		return resp
 	})
@@ -87,7 +87,7 @@ func main() {
 	srv.Router().Get("/heavy", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = heavyPayload
 		return resp
 	})
@@ -95,7 +95,7 @@ func main() {
 	srv.Router().Get("/users/:name", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = []byte(fmt.Sprintf("Hello, %s!\n", req.Params["name"]))
 		return resp
 	})
@@ -106,12 +106,12 @@ func main() {
 		data, err := os.ReadFile(filepath)
 		if err != nil {
 			resp.StatusCode = http.StatusNotFound
-			resp.Headers["Content-Type"] = "text/plain"
+			resp.Headers.Set("Content-Type", "text/plain")
 			resp.Body = []byte("404 File Not Found\n")
 			return resp
 		}
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = data
 		return resp
 	})
@@ -123,7 +123,7 @@ func main() {
 	srv.Router().Get("/protected", middleware.AuthPlaceholder(func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = []byte("Welcome to the secret protected area!\n")
 		return resp
 	}))
@@ -140,13 +140,13 @@ func main() {
 
 		if size < 0 || size > 10_000_000 {
 			resp.StatusCode = http.StatusBadRequest
-			resp.Headers["Content-Type"] = "text/plain"
+			resp.Headers.Set("Content-Type", "text/plain")
 			resp.Body = []byte("Size must be between 0 and 10MB")
 			return resp
 		}
 
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "application/octet-stream"
+		resp.Headers.Set("Content-Type", "application/octet-stream")
 		resp.Body = make([]byte, size)
 		return resp
 	})
@@ -158,7 +158,7 @@ func main() {
 		// For benchmark purposes, we just return the {"ok":true} directly.
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "application/json"
+		resp.Headers.Set("Content-Type", "application/json")
 		resp.Body = []byte(`{"ok":true}`)
 		return resp
 	})
@@ -168,7 +168,7 @@ func main() {
 		runtime.GC()
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
-		resp.Headers["Content-Type"] = "text/plain"
+		resp.Headers.Set("Content-Type", "text/plain")
 		resp.Body = []byte("GC complete")
 		return resp
 	})

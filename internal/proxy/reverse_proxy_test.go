@@ -54,8 +54,8 @@ func TestReverseProxy(t *testing.T) {
 	req.Method = titanhttp.MethodPost
 	req.Path = "/api/data"
 	req.Version = "HTTP/1.1"
-	req.Headers["host"] = target
-	req.Headers["content-length"] = "11" // length of "client-data"
+	req.Headers.Set("host", target)
+	req.Headers.Set("content-length", "11") // length of "client-data"
 	req.RemoteAddr = "192.168.1.100:54321"
 	req.Scheme = "https"
 	req.Body = []byte("client-data")
@@ -68,8 +68,8 @@ func TestReverseProxy(t *testing.T) {
 		t.Fatalf("expected status 201, got %d", resp.StatusCode)
 	}
 
-	if resp.Headers["x-backend-header"] != "Hello from backend" {
-		t.Errorf("expected header 'Hello from backend', got %v", resp.Headers["x-backend-header"])
+	if resp.Headers.Get("x-backend-header") != "Hello from backend" {
+		t.Errorf("expected header 'Hello from backend', got %v", resp.Headers.Get("x-backend-header"))
 	}
 
 	if resp.Stream == nil {

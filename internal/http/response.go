@@ -24,6 +24,7 @@ const (
 	StatusMethodNotAllowed StatusCode = 405
 	StatusURITooLong       StatusCode = 414
 	StatusTooManyRequests  StatusCode = 429
+	StatusRequestHeaderFieldsTooLarge StatusCode = 431
 
 	// 5xx Server Errors
 	StatusInternalServerError StatusCode = 500
@@ -42,8 +43,8 @@ type Response struct {
 	// StatusText is the short textual description of the Status-Code.
 	StatusText string
 
-	// Headers stores the key-value pairs of the HTTP headers.
-	Headers map[string]string
+	// Headers stores the parsed HTTP headers using a zero-allocation slice-backed structure.
+	Headers Header
 
 	// Body contains the payload of the response, if any (loaded in memory).
 	Body []byte
@@ -56,7 +57,6 @@ var responsePool = sync.Pool{
 	New: func() interface{} {
 		return &Response{
 			Version: "HTTP/1.1",
-			Headers: make(map[string]string),
 		}
 	},
 }
@@ -74,9 +74,7 @@ func ReleaseResponse(resp *Response) {
 	resp.StatusText = ""
 	resp.Body = nil
 	resp.Stream = nil
-	for k := range resp.Headers {
-		delete(resp.Headers, k)
-	}
+	resp.Headers.Reset()
 	responsePool.Put(resp)
 }
 
@@ -96,6 +94,7 @@ var statusText = map[StatusCode]string{
 	StatusMethodNotAllowed:    "Method Not Allowed",
 	StatusURITooLong:          "URI Too Long",
 	StatusTooManyRequests:     "Too Many Requests",
+	StatusRequestHeaderFieldsTooLarge: "Request Header Fields Too Large",
 	StatusInternalServerError: "Internal Server Error",
 	StatusNotImplemented:      "Not Implemented",
 }
@@ -117,17 +116,17 @@ func (r *Response) WriteTo(w io.Writer) (int64, error) {
 	}
 
 	// Calculate body size or chunked mode
-	_, hasContentLength := r.Headers["Content-Length"]
+	hasContentLength := r.Headers.Get("Content-Length") != ""
 	isChunked := r.Stream != nil && !hasContentLength
 
 	if len(r.Body) > 0 && !hasContentLength && r.Stream == nil {
-		r.Headers["Content-Length"] = strconv.Itoa(len(r.Body))
+		r.Headers.Set("Content-Length", strconv.Itoa(len(r.Body)))
 	} else if len(r.Body) == 0 && r.Stream == nil && !hasContentLength {
-		r.Headers["Content-Length"] = "0"
+		r.Headers.Set("Content-Length", "0")
 	}
 
 	if isChunked {
-		r.Headers["Transfer-Encoding"] = "chunked"
+		r.Headers.Set("Transfer-Encoding", "chunked")
 	}
 
 	var headerBuf bytes.Buffer
@@ -140,10 +139,10 @@ func (r *Response) WriteTo(w io.Writer) (int64, error) {
 	headerBuf.WriteString("\r\n")
 
 	// Headers
-	for k, v := range r.Headers {
-		headerBuf.WriteString(k)
+	for _, entry := range r.Headers.Entries() {
+		headerBuf.WriteString(entry.Key())
 		headerBuf.WriteString(": ")
-		headerBuf.WriteString(v)
+		headerBuf.WriteString(entry.Value())
 		headerBuf.WriteString("\r\n")
 	}
 
@@ -309,6 +308,14 @@ func NewResponse414() *Response {
 	resp := NewResponse()
 	resp.StatusCode = StatusURITooLong
 	resp.Body = []byte("414 URI Too Long\n")
+	return resp
+}
+
+// NewResponse431 generates a standard 431 Request Header Fields Too Large response.
+func NewResponse431() *Response {
+	resp := NewResponse()
+	resp.StatusCode = StatusRequestHeaderFieldsTooLarge
+	resp.Body = []byte("431 Request Header Fields Too Large\n")
 	return resp
 }
 
