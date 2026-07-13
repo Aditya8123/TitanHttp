@@ -98,15 +98,13 @@ Through strict memory management and custom implementations (like our Radix Tree
 
 Compared against popular Go frameworks (Gin, Fiber, Chi) handling a simple `/ping` route via `benchstat`:
 
-```text
-Rank   | Benchmark Name                                | Median Time     | Memory          | Allocs    
-----------------------------------------------------------------------------------------------------
-#1     | BenchmarkTitanHTTP-16                         | 118.5 ns        | 4 B             | 1 allocs  
-#2     | BenchmarkNetHTTP-16                           | 198.15 ns       | 4 B             | 1 allocs  
-#3     | BenchmarkGin-16                               | 244.6 ns        | 48 B            | 1 allocs  
-#4     | BenchmarkChi-16                               | 626 ns          | 372 B           | 3 allocs  
-#5     | BenchmarkFiber-16                             | 11234.5 ns      | 5595.2 B        | 21 allocs 
-```
+| Rank | Benchmark Name | Median Time | Memory | Allocs |
+| :--- | :--- | :--- | :--- | :--- |
+| **#1** | **BenchmarkTitanHTTP-16** | **118.5 ns** | **4 B** | **1 allocs** |
+| #2 | BenchmarkNetHTTP-16 | 198.15 ns | 4 B | 1 allocs |
+| #3 | BenchmarkGin-16 | 244.6 ns | 48 B | 1 allocs |
+| #4 | BenchmarkChi-16 | 626 ns | 372 B | 3 allocs |
+| #5 | BenchmarkFiber-16 | 11,234.5 ns | 5,595.2 B | 21 allocs |
 
 ### 4. Compliance and Security
 
