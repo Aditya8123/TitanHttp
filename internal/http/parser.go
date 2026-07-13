@@ -22,7 +22,7 @@ func ParseRequest(reader *bufio.Reader) (*Request, error) {
 	}
 
 	// 2. Parse headers
-	err = parseHeaders(reader, req.Headers)
+	err = parseHeaders(reader, &req.Headers)
 	if err != nil {
 		ReleaseRequest(req)
 		return nil, err
@@ -30,7 +30,7 @@ func ParseRequest(reader *bufio.Reader) (*Request, error) {
 
 	// If Expect: 100-continue is set, we defer body parsing to the server layer
 	// which will send a 100 Continue response before proceeding.
-	if req.Headers["expect"] == "100-continue" {
+	if req.Headers.Get("expect") == "100-continue" {
 		return req, nil
 	}
 
@@ -112,18 +112,20 @@ func parseRequestLine(reader *bufio.Reader, req *Request) error {
 
 const MaxHeadersCount = 100
 
-func parseHeaders(reader *bufio.Reader, headers map[string]string) error {
-	var hasChunked bool
+func parseHeaders(reader *bufio.Reader, headers *Header) error {
 	headerCount := 0
 	for {
 		line, err := reader.ReadSlice('\n')
 		if err != nil {
+			if err == bufio.ErrBufferFull {
+				return ErrHeaderFieldsTooLarge
+			}
 			return err
 		}
 
 		headerCount++
 		if headerCount > MaxHeadersCount {
-			return ErrMalformedHeader // Or a specific ErrTooManyHeaders
+			return ErrHeaderFieldsTooLarge
 		}
 
 		if len(line) < 2 || line[len(line)-2] != '\r' || line[len(line)-1] != '\n' {
@@ -169,7 +171,7 @@ func parseHeaders(reader *bufio.Reader, headers map[string]string) error {
 			keyStr = "connection"
 		case bytes.Equal(keyBytes, []byte("content-length")):
 			keyStr = "content-length"
-			if _, exists := headers[keyStr]; exists {
+			if headers.Get(keyStr) != "" {
 				return ErrDuplicateHeader
 			}
 		case bytes.Equal(keyBytes, []byte("content-type")):
@@ -180,33 +182,36 @@ func parseHeaders(reader *bufio.Reader, headers map[string]string) error {
 			keyStr = "authorization"
 		case bytes.Equal(keyBytes, []byte("transfer-encoding")):
 			keyStr = "transfer-encoding"
-			if bytes.Contains(bytes.ToLower(valueBytes), []byte("chunked")) {
-				hasChunked = true
-			}
 		default:
 			keyStr = string(keyBytes)
 		}
 
-		headers[keyStr] = string(valueBytes)
+		headers.Add(keyStr, string(valueBytes))
 	}
 
-	if _, hasCL := headers["content-length"]; hasCL {
-		if _, hasTE := headers["transfer-encoding"]; hasTE {
+	if headers.Get("content-length") != "" {
+		if headers.Get("transfer-encoding") != "" {
 			return ErrConflictingHeaders
 		}
-	}
-
-	if hasChunked {
-		return ErrNotImplemented
 	}
 
 	return nil
 }
 
-// ParseBody reads the request body based on Content-Length.
+// ParseBody reads the request body based on Content-Length or Transfer-Encoding.
 func ParseBody(reader *bufio.Reader, req *Request) error {
-	contentLengthStr, ok := req.Headers["content-length"]
-	if !ok {
+	isChunked := false
+	if strings.Contains(strings.ToLower(req.Headers.Get("transfer-encoding")), "chunked") {
+		isChunked = true
+	}
+
+	if isChunked {
+		req.Body = NewChunkedReader(reader)
+		return nil
+	}
+
+	contentLengthStr := req.Headers.Get("content-length")
+	if contentLengthStr == "" {
 		// No body to parse
 		return nil
 	}
@@ -224,12 +229,20 @@ func ParseBody(reader *bufio.Reader, req *Request) error {
 		return ErrBodyTooLarge
 	}
 
-	req.Body = make([]byte, contentLength)
-	_, err = io.ReadFull(reader, req.Body)
-	if err != nil {
-		return err
+	// Fast Path: Load into RAM if payload is <= 64KB
+	if contentLength <= 64*1024 {
+		req.RawBody = make([]byte, contentLength)
+		_, err = io.ReadFull(reader, req.RawBody)
+		if err != nil {
+			return err
+		}
+		// Wrap RawBody in a reader so standard middleware can still read from Body
+		req.Body = io.NopCloser(bytes.NewReader(req.RawBody))
+		return nil
 	}
 
+	// Slow Path (Streaming): Expose the underlying network stream for large payloads
+	req.Body = io.NopCloser(io.LimitReader(reader, int64(contentLength)))
 	return nil
 }
 
@@ -247,7 +260,7 @@ func ParseResponse(reader *bufio.Reader) (*Response, error) {
 	}
 
 	// 2. Parse headers
-	err = parseHeaders(reader, resp.Headers)
+	err = parseHeaders(reader, &resp.Headers)
 	if err != nil {
 		ReleaseResponse(resp)
 		return nil, err

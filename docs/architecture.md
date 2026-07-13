@@ -69,9 +69,18 @@ A `MemoryCache` designed to bypass handler execution for frequently accessed res
 - **Thread Safety:** Protected by `sync.RWMutex` to allow unlimited concurrent reads.
 - **Validation:** Fully parses `Cache-Control` directives (`max-age`, `no-cache`, `no-store`) and enforces TTL expiration autonomously via a background sweeper.
 
-## Future: Performance Engineering (Phase 8)
+## Performance Engineering (Phase 8)
 
-The next step is integrating `pprof` to profile CPU, Goroutines, and Memory, optimizing the routing table and GC pressure to achieve maximum throughput.
+To achieve maximum throughput and validate our architecture, we integrated `pprof` to profile CPU, Goroutines, and Memory.
+- **Micro-optimizations:** Reduced allocations in the HTTP parser by pooling byte slices with `sync.Pool`.
+- **Benchmarking:** Rigorously stress-tested against `net/http` using C10k workloads to prove our custom worker pool and radix router significantly outperform standard library baselines.
+
+## Presentation Layer & Showcase Platform (Phase 9)
+
+TitanHTTP is presented through a bespoke, cinematic Single Page Application (SPA) rather than a generic README.
+- **Frontend Architecture:** Built with React and strictly Vanilla CSS (`index.css`), avoiding external UI libraries to maintain complete control over the glassmorphic aesthetic.
+- **Native Routing:** Uses `react-router-dom` to dynamically render documentation (`/why`, `/architecture`, `/decisions`) natively within the application, ensuring the user is never kicked out to GitHub.
+- **The Guided Narrative:** The application forces a linear, 10-chapter scrolling experience that educates the reviewer incrementally, building trust by explaining *why* a component was built before showing the code.
 
 ---
 > *Design Note: Every architectural decision must prioritize deterministic behavior, clean error handling, and high readability.*

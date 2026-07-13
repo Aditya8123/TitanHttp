@@ -53,7 +53,7 @@ func TestGzipMiddleware(t *testing.T) {
 			mockHandler := func(req *http.Request) *http.Response {
 				resp := http.NewResponse()
 				resp.StatusCode = http.StatusOK
-				resp.Headers["Content-Type"] = tt.contentType
+				resp.Headers.Set("Content-Type", tt.contentType)
 				resp.Body = tt.initialBody
 				return resp
 			}
@@ -65,10 +65,9 @@ func TestGzipMiddleware(t *testing.T) {
 			req := &http.Request{
 				Method:  http.MethodGet,
 				Path:    "/",
-				Headers: make(map[string]string),
 			}
 			if tt.acceptEncoding != "" {
-				req.Headers["accept-encoding"] = tt.acceptEncoding
+				req.Headers.Set("accept-encoding", tt.acceptEncoding)
 			}
 
 			// Execute
@@ -76,10 +75,10 @@ func TestGzipMiddleware(t *testing.T) {
 
 			// Validate
 			if tt.expectCompression {
-				if resp.Headers["Content-Encoding"] != "gzip" {
-					t.Errorf("Expected Content-Encoding: gzip, got %s", resp.Headers["Content-Encoding"])
+				if resp.Headers.Get("Content-Encoding") != "gzip" {
+					t.Errorf("Expected Content-Encoding: gzip, got %s", resp.Headers.Get("Content-Encoding"))
 				}
-				if _, hasLength := resp.Headers["Content-Length"]; hasLength {
+				if resp.Headers.Get("Content-Length") != "" {
 					t.Errorf("Expected Content-Length to be removed")
 				}
 				if resp.Body != nil {
@@ -111,7 +110,7 @@ func TestGzipMiddleware(t *testing.T) {
 					t.Errorf("Decompressed data mismatch. Expected %q, got %q", string(tt.initialBody), string(decompressedData))
 				}
 			} else {
-				if resp.Headers["Content-Encoding"] == "gzip" {
+				if resp.Headers.Get("Content-Encoding") == "gzip" {
 					t.Errorf("Did not expect Content-Encoding: gzip")
 				}
 				if resp.Stream != nil {

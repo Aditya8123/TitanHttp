@@ -30,22 +30,22 @@ func ForwardRequest(req *http.Request, target string) *http.Response {
 	conn.SetDeadline(time.Now().Add(30 * time.Second))
 
 	// Add Header Management
-	req.Headers["connection"] = "close"
+	req.Headers.Set("connection", "close")
 	
 	// X-Forwarded-For: append client IP
 	clientIP, _, _ := net.SplitHostPort(req.RemoteAddr)
-	if existing, ok := req.Headers["x-forwarded-for"]; ok {
-		req.Headers["x-forwarded-for"] = existing + ", " + clientIP
+	if existing := req.Headers.Get("x-forwarded-for"); existing != "" {
+		req.Headers.Set("x-forwarded-for", existing + ", " + clientIP)
 	} else {
-		req.Headers["x-forwarded-for"] = clientIP
+		req.Headers.Set("x-forwarded-for", clientIP)
 	}
 
 	// X-Forwarded-Host and X-Forwarded-Proto
-	if _, ok := req.Headers["x-forwarded-host"]; !ok {
-		req.Headers["x-forwarded-host"] = req.Headers["host"]
+	if req.Headers.Get("x-forwarded-host") == "" {
+		req.Headers.Set("x-forwarded-host", req.Headers.Get("host"))
 	}
-	if _, ok := req.Headers["x-forwarded-proto"]; !ok {
-		req.Headers["x-forwarded-proto"] = req.Scheme
+	if req.Headers.Get("x-forwarded-proto") == "" {
+		req.Headers.Set("x-forwarded-proto", req.Scheme)
 	}
 
 	// 2. Write the request to the backend

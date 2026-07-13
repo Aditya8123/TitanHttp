@@ -21,7 +21,7 @@ func RateLimitMiddleware(limiter rate.Limiter) router.Middleware {
 
 			// In a real application, we would also check X-Forwarded-For if
 			// we are behind a proxy. For simplicity, we just use the remote IP.
-			if forwardedFor := req.Headers["x-forwarded-for"]; forwardedFor != "" {
+			if forwardedFor := req.Headers.Get("x-forwarded-for"); forwardedFor != "" {
 				// Get the first IP in the list
 				ips := strings.Split(forwardedFor, ",")
 				if len(ips) > 0 {

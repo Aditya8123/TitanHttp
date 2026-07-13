@@ -18,11 +18,11 @@ TitanHTTP was built for raw, data-driven optimizations, profiling, regression te
 
 | Profile / Workload | TitanHTTP | Go `net/http` | Performance Delta |
 | :--- | :--- | :--- | :--- |
-| **Max Raw Throughput** | **151,316 req/s** | 117,401 req/s | **+28.9% (Winner)** |
-| **Radix-Tree Routing** | **129,746 req/s** | 98,216 req/s | **+32.1% (Winner)** |
-| **Large Payload Handling** | **60,352 req/s** | 42,695 req/s | **+41.4% (Winner)** |
-| **Connection Churn** (`Connection: close`) | **3,568 req/s** | 1,969 req/s | **+81.1% (Winner)** |
-| **P99 Latency (C10K - 200 conns)** | **4.75 ms** | 14.56 ms | **-67.4% (Winner)** |
+| **Max Raw Throughput (Ping)** | **123,483 req/s** | 94,769 req/s | **+41.7% (Winner)** |
+| **Radix-Tree Routing** | **95,290 req/s** | 75,753 req/s | **+27.7% (Winner)** |
+| **Large Payload Handling (10KB)** | **74,266 req/s** | 34,990 req/s | **+115% (Winner)** |
+| **Concurrent Connections** (`C200/Keep-Alive`) | **68,172 req/s** | 38,043 req/s | **+84.1% (Winner)** |
+| **P99 Latency (Max Load)** | **4.76 ms** | 11.06 ms | **-56.9% (Winner)** |
 | **Memory Leak Profile** | **0 MB Leaked** | 0 MB Leaked | **Stable (after 500K requests)** |
 
 ### 🛠️ Key Technical Achievements & Optimizations

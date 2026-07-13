@@ -67,7 +67,7 @@ func main() {
 		{
 			Name: "Chunked Transfer-Encoding (Request)",
 			Request: "POST /ping HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n",
-			CheckFunc: expectStatus("501"), // TitanHTTP doesn't support chunked requests yet (or 400 Bad Request)
+			CheckFunc: expectStatus("405"), // TitanHTTP now supports chunked requests. /ping is GET-only, so 405 is correct.
 		},
 		{
 			Name: "Content-Length",

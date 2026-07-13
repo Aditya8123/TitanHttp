@@ -11,7 +11,7 @@ import (
 func AuthPlaceholder(next router.Handler) router.Handler {
 	return func(req *http.Request) *http.Response {
 		// Get the Authorization header (parser maps headers to lowercase keys)
-		authHeader := req.Headers["authorization"]
+		authHeader := req.Headers.Get("authorization")
 
 		// For demonstration, we require a specific hardcoded bearer token
 		if authHeader != "Bearer titan-secret-token" {

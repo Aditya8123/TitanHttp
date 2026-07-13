@@ -21,7 +21,7 @@ func CacheMiddleware(c *cache.MemoryCache) router.Middleware {
 				return next(req)
 			}
 
-			reqCC := req.Headers["cache-control"]
+			reqCC := req.Headers.Get("cache-control")
 			bypassCache := strings.Contains(reqCC, "no-cache") || strings.Contains(reqCC, "no-store")
 
 			if !bypassCache {
@@ -37,7 +37,7 @@ func CacheMiddleware(c *cache.MemoryCache) router.Middleware {
 
 			// Only cache 200 OK responses and fully buffered bodies
 			if resp.StatusCode == 200 && resp.Stream == nil {
-				respCC := resp.Headers["cache-control"]
+				respCC := resp.Headers.Get("cache-control")
 				if !strings.Contains(respCC, "no-store") && !strings.Contains(respCC, "no-cache") {
 					// Parse max-age if present
 					ttl := time.Duration(0) // Default: never expires

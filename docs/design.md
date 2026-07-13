@@ -170,6 +170,13 @@ Motion is the core educational tool of TitanHTTP. Nothing simply appears; everyt
 * Data never fades randomly.
 * State changes should be explainable.
 * **No elastic easing.** (Backend engineering is deterministic, not bouncy).
+* **3D as Functional Depth:** 3D elements are used to separate layers of architecture (e.g., physical infrastructure vs. logical routing) or to demonstrate state transitions, never just for visual flair.
+
+### 2D Transitions & Animations (Cinematic Image Parallax)
+
+*   **Cinematic Image Parallax:** Instead of WebGL, the site utilizes massive, high-resolution dark-mode images (e.g., fiber optics, server racks, datacenters) with `background-attachment: fixed` or explicit scroll-linked parallax to provide immense depth. Foreground UI (glassmorphism) floats above these images.
+*   **Typography Overlays:** Large, stark typography (LamboType) is overlaid on dark cinematic backgrounds, creating a striking contrast.
+*   **CSS-Driven State Morphing:** Transition states and diagrams (like TCP) use CSS transitions, SVGs, and intersection observers to trigger clean, deterministic animations when scrolled into view.
 
 ### Durations
 
@@ -177,7 +184,7 @@ Motion is the core educational tool of TitanHTTP. Nothing simply appears; everyt
 | --- | --- | --- | --- |
 | fast | 250ms | `--motion-250` | Hover states, micro-interactions, button transitions |
 | base | 400ms | `--motion-400` | Component expansions, terminal typing speed per line |
-| slow | 800ms | `--motion-800` | Packet flow across a section, architecture diagram highlighting |
+| slow | 800ms | `--motion-800` | Diagram animations, packet flow across a section |
 | cinematic | 1600ms | `--motion-1600` | Full section unveils, hero text fade-ins |
 
 ### Sound
@@ -205,9 +212,9 @@ TitanHTTP is organized not by isolated components, but by narrative flows.
 
 **↓ Section: TCP Handshake**
 
-* **Component:** Timeline Canvas (Pure Black, 100vw).
-* **Component:** SYN / ACK Packets (Network Cyan, moving 800ms).
-* **Component:** Socket Node (Glowing interaction point).
+* **Component:** Cinematic Parallax Background (Dark networking imagery).
+* **Component:** CSS/SVG Animation (SYN / ACK Packets moving between Client and Server nodes).
+* **Component:** Glassmorphic Info Strip (Explaining the state).
 
 **↓ Section: The Parser**
 
@@ -223,15 +230,15 @@ TitanHTTP is organized not by isolated components, but by narrative flows.
 
 ## Components
 
-### Cinematic Hero Stage
+### Cinematic Hero Stage (Image Parallax)
 
-Pure Black canvas with a subtle, glowing fiber-optic or server-rack topology in the background. No navbar initially. A single sentence in LamboType 120px:
+A massive, full-screen, high-resolution dark image of abstract internet infrastructure (e.g., fiber optics). The image scales slowly (`transform: scale(1.05)`) on load. A global sticky frosted-glass navigation bar sits at the top. A single sentence drops in, stark and massive in LamboType 120px:
 
 **THE INTERNET**
 **STARTS**
 **WITH A REQUEST**
 
-A tiny Network Cyan packet (`○`) appears and begins an animated journey downward through the DOM (`Browser ↓ TCP ↓ Socket ↓ TitanHTTP`).
+A glowing scroll indicator prompts the user to move downward into the architecture.
 
 ### Floating Metrics Dashboard
 
@@ -266,24 +273,24 @@ Graphs must feel like high-performance engineering tooling.
 6. Every metric has context.
 7. Every section ends with curiosity.
 
-### Illustration Rules
+### Image & 3D Style (Premium WebGL)
+
+Imagery is not static; it is rendered, volumetric, and alive.
 
 **Only use:**
 
-* Network topology
-* Packet flows
-* Datacenter infrastructure
-* Terminal interfaces
-* Architecture diagrams
-* Server racks
-* Fiber optics
-* Circuit board textures
+* **Dark Mode WebGL:** Real-time rendered scenes using Three.js or custom shaders. The background is `#000000`. Lighting should be low-key, utilizing rim lights and emissive materials (specifically Network Cyan and Packet Violet) to define geometry.
+* **Point Clouds & Particle Systems:** Represent bytes, streams, and raw data using millions of particles. Use GLSL shaders to flow them along bezier splines mimicking copper traces.
+* **Volumetric Grids:** Infinite, fading wireframe floors to ground isometric architectures, providing scale and perspective.
+* **Glass Shaders:** 3D nodes should use physical-based rendering (PBR) glass materials with high index of refraction (IOR) to distort the light passing behind them.
+* Monochromatic, hardware-accelerated architecture diagrams.
 
 **Strictly Prohibited:**
 
 * No stock photos.
-* No smiling developers.
-* No office environments.
+* No low-poly or "cartoony" 3D models.
+* No flat vector illustrations of people (e.g., "Corporate Memphis").
+* No smiling developers or office environments.
 * No generic coding/laptop illustrations.
 
 ## Do's and Don'ts
@@ -316,9 +323,9 @@ Graphs must feel like high-performance engineering tooling.
 
 ### Example Component Prompts
 
-1. **Architecture Node Animation:** Create a pure black section. Center an SVG architecture diagram. Make the "Parser" node glow with a `#00d9ff` 1px border and a subtle cyan drop-shadow. Animate a `#00d9ff` dot moving along a 1px `#7d7d7d` path from "Router" to "Worker" over 800ms using a linear easing function.
-2. **Dashboard Metric Panel:** Create a glassmorphic card. Background `rgba(46,46,46,0.3)`, backdrop filter blur 16px, border radius 16px. Top left label "TCP CONNECTIONS" in Roboto Mono 10px, uppercase, tracking 0.182em, color `#9f9fa0`. Center value "1,024" in Roboto Mono 24px, color `#ffffff`.
-3. **Terminal Unveil:** Create a container with 0px radius, background `#090a0b`. Inside, animate typing text in JetBrains Mono 14px, `#ffffff`. Text reads: `GET / HTTP/1.1`. Set typing speed to 250ms per line.
+1. **WebGL Architecture Node:** Initialize a Three.js scene on a pure black background. Create an array of translucent dark glass cubes representing the worker pool. Inject an emissive `#00d9ff` point light (the packet) that travels along a defined 3D spline from the router node to a worker node over 1600ms. Apply a post-processing bloom pass to make the cyan light streak.
+2. **Dashboard Metric Panel:** Create a CSS glassmorphic card layered *above* the WebGL canvas. Background `rgba(46,46,46,0.3)`, backdrop filter blur 16px, border radius 16px. Top left label "TCP CONNECTIONS" in Roboto Mono 10px, uppercase, tracking 0.182em, color `#9f9fa0`. Center value "1,024" in Roboto Mono 24px, color `#ffffff`.
+3. **Scroll-Driven Exploded View:** On scroll, transition a 3D server rack model into an exploded view along the Y-axis. Fade in HTML labels (`DOM` overlay) that track the 3D coordinates of the exposed motherboard components, connecting to them via 1px solid `#7d7d7d` SVG lines.
 
 ## Quick Start
 

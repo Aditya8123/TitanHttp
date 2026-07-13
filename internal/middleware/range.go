@@ -15,8 +15,8 @@ func Range(next router.Handler) router.Handler {
 	return func(req *http.Request) *http.Response {
 		resp := next(req)
 
-		rangeHeader, hasRange := req.Headers["range"]
-		if !hasRange || resp.StatusCode != http.StatusOK || len(resp.Body) == 0 {
+		rangeHeader := req.Headers.Get("range")
+		if rangeHeader == "" || resp.StatusCode != http.StatusOK || len(resp.Body) == 0 {
 			return resp
 		}
 
@@ -33,8 +33,8 @@ func Range(next router.Handler) router.Handler {
 					origLen := len(resp.Body)
 					resp.Body = resp.Body[start : end+1]
 					
-					resp.Headers["Content-Range"] = "bytes " + strconv.Itoa(start) + "-" + strconv.Itoa(end) + "/" + strconv.Itoa(origLen)
-					resp.Headers["Content-Length"] = strconv.Itoa(len(resp.Body))
+					resp.Headers.Set("Content-Range", "bytes "+strconv.Itoa(start)+"-"+strconv.Itoa(end)+"/"+strconv.Itoa(origLen))
+					resp.Headers.Set("Content-Length", strconv.Itoa(len(resp.Body)))
 				}
 			}
 		}

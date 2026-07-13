@@ -403,44 +403,44 @@
 
 # Phase 9 — Showcase Platform
 
-## Task 9.1 — Portfolio Website
+## Task 9.1 — Showcase Foundation
 
 ### Subtasks
 
-* Landing page
-* Feature showcase
-* Documentation portal
+* Project Setup & Styling (Glassmorphism, Void Black)
+* Main Navigation & Chapter Routing
+* Landing Page Implementation
 
 ---
 
-## Task 9.2 — Live Dashboard
+## Task 9.2 — Networking Chapters
 
 ### Subtasks
 
-* Server metrics
-* Request statistics
-* Connection monitor
+* Chapter 1: Why HTTP Exists
+* Chapter 2: TCP
+* Chapter 3: Building a Socket
+* Chapter 4: Reading Bytes
 
 ---
 
-## Task 9.3 — Interactive Learning
+## Task 9.3 — HTTP Core Chapters
 
 ### Subtasks
 
-* HTTP visualizer
-* Request lifecycle animation
-* Architecture explorer
+* Chapter 5: Parsing Requests
+* Chapter 6: Routing
+* Chapter 7: Concurrency
 
 ---
 
-## Task 9.4 — API Playground
+## Task 9.4 — Production & Completion Chapters
 
 ### Subtasks
 
-* Request builder
-* Response viewer
-* Raw HTTP viewer
-
+* Chapter 8: Production Features
+* Chapter 9: Benchmarks
+* Chapter 10: Source Code
 ---
 
 # Phase 10 — Release

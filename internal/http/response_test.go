@@ -8,22 +8,23 @@ import (
 func TestResponseBytes(t *testing.T) {
 	resp := NewResponse()
 	resp.StatusCode = StatusOK
-	resp.Headers["Content-Type"] = "text/plain"
+	resp.Headers.Set("Content-Type", "text/plain")
 	resp.Body = []byte("Hello TitanHTTP")
 
 	bytes := resp.Bytes()
 	str := string(bytes)
+	raw := str
 
 	if !strings.HasPrefix(str, "HTTP/1.1 200 OK\r\n") {
 		t.Errorf("Expected status line to be HTTP/1.1 200 OK\\r\\n, got %q", str)
 	}
 
-	if !strings.Contains(str, "Content-Length: 15\r\n") {
-		t.Errorf("Expected Content-Length: 15, got %q", str)
+	if !strings.Contains(raw, "content-length: 15") {
+		t.Errorf("Expected content-length: 15, got %q", raw)
 	}
 
-	if !strings.Contains(str, "Content-Type: text/plain\r\n") {
-		t.Errorf("Expected Content-Type: text/plain, got %q", str)
+	if !strings.Contains(raw, "content-type: text/plain") {
+		t.Errorf("Expected content-type: text/plain, got %q", raw)
 	}
 
 	if !strings.HasSuffix(str, "\r\nHello TitanHTTP") {
@@ -64,7 +65,7 @@ func BenchmarkResponseWriteTo_LargePayload(b *testing.B) {
 
 	resp := NewResponse()
 	resp.StatusCode = StatusOK
-	resp.Headers["Content-Type"] = "text/plain"
+	resp.Headers.Set("Content-Type", "text/plain")
 	resp.Body = payload
 
 	writer := devNullWriter{}

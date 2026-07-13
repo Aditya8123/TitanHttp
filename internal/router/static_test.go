@@ -141,8 +141,8 @@ func TestStaticFiles(t *testing.T) {
 
 			if tt.expectedHeaders != nil {
 				for k, v := range tt.expectedHeaders {
-					if resp.Headers[k] != v {
-						t.Errorf("Expected header %s: %s, got %s", k, v, resp.Headers[k])
+					if resp.Headers.Get(k) != v {
+						t.Errorf("Expected header %s: %s, got %s", k, v, resp.Headers.Get(k))
 					}
 				}
 			}

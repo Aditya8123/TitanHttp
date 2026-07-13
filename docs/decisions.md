@@ -150,4 +150,72 @@ We will use **Lazy Evaluation** for token refills. Tokens are not actually refil
 - **Con:** The logic for time-delta math and token clamping is slightly more complex to test than a naive background adder.
 
 ---
+
+## ADR 009: Immersive Portfolio Presentation
+
+**Status:** Accepted
+
+### Context
+A standard GitHub README is insufficient for demonstrating the complexity and educational value of a custom-built HTTP server. We needed a way to present the project that immediately signals high engineering standards to technical recruiters and senior developers.
+
+### Decision
+We built a custom React web application (`/web`) to act as a guided, cinematic portfolio. It visualizes the internal workings of the server rather than just listing features.
+
+### Trade-offs & Consequences
+- **Pro:** Creates an immediate "wow" factor; significantly increases the time spent reviewing the project.
+- **Pro:** Allows for interactive demonstrations (e.g., real-time benchmarking graphs, scrolling code walkthroughs).
+- **Con:** Requires maintaining a frontend React codebase alongside the core Go backend.
+
+---
+
+## ADR 010: Native Documentation Routing
+
+**Status:** Accepted
+
+### Context
+Initially, the NavBar linked out to the raw Markdown files (`recruiter.md`, `architecture.md`, `decisions.md`) hosted on GitHub. This broke the immersive experience by kicking the user out of the application.
+
+### Decision
+We integrated `react-router-dom` to build native documentation pages (`/why`, `/architecture`, `/decisions`). We extracted the core concepts from the Markdown files and wrapped them in premium, glassmorphic React UI cards.
+
+### Trade-offs & Consequences
+- **Pro:** Maintains deep user immersion within the dark-mode/cyberpunk aesthetic.
+- **Pro:** Enables seamless, instantaneous client-side navigation without browser reloads.
+- **Con:** Duplicates some text content between the Markdown source-of-truth and the React components, requiring synchronization if the architecture changes.
+
+---
+
+## ADR 011: Strict Bespoke Design System
+
+**Status:** Accepted
+
+### Context
+Modern web development heavily relies on utility-first frameworks like Tailwind CSS or component libraries like Material UI. While fast to write, they can sometimes lead to generic-looking applications.
+
+### Decision
+We rejected Tailwind CSS and external UI libraries. Instead, we established a strict bespoke design system using pure Vanilla CSS (`index.css`) governed by explicit color tokens (`Void Black`, `Network Cyan`, `Packet Violet`, `Steel Mid`) and typography (`Lambotype`, `Suisse Intl`, `Roboto Mono`). 
+
+### Trade-offs & Consequences
+- **Pro:** Complete pixel-perfect control over glassmorphism effects, shadows, and subtle micro-animations.
+- **Pro:** The UI feels strictly customized and "expensive," aligning with the low-level nature of the Go backend.
+- **Con:** Writing raw CSS is more verbose and requires careful management of global styles to prevent clashes.
+
+---
+
+## ADR 012: The 10-Chapter Guided Narrative
+
+**Status:** Accepted
+
+### Context
+Reviewing a backend codebase can be overwhelming. Dropping a reviewer into the `internal/` directory without context makes it hard to appreciate the engineering progression.
+
+### Decision
+We structured the frontend presentation as a strict 10-Chapter guided narrative (matching the `phases.md` hierarchy). The UI forces the user to scroll through the evolution of the server: from raw TCP bytes, to parsing, to routing, to concurrency.
+
+### Trade-offs & Consequences
+- **Pro:** Builds trust incrementally. The reviewer understands *why* a component was built before seeing *how* it was built.
+- **Pro:** Gamifies the code review process.
+- **Con:** Linear storytelling can be frustrating for users who just want to jump straight to the source code (mitigated by adding the "JOURNEY" dropdown in the NavBar).
+
+---
 > *"Code tells you how; comments tell you why."*

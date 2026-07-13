@@ -15,6 +15,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"runtime"
 
@@ -32,6 +33,10 @@ var readerPool = sync.Pool{
 	},
 }
 
+type WorkerShard struct {
+	queue chan net.Conn
+}
+
 type Server struct {
 	addr         string
 	mu           sync.Mutex // Protects listener
@@ -41,8 +46,10 @@ type Server struct {
 	done         chan struct{}
 	activeConnWg sync.WaitGroup
 	IdleTimeout  time.Duration
+	ReadTimeout  time.Duration
 	MaxWorkers   int
-	workerQueue  chan net.Conn
+	shards       []WorkerShard
+	roundRobin   uint64
 }
 
 func NewServer(addr string) *Server {
@@ -52,9 +59,25 @@ func NewServer(addr string) *Server {
 		metrics:     &Metrics{},
 		done:        make(chan struct{}),
 		IdleTimeout: DefaultIdleTimeout,
+		ReadTimeout: 10 * time.Second,
 		MaxWorkers:  10000,
-		workerQueue: make(chan net.Conn, 10000),
 	}
+	
+	// Create shards to reduce channel contention
+	numShards := runtime.GOMAXPROCS(0) * 8
+	if numShards < 16 {
+		numShards = 16
+	}
+	s.shards = make([]WorkerShard, numShards)
+	
+	// Queue size per shard. e.g. 10000 total connections / 16 shards = 625 connections per shard
+	queueSize := s.MaxWorkers / numShards
+	for i := 0; i < numShards; i++ {
+		s.shards[i] = WorkerShard{
+			queue: make(chan net.Conn, queueSize),
+		}
+	}
+	
 	return s
 }
 
@@ -99,7 +122,7 @@ func (s *Server) StartTLS(certFile, keyFile string) error {
 
 	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
-		NextProtos:   []string{"http/1.1"},
+		NextProtos:   []string{"h2", "http/1.1"},
 	}
 
 	l, err := net.Listen("tcp", s.addr)
@@ -173,9 +196,21 @@ func (s *Server) serve() error {
 				// Increment active connections before dispatching to prevent shutdown races
 				s.activeConnWg.Add(1)
 
-				// Dispatch to the worker pool. If the pool is full, this will block,
-				// applying backpressure to the TCP accept loop to prevent memory explosion.
-				s.workerQueue <- conn
+				// Dispatch to the worker pool.
+				// We use atomic round-robin to pick a shard, ensuring perfect distribution
+				// and eliminating the single-channel mutex bottleneck.
+				shardIdx := atomic.AddUint64(&s.roundRobin, 1) % uint64(len(s.shards))
+				
+				select {
+				case s.shards[shardIdx].queue <- conn:
+					// Dispatched successfully
+				default:
+					// Capacity exhausted! Backpressure triggered.
+					// Reject connection gracefully by closing instantly to protect server memory.
+					conn.Close()
+					s.metrics.ConnectionRejected()
+					s.activeConnWg.Done() // Decrement because we didn't process it
+				}
 			}
 		}()
 	}
@@ -186,12 +221,17 @@ func (s *Server) serve() error {
 }
 
 func (s *Server) startWorkerPool() {
-	for i := 0; i < s.MaxWorkers; i++ {
-		go func() {
-			for conn := range s.workerQueue {
-				s.handleConnection(conn)
-			}
-		}()
+	workersPerShard := s.MaxWorkers / len(s.shards)
+	
+	for i := 0; i < len(s.shards); i++ {
+		shard := s.shards[i]
+		for j := 0; j < workersPerShard; j++ {
+			go func(q chan net.Conn) {
+				for conn := range q {
+					s.handleConnection(conn)
+				}
+			}(shard.queue)
+		}
 	}
 }
 
@@ -247,9 +287,14 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	// Connection loop: continuously read from the socket until EOF or error.
 	for {
-		// Set an idle timeout while waiting for the client to send the next request.
-		if s.IdleTimeout > 0 {
-			err := conn.SetReadDeadline(time.Now().Add(s.IdleTimeout))
+		// Apply ReadTimeout for the first request, and IdleTimeout for subsequent keep-alive requests.
+		timeout := s.ReadTimeout
+		if requestsServed > 0 {
+			timeout = s.IdleTimeout
+		}
+
+		if timeout > 0 {
+			err := conn.SetReadDeadline(time.Now().Add(timeout))
 			if err != nil {
 				fmt.Printf("Failed to set read deadline: %v\n", err)
 				return
@@ -259,7 +304,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		req, err := http.ParseRequest(r)
 		
 		// Clear the read deadline while processing the request so long handlers aren't killed
-		if s.IdleTimeout > 0 {
+		if timeout > 0 {
 			conn.SetReadDeadline(time.Time{})
 		}
 		if err != nil {
@@ -276,6 +321,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 				switch {
 				case errors.Is(err, http.ErrURITooLong):
 					resp = http.NewResponse414()
+				case errors.Is(err, http.ErrHeaderFieldsTooLarge):
+					resp = http.NewResponse431()
 				case errors.Is(err, http.ErrNotImplemented):
 					resp = http.NewResponse501()
 				case errors.Is(err, http.ErrMethodNotAllowed):
@@ -292,6 +339,10 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
+		// Provide a default background context. 
+		// We avoid per-request context allocations under high churn workloads unless specifically needed.
+		req.WithContext(context.Background())
+
 		// Populate network-level details on the Request
 		if addr := conn.RemoteAddr(); addr != nil {
 			req.RemoteAddr = addr.String()
@@ -305,7 +356,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			req.Scheme = "http"
 		}
 
-		if req.Headers["expect"] == "100-continue" {
+		if req.Headers.Get("expect") == "100-continue" {
 			if _, wErr := conn.Write([]byte("HTTP/1.1 100 Continue\r\n\r\n")); wErr != nil {
 				return
 			}
@@ -333,12 +384,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 		wantsKeepAlive := req.WantsKeepAlive()
 
 		if wantsKeepAlive {
-			resp.Headers["Connection"] = "keep-alive"
+			resp.Headers.Set("Connection", "keep-alive")
 			if s.IdleTimeout > 0 {
-				resp.Headers["Keep-Alive"] = fmt.Sprintf("timeout=%d", int(s.IdleTimeout.Seconds()))
+				resp.Headers.Set("Keep-Alive", fmt.Sprintf("timeout=%d", int(s.IdleTimeout.Seconds())))
 			}
 		} else {
-			resp.Headers["Connection"] = "close"
+			resp.Headers.Set("Connection", "close")
 		}
 
 		n, err := resp.WriteTo(conn)

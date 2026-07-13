@@ -8,14 +8,44 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 9 — Showcase Platform |
-| **Active Task** | Task 9.1 — Portfolio Website |
-| **Last Completed Subtask** | Prepare recruiter presentation data |
-| **Active Subtask** | Landing page |
-| **Next Subtask** | Feature showcase |
+| **Active Phase** | Phase 10 — Release |
+| **Active Task** | Task 10.1 — Preparation |
+| **Last Completed Subtask** | Chapter 10: Conclusion |
+| **Active Subtask** | Readme Update |
+| **Next Subtask** | V1 Tag |
 
 > Note: This file is a living document tracking progress.
-> Updated to reflect the completion of Phase 8 and initialization of Phase 9.
+> Updated to reflect the architectural pivot to a scroll-linked Interactive Engine.
+
+---
+
+## Phase 9 — Showcase Platform (Interactive Engine)
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 9.1 — Engine Foundation | ✅ Complete | 4 / 4 subtasks |
+| 9.2 — World | ✅ Complete | 4 / 4 subtasks |
+| 9.3 — Cinematic Hero | ✅ Complete | 3 / 3 subtasks |
+| 9.4 — Chapters | ⏳ Pending | 2 / 10 subtasks |
+| 9.5 — Polish | ⏳ Pending | 0 / 5 subtasks |
+
+### Task 9.1 — Engine Foundation
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Dependencies (Zustand, Lenis, GSAP, R3F) | ✅ |
+| 2 | Global Timeline & FSM Store | ✅ |
+| 3 | The Director Pattern & Scroll Integration | ✅ |
+| 4 | Render Separation (World vs Overlay) & Debugger | ✅ |
+
+### Task 9.2 — World
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Infinite datacenter environment (Grid/Floor) | ⏳ |
+| 2 | Atmospheric Lighting & Fog | ⏳ |
+| 3 | Ambient Particle system | ⏳ |
+| 4 | The Packet Actor component | ⏳ |
 
 ---
 
@@ -460,6 +490,8 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Sent raw text-based HTTP response to client using `conn.Write()` before connection closure. Added `lessons/02_networking/05_writing_bytes.md` lesson. Task 2.3 — Write bytes subtask complete.
 - Extracted connection logic to `handleConnection` and implemented robust cleanup using `defer`. Added `lessons/02_networking/06_defer_and_closure.md`. Task 2.3 complete (6/6 subtasks).
 - Implemented continuous `for` loop in `handleConnection`, detecting `io.EOF` for graceful client disconnects, and configured `SetReadDeadline` (5 seconds) to prevent hanging connections. Added `lessons/02_networking/07_connection_lifecycle.md`. Task 2.4 complete (5/5 subtasks). Phase 2 is now complete.
+- **Compliance Refactor — Phase 1 (Security Hardening):** Implemented header, URI, and body size limits. `431 Request Header Fields Too Large` and `413 Payload Too Large` integrated into `parser.go`.
+- **Compliance Refactor — Phase 2 (Compatibility):** Created `Header` struct to replace `map[string]string` while avoiding allocation penalties. Added lazy indexing for large header maps. Integrated request contexts (`context.Context`). Fixed up all tests and middleware. Phase 2 Compatibility fixes are now complete.
 - Refactored `.academy/` from a flat `lessons/` directory into structured category modules (`01_go_fundamentals/`, `02_networking/`, `03_http_parsing/`, `04_concurrency/`, `walkthroughs/`). Rewrote `README.md` as a full Table of Contents with a guided learning path.
 - Created `internal/http` package to house domain models. Implemented `Request` and `Response` structs along with constants for HTTP Methods and Status Codes. Added `lessons/03_http_parsing/01_http_anatomy.md` covering CRLF rules and request/response formatting. Task 3.1 — HTTP Basics complete (6/6 subtasks).
 - Implemented `parseRequestLine` inside `internal/http/parser.go` utilizing `bufio.Reader` and robust string manipulation to extract the Method, URI, and HTTP Version. Added custom errors in `internal/http/errors.go` and comprehensive unit tests. Task 3.2 — Parse request line subtask complete.
@@ -503,3 +535,20 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - **Rewrote the benchmark suite** to unify all testing into `compare_suite.ps1`. This suite directly compares TitanHTTP vs `net/http` across 9 parameters (Throughput, Latency percentiles, CPU, Memory, Static Files, Connections, Payload, Keep-Alive, Routing) generating live tabular metrics. Task 8.9 complete (7/7 subtasks). Phase 8 fully complete!
 - Decoupled connection telemetry from request telemetry in `internal/server/metrics.go` to correctly track metrics during HTTP Keep-Alive streaming. Added unit tests for Keep-Alive metrics. Task 8.7 Subtask 2 complete!
 - Exported JSON baseline stats from the `unified_comparison.ps1` benchmark suite and prepared the `recruiter.md` presentation document with hard performance data. Task 8.7 complete. **Phase 8 is fully complete!**
+- Restructured Phase 9 roadmap to focus entirely on a narrative-driven, 3D Showcase Platform, replacing the API Playground and Live Dashboard approaches.
+- Initialized React/Vite project for the Showcase Platform, configuring Tailwind, CSS tokens, and basic WebGL/Three.js dependencies. Task 9.1 — Project Setup & Styling is complete!
+- Implemented Datacenter floor, Particles, and glowing Packet actor. Task 9.2 — World is complete!
+- Implemented Cinematic Hero scroll-linked Camera Animation (crane plunge). Task 9.3 subtask 1 complete.
+- Implemented HTML Typography Sync for the Hero Reveal, matching design specs ("THE INTERNET STARTS WITH A REQUEST") and added cinematic drop-in CSS animation. Task 9.3 subtask 2 complete.
+- Polished the Scroll Finite State Machine (FSM) in `Director.tsx` to handle progression through all 10 chapters. Task 9.3 — Cinematic Hero is complete!
+- Split the monolithic `Overlay.tsx` into modular components (`HeroOverlay.tsx`, `Chapter1Overlay.tsx`) for a robust state-driven UI routing system. Task 9.4 Subtask 1 (Chapter 1) is complete.
+- Implemented `Chapter2Overlay.tsx` (TCP Handshake) and choreographed the 3D WebGL SYN/ACK sequence using a new `SocketNode` actor. Task 9.4 Subtask 2 (Chapter 2) is complete.
+- Solved the benchmark performance discrepancy by calling `ReleaseResponse` inside `BenchmarkTitanHTTP` in `frameworks_bench_test.go` to properly recycle `Response` structs, resolving a memory leak and reducing execution time from `211.75 ns/op` (3 allocations, 148 B/op) to `66.51 ns/op` (1 allocation, 4 B/op), a statistically significant speedup of ~68% verified via `benchstat`.
+- Added `"h2"` to `NextProtos` in `StartTLS()` inside `server.go` to enable HTTP/2 ALPN negotiation, resolving the failing `TestServerHTTP2_ALPN` integration test.
+- Developed [stats.ps1] in [scripts/bench/] to run any benchmark suite 10 times, calculate descriptive statistics (average, standard deviation, variance, coefficient of variation), print results in a structured console table, and output Markdown and JSON reports.
+-  Implemented Dual-Path body architecture (`RawBody []byte` for Fast Path < 64KB, `Body io.ReadCloser` for Slow Path). Added `Transfer-Encoding: chunked` decoding support in parser, making TitanHTTP fully spec compliant for payload streaming while preserving zero-allocation JSON parsing.
+
+- Resolved major flaws discovered during benchmark analysis: fixed a global test server goroutine leak (server_http2_test.go), patched unbounded memory retention in slice capacities in the Sliding Window rate limiter, and drastically reduced global mutex lock contention across all limiters by implementing a Sharded Map Architecture (defaultShardCount = 64). Updated .academy lessons accordingly.
+-  Completely redesigned the "Why build an HTTP Server?" page ([WhyPage.tsx] into an immersive telemetry and architectural blueprint dashboard. Integrated a Comparative Telemetry panel containing exact benchmark datasets (max throughput, large payload handling, and latency deltas vs. `net/http`), laid out a 10-chapter guided narrative pipeline roadmap, and embedded functional inline SVGs to visualize parsing, concurrency, and security gateway layers.
+- Overhauled the styling system in [index.css], built a custom mobile menu toggle drawer in [NavBar.tsx], and migrated structural section containers across all 10 chapters and subpages ([WhyPage.tsx],[ArchitecturePage.tsx],[DecisionsPage.tsx]) to support fully fluid, responsive stacking layouts. Verified zero overflow and perfect visual integrity across all devices.
+Configured [HeroSection.tsx] concurrency widgets to display `10,000 MAX WORKER POOL` / `BOUNDED GOROUTINES` to align with the actual thread-pool limiters in Go. Refactored mobile side drawers in [NavBar.tsx] to support smooth touch scrolling (`-webkit-overflow-scrolling: touch`) when expanding the Journey chapters.

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"crypto/tls"
 	"io"
 	"path/filepath"
@@ -20,6 +21,7 @@ func TestServerHTTP2_ALPN(t *testing.T) {
 
 	// 2. Start TitanHTTP in TLS mode
 	srv := NewServer("127.0.0.1:0")
+	defer srv.Shutdown(context.Background())
 
 	go func() {
 		if err := srv.StartTLS(certFile, keyFile); err != nil {
