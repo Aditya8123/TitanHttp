@@ -58,7 +58,7 @@ func TestReverseProxy(t *testing.T) {
 	req.Headers.Set("content-length", "11") // length of "client-data"
 	req.RemoteAddr = "192.168.1.100:54321"
 	req.Scheme = "https"
-	req.Body = []byte("client-data")
+	req.RawBody = []byte("client-data")
 
 	// 4. Send request through the proxy
 	resp := proxyHandler(req)

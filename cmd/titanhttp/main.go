@@ -138,7 +138,7 @@ func main() {
 		var size int
 		fmt.Sscanf(sizeStr, "%d", &size)
 
-		if size < 0 || size > 10_000_000 {
+		if size < 0 || size > 15_000_000 {
 			resp.StatusCode = http.StatusBadRequest
 			resp.Headers.Set("Content-Type", "text/plain")
 			resp.Body = []byte("Size must be between 0 and 10MB")

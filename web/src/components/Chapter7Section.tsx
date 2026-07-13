@@ -14,8 +14,6 @@ export const Chapter7Section: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
-
-
   return (
     <section id="concurrency" ref={sectionRef} style={{
       position: 'relative',
@@ -51,21 +49,14 @@ export const Chapter7Section: React.FC = () => {
       }} />
 
       {/* Content Container */}
-      <div style={{
+      <div className="chapter-container" style={{
         position: 'relative',
         zIndex: 2,
-        maxWidth: '1440px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '0 40px',
-        display: 'flex',
-        gap: '80px',
         opacity: isInView ? 1 : 0,
-        transform: `translateY(${isInView ? 0 : '40px'})`,
-        transition: 'all 1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transform: `translateY(${isInView ? 0 : '40px'})`
       }}>
         {/* Left Column: Text */}
-        <div style={{ flex: 1, maxWidth: '500px' }}>
+        <div className="chapter-column-text">
           <div style={{
             fontFamily: 'var(--font-roboto-mono)',
             fontSize: '14px',
@@ -74,14 +65,7 @@ export const Chapter7Section: React.FC = () => {
             marginBottom: '16px'
           }}>CHAPTER 07</div>
           
-          <h2 style={{
-            fontFamily: 'var(--font-lambotype)',
-            fontSize: '80px',
-            lineHeight: 0.9,
-            color: 'var(--color-paper-white)',
-            marginBottom: '32px',
-            textTransform: 'uppercase'
-          }}>
+          <h2 className="chapter-heading">
             CONCURRENCY
           </h2>
 
@@ -101,12 +85,7 @@ export const Chapter7Section: React.FC = () => {
         </div>
 
         {/* Right Column: Code Visualization */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end'
-        }}>
+        <div className="chapter-column-visual">
            <div style={{
             background: 'rgba(10, 10, 12, 0.8)',
             backdropFilter: 'blur(16px)',
@@ -123,7 +102,8 @@ export const Chapter7Section: React.FC = () => {
                 fontSize: '14px',
                 lineHeight: 1.6,
                 margin: 0,
-                color: 'var(--color-paper-white)'
+                color: 'var(--color-paper-white)',
+                overflowX: 'auto'
               }}>
                 {[
                   { len: 7,  delay: 0.5, content: <><span style={{ color: '#c678dd' }}>for</span> {'{'}</> },

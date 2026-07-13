@@ -11,6 +11,7 @@ type Metrics struct {
 	activeConns   atomic.Int64
 	totalBytes    atomic.Int64
 	panicCount    atomic.Int32
+	rejectedConns atomic.Int64
 }
 
 // ConnectionOpened should be called when a new connection begins processing.
@@ -34,12 +35,18 @@ func (m *Metrics) PanicRecovered() {
 	m.panicCount.Add(1)
 }
 
+// ConnectionRejected increments the counter for connections shed under backpressure.
+func (m *Metrics) ConnectionRejected() {
+	m.rejectedConns.Add(1)
+}
+
 // Report prints the current snapshot of server metrics.
 func (m *Metrics) Report() {
-	fmt.Printf("[Metrics] Total: %d | Active: %d | Bytes: %d | Panics: %d\n",
+	fmt.Printf("[Metrics] Total: %d | Active: %d | Bytes: %d | Panics: %d | Rejected: %d\n",
 		m.totalRequests.Load(),
 		m.activeConns.Load(),
 		m.totalBytes.Load(),
 		m.panicCount.Load(),
+		m.rejectedConns.Load(),
 	)
 }

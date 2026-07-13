@@ -38,8 +38,13 @@ type Request struct {
 	// Headers stores the parsed HTTP headers using a zero-allocation slice-backed structure.
 	Headers Header
 
-	// Body contains the payload of the request, if any.
-	Body []byte
+	// RawBody contains the fast-path byte slice of the request payload, if it was less than 64KB.
+	// This enables zero-allocation access for small JSON and text payloads.
+	RawBody []byte
+
+	// Body provides standard io.ReadCloser streaming access to the payload.
+	// This supports large payloads and chunked transfer encoding.
+	Body io.ReadCloser
 
 	// Params stores dynamic path parameters extracted by the router (e.g., /users/:id).
 	Params map[string]string
@@ -91,6 +96,7 @@ func ReleaseRequest(req *Request) {
 	req.Method = ""
 	req.Path = ""
 	req.Version = ""
+	req.RawBody = nil
 	req.Body = nil
 	req.RemoteAddr = ""
 	req.Scheme = ""
@@ -166,9 +172,15 @@ func (r *Request) WriteTo(w io.Writer) (int64, error) {
 	}
 
 	// Body
-	if len(r.Body) > 0 {
-		n, err = w.Write(r.Body)
+	if len(r.RawBody) > 0 {
+		n, err = w.Write(r.RawBody)
 		totalWritten += int64(n)
+		if err != nil {
+			return totalWritten, err
+		}
+	} else if r.Body != nil {
+		written, err := io.Copy(w, r.Body)
+		totalWritten += written
 		if err != nil {
 			return totalWritten, err
 		}

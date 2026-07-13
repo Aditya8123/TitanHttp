@@ -233,8 +233,8 @@ func TestParseBody(t *testing.T) {
 			}
 
 			if tt.expectedError == nil {
-				if string(req.Body) != tt.expectedBody {
-					t.Errorf("expected body %q, got %q", tt.expectedBody, string(req.Body))
+				if string(req.RawBody) != tt.expectedBody {
+					t.Errorf("expected body %q, got %q", tt.expectedBody, string(req.RawBody))
 				}
 			}
 		})

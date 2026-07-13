@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Server, ChevronDown } from 'lucide-react';
+import { Server, ChevronDown, Menu, X } from 'lucide-react';
 
 const GithubIcon = ({ size = 16, color = "currentColor" }) => (
   <svg
@@ -34,6 +34,8 @@ const journeyChapters = [
 export const NavBar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [journeyOpen, setJourneyOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileJourneyOpen, setMobileJourneyOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +45,18 @@ export const NavBar: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Prevent scrolling when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <>
@@ -95,8 +109,111 @@ export const NavBar: React.FC = () => {
           color: var(--color-network-cyan);
           padding-left: 24px;
         }
+
+        /* Mobile specific styles */
+        .mobile-toggle {
+          display: none;
+        }
+
+        .mobile-drawer {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(10, 10, 12, 0.98);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          z-index: 95;
+          display: flex;
+          flex-direction: column;
+          padding: 100px 24px 60px 24px;
+          transform: translateY(-100%);
+          transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow-y: scroll;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .mobile-drawer.open {
+          transform: translateY(0);
+        }
+
+        .mobile-drawer-link {
+          font-family: var(--font-roboto-mono);
+          color: var(--color-paper-white);
+          font-size: 16px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          text-decoration: none;
+          padding: 16px 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          transition: color 0.3s ease;
+        }
+
+        .mobile-drawer-link:hover {
+          color: var(--color-network-cyan);
+        }
+
+        .mobile-journey-dropdown {
+          display: flex;
+          flex-direction: column;
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.4s ease-out;
+          background: rgba(255,255,255,0.02);
+          border-radius: 4px;
+        }
+
+        .mobile-journey-dropdown.open {
+          max-height: 600px;
+          padding: 8px 0;
+          margin-top: 8px;
+          overflow-y: auto;
+        }
+
+        .mobile-dropdown-link {
+          color: var(--color-steel-mid);
+          text-decoration: none;
+          padding: 12px 16px;
+          font-family: var(--font-roboto-mono);
+          font-size: 11px;
+          letter-spacing: 0.1em;
+          display: block;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .mobile-dropdown-link:hover {
+          color: var(--color-network-cyan);
+          background: rgba(0, 217, 255, 0.05);
+        }
+
+        @media (max-width: 1024px) {
+          .nav-desktop-links {
+            display: none !important;
+          }
+          .nav-desktop-cta {
+            display: none !important;
+          }
+          .mobile-toggle {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--color-paper-white);
+            cursor: pointer;
+            z-index: 101;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.3s;
+          }
+          .mobile-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+          }
+        }
       `}</style>
-      <nav style={{
+
+      <nav className="nav-container" style={{
         position: 'fixed',
         top: '0',
         left: '0',
@@ -105,17 +222,18 @@ export const NavBar: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: scrolled ? '16px 60px' : '24px 60px',
-        background: scrolled ? 'rgba(10, 10, 12, 0.75)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(24px) saturate(150%)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(24px) saturate(150%)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid transparent',
+        padding: scrolled ? '16px 24px' : '24px 24px',
+        background: (scrolled || mobileMenuOpen) ? 'rgba(10, 10, 12, 0.95)' : 'transparent',
+        backdropFilter: (scrolled || mobileMenuOpen) ? 'blur(24px) saturate(150%)' : 'none',
+        WebkitBackdropFilter: (scrolled || mobileMenuOpen) ? 'blur(24px) saturate(150%)' : 'none',
+        borderBottom: (scrolled || mobileMenuOpen) ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid transparent',
         transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
       }}>
         {/* Left: Brand */}
         <div 
-          style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} 
+          style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', zIndex: 101 }} 
           onClick={() => {
+            setMobileMenuOpen(false);
             navigate('/');
             window.scrollTo({top: 0, behavior: 'smooth'});
           }}
@@ -146,8 +264,8 @@ export const NavBar: React.FC = () => {
           </span>
         </div>
 
-        {/* Center: Links */}
-        <div style={{ 
+        {/* Center: Links (Desktop) */}
+        <div className="nav-desktop-links" style={{ 
           display: 'flex', 
           gap: '32px', 
           alignItems: 'center',
@@ -205,8 +323,8 @@ export const NavBar: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: CTA */}
-        <div>
+        {/* Right: CTA (Desktop) */}
+        <div className="nav-desktop-cta">
           <a href="/#alive" style={{ textDecoration: 'none' }}>
             <button style={{
               background: 'var(--color-paper-white)',
@@ -238,7 +356,87 @@ export const NavBar: React.FC = () => {
             </button>
           </a>
         </div>
+
+        {/* Mobile Hamburger Toggle Button */}
+        <button 
+          className="mobile-toggle"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle navigation menu"
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </nav>
+
+      {/* Mobile Navigation Drawer */}
+      <div className={`mobile-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        <Link to="/why" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>WHY</Link>
+        <Link to="/architecture" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>ARCHITECTURE</Link>
+        <Link to="/decisions" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>DECISIONS</Link>
+        
+        {/* Mobile Journey Dropdown */}
+        <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <button 
+            className="mobile-drawer-link" 
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              textAlign: 'left', 
+              width: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+            onClick={() => setMobileJourneyOpen(!mobileJourneyOpen)}
+          >
+            <span>JOURNEY</span>
+            <ChevronDown size={18} style={{ transform: mobileJourneyOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+          </button>
+          
+          <div className={`mobile-journey-dropdown ${mobileJourneyOpen ? 'open' : ''}`}>
+            {journeyChapters.map(ch => (
+              <Link 
+                key={ch.name} 
+                to={ch.link} 
+                className="mobile-dropdown-link" 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setMobileJourneyOpen(false);
+                }}
+              >
+                {ch.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA (Mobile) */}
+        <div style={{ marginTop: 'auto', paddingTop: '40px', paddingBottom: '40px' }}>
+          <a href="/#alive" style={{ textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>
+            <button style={{
+              background: 'var(--color-paper-white)',
+              color: '#000',
+              border: 'none',
+              padding: '16px 28px',
+              borderRadius: '100px',
+              fontFamily: 'var(--font-roboto-mono)',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              letterSpacing: '0.15em',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              width: '100%',
+              boxShadow: '0 4px 14px rgba(255, 255, 255, 0.25)',
+            }}>
+              <GithubIcon size={18} /> SOURCE CODE
+            </button>
+          </a>
+        </div>
+      </div>
     </>
   );
 };

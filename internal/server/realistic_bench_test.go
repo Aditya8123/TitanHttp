@@ -48,7 +48,7 @@ func setupRealisticRouter() *router.Router {
 	r.Post("/products", func(req *titanhttp.Request) *titanhttp.Response {
 		// Simulate reading and parsing JSON
 		var p Product
-		bodyBytes := req.Body
+		bodyBytes := req.RawBody
 		json.Unmarshal(bodyBytes, &p)
 
 		res := titanhttp.NewResponse()

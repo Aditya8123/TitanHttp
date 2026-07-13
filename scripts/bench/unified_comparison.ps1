@@ -65,14 +65,14 @@ function Get-Stats {
     }
     
     return @{
-        Mean = [math]::Round($mean, 2)
-        StdDev = [math]::Round($stdDev, 2)
-        Min = [math]::Round($min, 2)
-        Max = [math]::Round($max, 2)
-        Range = [math]::Round($max - $min, 2)
-        Median = [math]::Round((&$getPercentile 50), 2)
-        P95 = [math]::Round((&$getPercentile 95), 2)
-        P99 = [math]::Round((&$getPercentile 99), 2)
+        Mean = [math]::Round($mean, 4)
+        StdDev = [math]::Round($stdDev, 4)
+        Min = [math]::Round($min, 4)
+        Max = [math]::Round($max, 4)
+        Range = [math]::Round($max - $min, 4)
+        Median = [math]::Round((&$getPercentile 50), 4)
+        P95 = [math]::Round((&$getPercentile 95), 4)
+        P99 = [math]::Round((&$getPercentile 99), 4)
     }
 }
 
@@ -82,14 +82,19 @@ function Run-BombardierSingle {
     $jsonRaw = Invoke-Expression "$cmd 2> `$null"
     $res = $jsonRaw | ConvertFrom-Json
     
-    $p50 = [math]::Round($res.result.latency.percentiles."50" / 1000, 2)
-    $p95 = [math]::Round($res.result.latency.percentiles."95" / 1000, 2)
-    $p99 = [math]::Round($res.result.latency.percentiles."99" / 1000, 2)
+    $p50 = [math]::Round($res.result.latency.percentiles."50" / 1000, 4)
+    $p95 = [math]::Round($res.result.latency.percentiles."95" / 1000, 4)
+    $p99 = [math]::Round($res.result.latency.percentiles."99" / 1000, 4)
     
     $errors = 0
     if ($res.result.errors) {
         $errors = ($res.result.req1xx + $res.result.req2xx + $res.result.req3xx + $res.result.req4xx + $res.result.req5xx) 
         $errors = $res.result.reqsTotal - $errors
+    }
+    
+    $bytesPerSec = 0
+    if ($res.result.timeTakenSeconds -gt 0) {
+        $bytesPerSec = $res.result.bytesRead / $res.result.timeTakenSeconds
     }
     
     return @{
@@ -98,7 +103,7 @@ function Run-BombardierSingle {
         P95 = $p95
         P99 = $p99
         Errors = $errors
-        ThroughputMB = [math]::Round($res.result.throughput / 1MB, 2)
+        ThroughputMB = [math]::Round($bytesPerSec / 1MB, 2)
     }
 }
 

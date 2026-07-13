@@ -34,7 +34,7 @@ export const Chapter10Section: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundImage: 'url(/images/chapter10.png)',
+        backgroundImage: 'url(/images/chapter10.jpeg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -51,6 +51,61 @@ export const Chapter10Section: React.FC = () => {
         zIndex: 1
       }} />
 
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'rgba(0,0,0,0.75)',
+        zIndex: 1
+      }} />
+
+      <style>{`
+        .c10-buttons-container {
+          display: flex;
+          gap: 24px;
+          align-items: center;
+        }
+        .c10-footer {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          padding: 24px 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.5);
+          backdrop-filter: blur(8px);
+          z-index: 10;
+          font-family: var(--font-roboto-mono);
+          font-size: 12px;
+          color: var(--color-steel-mid);
+        }
+        @media (max-width: 640px) {
+          .c10-buttons-container {
+            flex-direction: column !important;
+            gap: 16px !important;
+            width: 100%;
+            padding: 0 20px;
+          }
+          .c10-buttons-container a {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .c10-footer {
+            flex-direction: column !important;
+            gap: 12px !important;
+            padding: 16px 20px !important;
+            text-align: center !important;
+            position: relative !important;
+            margin-top: 40px;
+          }
+        }
+      `}</style>
+
       {/* Content Container */}
       <div style={{
         position: 'relative',
@@ -58,7 +113,7 @@ export const Chapter10Section: React.FC = () => {
         maxWidth: '800px',
         margin: '0 auto',
         width: '100%',
-        padding: '0 40px',
+        padding: '0 24px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -74,14 +129,8 @@ export const Chapter10Section: React.FC = () => {
           letterSpacing: '0.1em',
           marginBottom: '16px'
         }}>CHAPTER 10</div>
-        
-        <h2 style={{
-          fontFamily: 'var(--font-lambotype)',
-          fontSize: '100px',
-          lineHeight: 0.9,
-          color: 'var(--color-paper-white)',
-          marginBottom: '32px',
-          textTransform: 'uppercase',
+
+        <h2 className="chapter-heading" style={{
           textShadow: '0 0 40px rgba(0, 217, 255, 0.3)'
         }}>
           SOURCE CODE
@@ -121,7 +170,8 @@ export const Chapter10Section: React.FC = () => {
             fontSize: '14px',
             color: 'var(--color-paper-white)',
             margin: 0,
-            lineHeight: 1.8
+            lineHeight: 1.8,
+            overflowX: 'auto'
           }}>
             <span style={{ color: 'var(--color-steel-mid)' }}># Clone the repository</span>{'\n'}
             <span style={{ color: 'var(--color-network-cyan)' }}>git</span> clone https://github.com/Aditya8123/TitanHttp.git{'\n\n'}
@@ -132,7 +182,7 @@ export const Chapter10Section: React.FC = () => {
           </pre>
         </div>
 
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+        <div className="c10-buttons-container">
           <a href="https://github.com/Aditya8123/TitanHttp" target="_blank" rel="noreferrer" style={{
             background: 'var(--color-paper-white)',
             color: '#000',
@@ -151,8 +201,8 @@ export const Chapter10Section: React.FC = () => {
             transition: 'transform 0.2s ease',
             textDecoration: 'none'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
             <Code size={18} /> VIEW ON GITHUB
           </a>
@@ -173,14 +223,14 @@ export const Chapter10Section: React.FC = () => {
             transition: 'all 0.2s ease',
             textDecoration: 'none'
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           >
             <Terminal size={18} /> READ DOCUMENTATION
           </a>
@@ -188,23 +238,7 @@ export const Chapter10Section: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        padding: '24px 40px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-        background: 'rgba(0, 0, 0, 0.5)',
-        backdropFilter: 'blur(8px)',
-        zIndex: 10,
-        fontFamily: 'var(--font-roboto-mono)',
-        fontSize: '12px',
-        color: 'var(--color-steel-mid)'
-      }}>
+      <div className="c10-footer">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ color: 'var(--color-network-cyan)' }}>TITAN</span>HTTP © {new Date().getFullYear()}
         </div>

@@ -50,7 +50,7 @@ function Run-Compliance {
     
     Stop-Process -Id $TitanProcess.Id -Force -ErrorAction SilentlyContinue
     
-    $reportPath = "benchmarks/reports/compliance_report.md"
+    $reportPath = "benchmarks/reports/compliance_report.txt"
     $mdLines = @(
         "# HTTP Compliance Tests Report"
         "Generated on $(Get-Date)"
@@ -58,7 +58,7 @@ function Run-Compliance {
         "## Test Results"
         ""
         '```text'
-        $compOutput
+        ($compOutput -replace "\x1B\[[0-9;]*[a-zA-Z]", "")
         '```'
     )
     ($mdLines -join "`r`n") | Out-File -FilePath $reportPath -Encoding utf8

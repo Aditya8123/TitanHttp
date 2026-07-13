@@ -43,7 +43,7 @@ func main() {
 	http.HandleFunc("/payload/", func(w http.ResponseWriter, r *http.Request) {
 		sizeStr := strings.TrimPrefix(r.URL.Path, "/payload/")
 		size, _ := strconv.Atoi(sizeStr)
-		if size < 0 || size > 10_000_000 {
+		if size < 0 || size > 15_000_000 {
 			http.Error(w, "Size must be between 0 and 10MB", http.StatusBadRequest)
 			return
 		}

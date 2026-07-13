@@ -50,21 +50,14 @@ export const Chapter5Section: React.FC = () => {
       }} />
 
       {/* Content Container */}
-      <div style={{
+      <div className="chapter-container" style={{
         position: 'relative',
         zIndex: 2,
-        maxWidth: '1440px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '0 40px',
-        display: 'flex',
-        gap: '80px',
         opacity: isInView ? 1 : 0,
-        transform: `translateY(${isInView ? 0 : '40px'})`,
-        transition: 'all 1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transform: `translateY(${isInView ? 0 : '40px'})`
       }}>
         {/* Left Column: Text */}
-        <div style={{ flex: 1, maxWidth: '500px' }}>
+        <div className="chapter-column-text">
           <div style={{
             fontFamily: 'var(--font-roboto-mono)',
             fontSize: '14px',
@@ -73,14 +66,7 @@ export const Chapter5Section: React.FC = () => {
             marginBottom: '16px'
           }}>CHAPTER 05</div>
           
-          <h2 style={{
-            fontFamily: 'var(--font-lambotype)',
-            fontSize: '80px',
-            lineHeight: 0.9,
-            color: 'var(--color-paper-white)',
-            marginBottom: '32px',
-            textTransform: 'uppercase'
-          }}>
+          <h2 className="chapter-heading">
             PARSING<br />REQUESTS
           </h2>
 
@@ -99,12 +85,7 @@ export const Chapter5Section: React.FC = () => {
         </div>
 
         {/* Right Column: Parsing Visualization */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end'
-        }}>
+        <div className="chapter-column-visual">
           <div style={{
             background: 'rgba(20, 20, 20, 0.8)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -120,7 +101,7 @@ export const Chapter5Section: React.FC = () => {
             {/* Raw String */}
             <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
               <div style={{ fontFamily: 'var(--font-roboto-mono)', fontSize: '10px', color: 'var(--color-steel-mid)', marginBottom: '8px' }}>RAW BYTE STREAM</div>
-              <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: '14px', color: '#e06c75' }}>
+              <div style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: '14px', color: '#e06c75', overflowX: 'auto' }}>
                 "GET /api/v1/users HTTP/1.1\r\n"
               </div>
             </div>
@@ -140,7 +121,8 @@ export const Chapter5Section: React.FC = () => {
                 fontSize: '13px', 
                 color: 'var(--color-paper-white)', 
                 margin: 0, 
-                lineHeight: 1.6 
+                lineHeight: 1.6,
+                overflowX: 'auto'
               }}>
                 {[
                   { len: 20, delay: 0.5, content: <>type Request struct {'{'}</> },

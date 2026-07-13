@@ -22,7 +22,6 @@ export const Chapter4Section: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
-
   return (
     <section id="the-listener-loop" ref={sectionRef} style={{
       position: 'relative',
@@ -59,24 +58,15 @@ export const Chapter4Section: React.FC = () => {
       }} />
 
       {/* Content Container */}
-      <div style={{
+      <div className="chapter-container" style={{
         position: 'relative',
         zIndex: 2,
-        maxWidth: '1440px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '0 40px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '80px',
         opacity: isInView ? 1 : 0,
-        transform: `translateY(${isInView ? 0 : '40px'})`,
-        transition: 'all 1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transform: `translateY(${isInView ? 0 : '40px'})`
       }}>
 
         {/* Left Column: Text */}
-        <div style={{ flex: 1, maxWidth: '500px' }}>
+        <div className="chapter-column-text">
           <div style={{
             fontFamily: 'var(--font-roboto-mono)',
             fontSize: '14px',
@@ -85,14 +75,7 @@ export const Chapter4Section: React.FC = () => {
             marginBottom: '16px'
           }}>CHAPTER 04</div>
 
-          <h2 style={{
-            fontFamily: 'var(--font-lambotype)',
-            fontSize: '80px',
-            lineHeight: 0.9,
-            color: 'var(--color-paper-white)',
-            marginBottom: '24px',
-            textTransform: 'uppercase'
-          }}>
+          <h2 className="chapter-heading">
             READING BYTES
           </h2>
           <p style={{
@@ -127,16 +110,29 @@ export const Chapter4Section: React.FC = () => {
             20% { opacity: 1; }
             100% { transform: translateY(150px); opacity: 0; }
           }
+          
+          @media (max-width: 640px) {
+            .responsive-byte-stream-wrapper {
+              flex-direction: column !important;
+              gap: 24px !important;
+              width: 100%;
+            }
+            .responsive-byte-stream-pipe {
+              width: 100% !important;
+              height: 50px !important;
+              border-right: 1px dashed rgba(0, 217, 255, 0.3) !important;
+              border-bottom: none !important;
+            }
+            .responsive-byte-stream-buffer {
+              width: 180px !important;
+              height: 180px !important;
+            }
+          }
         `}</style>
 
         {/* Right Column: Cinematic Byte Stream Animation */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end'
-        }}>
-          <div style={{
+        <div className="chapter-column-visual">
+          <div className="responsive-byte-stream-wrapper" style={{
             width: '100%',
             maxWidth: '600px',
             display: 'flex',
@@ -144,7 +140,7 @@ export const Chapter4Section: React.FC = () => {
             justifyContent: 'center'
           }}>
             {/* Socket Pipe (Left) */}
-            <div style={{
+            <div className="responsive-byte-stream-pipe" style={{
               flex: 1,
               height: '60px',
               background: 'linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0, 217, 255, 0.05) 100%)',
@@ -191,7 +187,7 @@ export const Chapter4Section: React.FC = () => {
             </div>
 
             {/* Buffer Box (Right) */}
-            <div style={{
+            <div className="responsive-byte-stream-buffer" style={{
               width: '240px',
               height: '240px',
               background: 'rgba(10, 10, 12, 0.8)',

@@ -66,22 +66,14 @@ export const Chapter6Section: React.FC = () => {
       }} />
 
       {/* Content Container */}
-      <div style={{
+      <div className="chapter-container reverse" style={{
         position: 'relative',
         zIndex: 2,
-        maxWidth: '1440px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '0 40px',
-        display: 'flex',
-        flexDirection: 'row-reverse',
-        gap: '80px',
         opacity: isInView ? 1 : 0,
-        transform: `translateY(${isInView ? 0 : '40px'})`,
-        transition: 'all 1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transform: `translateY(${isInView ? 0 : '40px'})`
       }}>
         {/* Right Column: Text */}
-        <div style={{ flex: 1, maxWidth: '500px' }}>
+        <div className="chapter-column-text">
           <div style={{
             fontFamily: 'var(--font-roboto-mono)',
             fontSize: '14px',
@@ -90,14 +82,7 @@ export const Chapter6Section: React.FC = () => {
             marginBottom: '16px'
           }}>CHAPTER 06</div>
           
-          <h2 style={{
-            fontFamily: 'var(--font-lambotype)',
-            fontSize: '80px',
-            lineHeight: 0.9,
-            color: 'var(--color-paper-white)',
-            marginBottom: '32px',
-            textTransform: 'uppercase'
-          }}>
+          <h2 className="chapter-heading">
             ROUTING
           </h2>
 
@@ -117,12 +102,7 @@ export const Chapter6Section: React.FC = () => {
         </div>
 
         {/* Left Column: Routing Visualization */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start'
-        }}>
+        <div className="chapter-column-visual">
           <div key={activeIndex} style={{
             background: 'rgba(10, 10, 12, 0.8)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -188,7 +168,9 @@ export const Chapter6Section: React.FC = () => {
                   borderRadius: '6px',
                   fontFamily: 'var(--font-jetbrains-mono)',
                   color: '#fff',
-                  boxShadow: '0 0 15px rgba(0, 217, 255, 0.2)'
+                  boxShadow: '0 0 15px rgba(0, 217, 255, 0.2)',
+                  overflowX: 'auto',
+                  maxWidth: 'calc(100% - 40px)'
                }}>
                  <span style={{ color: 'var(--color-network-cyan)', marginRight: '8px' }}>{ROUTES[activeIndex].method}</span>
                  {ROUTES[activeIndex].path}
@@ -249,9 +231,11 @@ export const Chapter6Section: React.FC = () => {
                          display: 'flex',
                          justifyContent: 'space-between',
                          fontFamily: 'var(--font-jetbrains-mono)',
-                         fontSize: '14px',
+                         fontSize: '13px',
                          color: 'var(--color-steel-mid)',
-                         animation: isActive ? 'handlerPulse 4s infinite cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
+                         animation: isActive ? 'handlerPulse 4s infinite cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+                         gap: '8px',
+                         overflowX: 'auto'
                       }}>
                          <span style={{ color: isActive ? 'inherit' : 'var(--color-steel-mid)' }}>{route.path}</span>
                          <span>{route.handler}</span>

@@ -14,7 +14,7 @@ func TestRequest_WriteTo(t *testing.T) {
 	req.Headers.Set("Host", "localhost:8080")
 	req.Headers.Set("Content-Type", "application/json")
 	req.Headers.Set("Content-Length", "17")
-	req.Body = []byte(`{"message":"hi"}`)
+	req.RawBody = []byte(`{"message":"hi"}`)
 
 	var buf bytes.Buffer
 	n, err := req.WriteTo(&buf)

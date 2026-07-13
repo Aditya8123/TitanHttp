@@ -10,21 +10,42 @@ type bucket struct {
 	lastRefill time.Time
 }
 
-// TokenBucket implements the Limiter interface using the token bucket algorithm.
-type TokenBucket struct {
-	mu           sync.Mutex
-	capacity     float64
-	refillRate   float64 // tokens per second
-	buckets      map[string]*bucket
+type tokenBucketShard struct {
+	mu      sync.Mutex
+	buckets map[string]*bucket
 }
 
-// NewTokenBucket creates a new TokenBucket rate limiter.
+// TokenBucket implements the Limiter interface using the token bucket algorithm
+// mapped across multiple shards to eliminate lock contention.
+type TokenBucket struct {
+	capacity   float64
+	refillRate float64 // tokens per second
+	shards     []*tokenBucketShard
+}
+
+// NewTokenBucket creates a new sharded TokenBucket rate limiter.
 func NewTokenBucket(capacity int, refillPerSec float64) *TokenBucket {
-	return &TokenBucket{
+	tb := &TokenBucket{
 		capacity:   float64(capacity),
 		refillRate: refillPerSec,
-		buckets:    make(map[string]*bucket),
+		shards:     make([]*tokenBucketShard, defaultShardCount),
 	}
+	for i := 0; i < defaultShardCount; i++ {
+		tb.shards[i] = &tokenBucketShard{
+			buckets: make(map[string]*bucket),
+		}
+	}
+	return tb
+}
+
+// getShard returns the specific shard for a given IP address using FNV-1a hashing.
+func (tb *TokenBucket) getShard(ip string) *tokenBucketShard {
+	var hash uint32 = 2166136261
+	for i := 0; i < len(ip); i++ {
+		hash ^= uint32(ip[i])
+		hash *= 16777619
+	}
+	return tb.shards[hash%defaultShardCount]
 }
 
 // StartSweeper begins a background goroutine to periodically clean up stale IPs.
@@ -34,29 +55,32 @@ func (tb *TokenBucket) StartSweeper(interval time.Duration, maxIdle time.Duratio
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for range ticker.C {
-			tb.mu.Lock()
 			now := time.Now()
-			for ip, b := range tb.buckets {
-				if now.Sub(b.lastRefill) > maxIdle {
-					delete(tb.buckets, ip)
+			for _, shard := range tb.shards {
+				shard.mu.Lock()
+				for ip, b := range shard.buckets {
+					if now.Sub(b.lastRefill) > maxIdle {
+						delete(shard.buckets, ip)
+					}
 				}
+				shard.mu.Unlock()
 			}
-			tb.mu.Unlock()
 		}
 	}()
 }
 
 // Allow implements the Limiter interface.
 func (tb *TokenBucket) Allow(ip string) bool {
-	tb.mu.Lock()
-	defer tb.mu.Unlock()
+	shard := tb.getShard(ip)
+	shard.mu.Lock()
+	defer shard.mu.Unlock()
 
-	b, exists := tb.buckets[ip]
+	b, exists := shard.buckets[ip]
 	now := time.Now()
 
 	if !exists {
 		// New IP: bucket starts full, minus one for this request
-		tb.buckets[ip] = &bucket{
+		shard.buckets[ip] = &bucket{
 			tokens:     tb.capacity - 1,
 			lastRefill: now,
 		}

@@ -282,7 +282,10 @@ foreach ($s in $rankedSummaries) {
 }
 
 # Save text report
-$txtPath = "$reportsDir/stats_report.txt"
+$reportName = "stats_report"
+if ($Internal -and -not $Frameworks) { $reportName = "internal_stats_report" }
+if ($Frameworks -and -not $Internal) { $reportName = "frameworks_stats_report" }
+$txtPath = "$reportsDir/$reportName.txt"
 $reportTXT -join "`r`n" | Out-File -FilePath $txtPath -Encoding utf8
 
 # Clean up any leftover stats JSON/MD files if they exist to keep workspace clean

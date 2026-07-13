@@ -51,21 +51,14 @@ export const Chapter9Section: React.FC = () => {
       }} />
 
       {/* Content Container */}
-      <div style={{
+      <div className="chapter-container" style={{
         position: 'relative',
         zIndex: 2,
-        maxWidth: '1440px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '0 40px',
-        display: 'flex',
-        gap: '80px',
         opacity: isInView ? 1 : 0,
-        transform: `translateY(${isInView ? 0 : '40px'})`,
-        transition: 'all 1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transform: `translateY(${isInView ? 0 : '40px'})`
       }}>
         {/* Left Column: Text */}
-        <div style={{ flex: 1, maxWidth: '500px' }}>
+        <div className="chapter-column-text">
           <div style={{
             fontFamily: 'var(--font-roboto-mono)',
             fontSize: '14px',
@@ -74,14 +67,7 @@ export const Chapter9Section: React.FC = () => {
             marginBottom: '16px'
           }}>CHAPTER 09</div>
           
-          <h2 style={{
-            fontFamily: 'var(--font-lambotype)',
-            fontSize: '80px',
-            lineHeight: 0.9,
-            color: 'var(--color-paper-white)',
-            marginBottom: '32px',
-            textTransform: 'uppercase'
-          }}>
+          <h2 className="chapter-heading">
             BENCHMARKS
           </h2>
 
@@ -99,12 +85,7 @@ export const Chapter9Section: React.FC = () => {
         </div>
 
         {/* Right Column: Benchmark Visualization */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end'
-        }}>
+        <div className="chapter-column-visual">
           <div style={{
             background: 'rgba(10, 10, 12, 0.8)',
             backdropFilter: 'blur(16px)',
@@ -133,22 +114,27 @@ export const Chapter9Section: React.FC = () => {
                 fontSize: '13px',
                 lineHeight: 1.8,
                 margin: 0,
-                color: 'var(--color-paper-white)'
+                color: 'var(--color-paper-white)',
+                overflowX: 'auto'
               }}>
                 <span style={{ color: 'var(--color-steel-mid)' }}>&gt; powershell ./scripts/bench/bench.ps1 -RunMode A</span>{'\n'}
                 <span style={{ color: 'var(--color-steel-mid)' }}>[+] INITIATING CINEMATIC BENCHMARK SUITE...</span>{'\n\n'}
                 
                 <span style={{ color: '#fff' }}>=&gt; Throughput Analysis (Req/s)</span>{'\n'}
-                [<span style={{ color: 'var(--color-network-cyan)' }}>TitanHTTP</span>]   <span style={{ color: '#98c379', fontWeight: 'bold' }}>151,316 req/s</span>  (Winner){'\n'}
-                [net/http]    117,401 req/s  (+28.9%){'\n\n'}
+                [<span style={{ color: 'var(--color-network-cyan)' }}>TitanHTTP</span>]   <span style={{ color: '#98c379', fontWeight: 'bold' }}>123,483 req/s</span>  (Winner){'\n'}
+                [net/http]    94,769 req/s   (+41.7%){'\n\n'}
                 
-                <span style={{ color: '#fff' }}>=&gt; P99 Tail Latency (C10K - 200 conns)</span>{'\n'}
-                [<span style={{ color: 'var(--color-network-cyan)' }}>TitanHTTP</span>]   <span style={{ color: '#98c379', fontWeight: 'bold' }}>4.75 ms</span>        (Winner){'\n'}
-                [net/http]    14.56 ms       (-67.4%){'\n\n'}
-
+                <span style={{ color: '#fff' }}>=&gt; P99 Tail Latency (Max Load)</span>{'\n'}
+                [<span style={{ color: 'var(--color-network-cyan)' }}>TitanHTTP</span>]   <span style={{ color: '#98c379', fontWeight: 'bold' }}>4.76 ms</span>        (Winner){'\n'}
+                [net/http]    11.06 ms       (-56.9%){'\n\n'}
+                
+                <span style={{ color: '#fff' }}>=&gt; Zero-Allocation Hot-Paths</span>{'\n'}
+                [<span style={{ color: 'var(--color-network-cyan)' }}>Cache Hit</span>]   <span style={{ color: '#98c379', fontWeight: 'bold' }}>14.37 ns/op</span>    (0 B allocs){'\n'}
+                [<span style={{ color: 'var(--color-network-cyan)' }}>Router</span>]      <span style={{ color: '#98c379', fontWeight: 'bold' }}>80.37 ns/op</span>    (0 B allocs){'\n\n'}
+ 
                 <span style={{ color: '#fff' }}>=&gt; Memory Allocation Check</span>{'\n'}
                 [<span style={{ color: 'var(--color-network-cyan)' }}>TitanHTTP</span>]   <span style={{ color: '#98c379', fontWeight: 'bold' }}>0 MB Leaked</span>    (500k reqs){'\n\n'}
-
+ 
                 <span style={{ color: 'var(--color-network-cyan)', textShadow: '0 0 10px rgba(0, 217, 255, 0.5)' }}>[+] SYSTEM BENCHMARK PASSED.</span>
               </pre>
             </div>

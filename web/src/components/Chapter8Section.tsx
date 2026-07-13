@@ -50,22 +50,14 @@ export const Chapter8Section: React.FC = () => {
       }} />
 
       {/* Content Container */}
-      <div style={{
+      <div className="chapter-container reverse" style={{
         position: 'relative',
         zIndex: 2,
-        maxWidth: '1440px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '0 40px',
-        display: 'flex',
-        flexDirection: 'row-reverse',
-        gap: '80px',
         opacity: isInView ? 1 : 0,
-        transform: `translateY(${isInView ? 0 : '40px'})`,
-        transition: 'all 1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        transform: `translateY(${isInView ? 0 : '40px'})`
       }}>
         {/* Right Column: Text */}
-        <div style={{ flex: 1, maxWidth: '500px' }}>
+        <div className="chapter-column-text">
           <div style={{
             fontFamily: 'var(--font-roboto-mono)',
             fontSize: '14px',
@@ -74,14 +66,7 @@ export const Chapter8Section: React.FC = () => {
             marginBottom: '16px'
           }}>CHAPTER 08</div>
           
-          <h2 style={{
-            fontFamily: 'var(--font-lambotype)',
-            fontSize: '80px',
-            lineHeight: 0.9,
-            color: 'var(--color-paper-white)',
-            marginBottom: '32px',
-            textTransform: 'uppercase'
-          }}>
+          <h2 className="chapter-heading">
             PRODUCTION<br/>FEATURES
           </h2>
 
@@ -99,12 +84,7 @@ export const Chapter8Section: React.FC = () => {
         </div>
 
         {/* Left Column: Security Matrix Visualization */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start'
-        }}>
+        <div className="chapter-column-visual">
           <div style={{
             background: 'rgba(10, 10, 12, 0.8)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -144,25 +124,27 @@ export const Chapter8Section: React.FC = () => {
               fontSize: '14px', 
               borderBottom: '1px solid rgba(255,255,255,0.1)', 
               paddingBottom: '12px',
-              letterSpacing: '0.05em'
+              letterSpacing: '0.05em',
+              overflowX: 'auto',
+              whiteSpace: 'nowrap'
             }}>
               &gt; INITIATING SECURITY VALIDATION...
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '13px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: 'var(--color-steel-mid)' }}>RFC Compliance Suite</span>
                 <span style={{ color: 'var(--color-network-cyan)', animation: 'textGlow 2s infinite' }}>[20/20 PASS]</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: 'var(--color-steel-mid)' }}>CL-TE Request Smuggling</span>
                 <span style={{ color: 'var(--color-network-cyan)', animation: 'textGlow 2s infinite 0.5s' }}>[BLOCKED]</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: 'var(--color-steel-mid)' }}>Slowloris & Slow POST</span>
                 <span style={{ color: 'var(--color-network-cyan)', animation: 'textGlow 2s infinite 1.0s' }}>[DEFENDED]</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: 'var(--color-steel-mid)' }}>Header Flood Guard</span>
                 <span style={{ color: 'var(--color-network-cyan)', animation: 'textGlow 2s infinite 1.5s' }}>[ACTIVE]</span>
               </div>

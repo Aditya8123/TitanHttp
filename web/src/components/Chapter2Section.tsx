@@ -98,7 +98,7 @@ export const Chapter2Section: React.FC = () => {
           maxWidth: '1440px',
           margin: '0 auto',
           width: '100%',
-          padding: '0 40px',
+          padding: '0 24px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -107,7 +107,7 @@ export const Chapter2Section: React.FC = () => {
           transition: 'opacity 1s ease, transform 1s ease'
         }}>
         
-        <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{
             fontFamily: 'var(--font-roboto-mono)',
             fontSize: '14px',
@@ -116,14 +116,7 @@ export const Chapter2Section: React.FC = () => {
             marginBottom: '16px'
           }}>CHAPTER 02</div>
           
-          <h2 style={{
-            fontFamily: 'var(--font-lambotype)',
-            fontSize: '64px',
-            lineHeight: 0.9,
-            color: 'var(--color-paper-white)',
-            marginBottom: '24px',
-            textTransform: 'uppercase'
-          }}>
+          <h2 className="chapter-heading">
             TCP
           </h2>
           <p style={{
@@ -140,32 +133,16 @@ export const Chapter2Section: React.FC = () => {
         </div>
 
         {/* CSS/SVG Diagram for TCP Handshake */}
-        <GlassPanel style={{
-          width: '100%',
-          maxWidth: '900px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '60px'
-        }}>
+        <GlassPanel className="tcp-diagram-panel">
           
           {/* Client Icon */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '16px',
-            transition: 'all 0.5s ease',
+          <div className="tcp-node-box" style={{
             color: clientColor,
             textShadow: clientGlow
           }}>
-            <div style={{
-              background: 'rgba(0,0,0,0.5)',
-              padding: '24px',
-              borderRadius: '50%',
+            <div className="tcp-node-icon-wrapper" style={{
               border: `1px solid ${synAckProgress >= 1 ? 'rgba(0, 217, 255, 0.5)' : 'rgba(255,255,255,0.1)'}`,
               boxShadow: clientGlow,
-              transition: 'all 0.5s ease'
             }}>
               <Monitor size={48} strokeWidth={1.5} />
             </div>
@@ -173,7 +150,7 @@ export const Chapter2Section: React.FC = () => {
           </div>
 
           {/* Connection Tracks */}
-          <div style={{ flex: 1, position: 'relative', height: '140px', margin: '0 40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div className="tcp-tracks-container">
             
             {/* SYN Track */}
             <div style={{ position: 'relative', height: '2px', background: 'rgba(255,255,255,0.05)' }}>
@@ -300,22 +277,13 @@ export const Chapter2Section: React.FC = () => {
           </div>
 
           {/* Server Icon */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '16px',
-            transition: 'all 0.5s ease',
+          <div className="tcp-node-box" style={{
             color: serverColor,
             textShadow: serverGlow
           }}>
-            <div style={{
-              background: 'rgba(0,0,0,0.5)',
-              padding: '24px',
-              borderRadius: '50%',
+            <div className="tcp-node-icon-wrapper" style={{
               border: `1px solid ${synProgress >= 1 ? 'rgba(0, 217, 255, 0.5)' : 'rgba(255,255,255,0.1)'}`,
               boxShadow: serverGlow,
-              transition: 'all 0.5s ease'
             }}>
               <Server size={48} strokeWidth={1.5} />
             </div>

@@ -89,3 +89,170 @@ section div {
   /* Subtle shadow for the CHAPTER label and other text */
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
+
+/* Global Responsive Layout Classes */
+
+.chapter-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 80px;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px;
+  transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.chapter-container.reverse {
+  flex-direction: row-reverse;
+}
+
+.chapter-column-text {
+  flex: 1;
+  max-width: 500px;
+}
+
+.chapter-column-visual {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chapter-container.reverse .chapter-column-visual {
+  justify-content: flex-start;
+}
+
+.chapter-container:not(.reverse) .chapter-column-visual {
+  justify-content: flex-end;
+}
+
+/* Responsive Headings */
+.chapter-heading {
+  font-family: var(--font-lambotype);
+  font-size: clamp(38px, 6vw, 80px) !important;
+  line-height: 0.9 !important;
+  color: var(--color-paper-white);
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+
+/* TCP Diagram Scaling helpers */
+.tcp-diagram-panel {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px;
+  transition: all 0.3s ease;
+}
+
+.tcp-node-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.5s ease;
+}
+
+.tcp-node-icon-wrapper {
+  background: rgba(0,0,0,0.5);
+  padding: 24px;
+  border-radius: 50%;
+  transition: all 0.5s ease;
+}
+
+.tcp-tracks-container {
+  flex: 1;
+  position: relative;
+  height: 140px;
+  margin: 0 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Flow diagram styles (ArchitecturePage) */
+.flow-arrow-icon {
+  transition: transform 0.3s ease;
+}
+
+/* Mobile responsive media queries */
+@media (max-width: 1024px) {
+  .chapter-container,
+  .chapter-container.reverse {
+    flex-direction: column !important;
+    gap: 40px !important;
+    padding: 0 24px !important;
+    text-align: center !important;
+  }
+
+  .chapter-column-text {
+    max-width: 600px !important;
+    width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .chapter-column-visual {
+    width: 100% !important;
+    justify-content: center !important;
+    transform: none !important; /* disable heavy parallax offsets on mobile */
+  }
+
+  .chapter-container.reverse .chapter-column-visual,
+  .chapter-container:not(.reverse) .chapter-column-visual {
+    justify-content: center !important;
+  }
+
+  /* TCP Diagram mobile shrink */
+  .tcp-diagram-panel {
+    padding: 24px 16px !important;
+    gap: 12px;
+  }
+
+  .tcp-node-box {
+    gap: 8px !important;
+  }
+
+  .tcp-node-icon-wrapper {
+    padding: 12px !important;
+  }
+
+  .tcp-node-icon-wrapper svg {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .tcp-node-box div {
+    font-size: 11px !important;
+  }
+
+  .tcp-tracks-container {
+    margin: 0 12px !important;
+    height: 100px !important;
+  }
+
+  /* Flow diagrams (Architecture) */
+  .flow-arrow-icon {
+    transform: rotate(90deg) !important;
+    margin: 8px 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .tcp-diagram-panel {
+    border-radius: 8px !important;
+  }
+  
+  .tcp-tracks-container {
+    height: 80px !important;
+  }
+
+  .tcp-tracks-container span {
+    font-size: 9px !important;
+  }
+}

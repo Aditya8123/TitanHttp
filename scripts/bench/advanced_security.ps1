@@ -176,9 +176,8 @@ function Run-Comparison {
     
     $tColor = if ($tRes.Passed) { "Green" } else { "Red" }
     $nColor = if ($nRes.Passed) { "Green" } else { "Red" }
-    
-    Write-Host "     [TitanHTTP] " -NoNewline; Write-Host ($if($tRes.Passed){"PASS"}else{"FAIL"}) -ForegroundColor $tColor
-    Write-Host "     [net/http]  " -NoNewline; Write-Host ($if($nRes.Passed){"PASS"}else{"FAIL"}) -ForegroundColor $nColor
+    Write-Host "     [TitanHTTP] " -NoNewline; Write-Host $(if($tRes.Passed){"PASS"}else{"FAIL"}) -ForegroundColor $tColor
+    Write-Host "     [net/http]  " -NoNewline; Write-Host $(if($nRes.Passed){"PASS"}else{"FAIL"}) -ForegroundColor $nColor
 
     $AllResults.Add(@{
         Name = $Name
