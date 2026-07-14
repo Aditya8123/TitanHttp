@@ -26,8 +26,8 @@ func (s *Server) handleHTTP2(conn net.Conn) {
 	}
 
 	fmt.Println("Successfully negotiated and read HTTP/2 preface. Full HTTP/2 support is pending in a future release.")
-	
+
 	// In a real HTTP/2 implementation, we would send a SETTINGS frame here.
-	// For now, we simply close the connection. Since it's a stub, we don't 
+	// For now, we simply close the connection. Since it's a stub, we don't
 	// write HTTP/1.1 error codes over an HTTP/2 negotiated stream.
 }

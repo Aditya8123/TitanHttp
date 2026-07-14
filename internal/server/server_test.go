@@ -13,7 +13,7 @@ import (
 func TestServer_GracefulShutdown(t *testing.T) {
 	// Start server on a random port
 	srv := NewServer("127.0.0.1:0")
-	
+
 	// Add a slow route that blocks for 200ms
 	srv.Router().Get("/slow", func(req *http.Request) *http.Response {
 		time.Sleep(200 * time.Millisecond)
@@ -64,7 +64,7 @@ func TestServer_GracefulShutdown(t *testing.T) {
 
 func TestServer_Metrics(t *testing.T) {
 	srv := NewServer("127.0.0.1:0")
-	
+
 	srv.Router().Get("/ping", func(req *http.Request) *http.Response {
 		return http.NewResponse200()
 	})
@@ -84,7 +84,7 @@ func TestServer_Metrics(t *testing.T) {
 
 	// Give the server a moment to finish metric updates
 	time.Sleep(50 * time.Millisecond)
-	
+
 	// Shut down server
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -94,7 +94,7 @@ func TestServer_Metrics(t *testing.T) {
 	if reqs := srv.metrics.totalRequests.Load(); reqs != 5 {
 		t.Errorf("Expected 5 total requests, got %d", reqs)
 	}
-	
+
 	if active := srv.metrics.activeConns.Load(); active != 0 {
 		t.Errorf("Expected 0 active connections after shutdown, got %d", active)
 	}
@@ -102,7 +102,7 @@ func TestServer_Metrics(t *testing.T) {
 
 func TestServer_MetricsKeepAlive(t *testing.T) {
 	srv := NewServer("127.0.0.1:0")
-	
+
 	srv.Router().Get("/ping", func(req *http.Request) *http.Response {
 		return http.NewResponse200()
 	})
@@ -125,7 +125,7 @@ func TestServer_MetricsKeepAlive(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to write request %d: %v", i, err)
 		}
-		
+
 		// Read response
 		buf := make([]byte, 1024)
 		conn.Read(buf)

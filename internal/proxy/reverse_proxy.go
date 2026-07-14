@@ -31,11 +31,11 @@ func ForwardRequest(req *http.Request, target string) *http.Response {
 
 	// Add Header Management
 	req.Headers.Set("connection", "close")
-	
+
 	// X-Forwarded-For: append client IP
 	clientIP, _, _ := net.SplitHostPort(req.RemoteAddr)
 	if existing := req.Headers.Get("x-forwarded-for"); existing != "" {
-		req.Headers.Set("x-forwarded-for", existing + ", " + clientIP)
+		req.Headers.Set("x-forwarded-for", existing+", "+clientIP)
 	} else {
 		req.Headers.Set("x-forwarded-for", clientIP)
 	}

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gofiber/fiber/v2"
 	"github.com/go-chi/chi/v5"
+	"github.com/gofiber/fiber/v2"
 
 	thttp "github.com/Aditya8123/TitanHttp/internal/http"
 	"github.com/Aditya8123/TitanHttp/internal/router"
@@ -22,7 +22,7 @@ func BenchmarkNetHTTP(b *testing.B) {
 	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong"))
 	})
-	
+
 	req := httptest.NewRequest("GET", "/ping", nil)
 	w := httptest.NewRecorder()
 
@@ -39,7 +39,7 @@ func BenchmarkGin(b *testing.B) {
 	router.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
-	
+
 	req := httptest.NewRequest("GET", "/ping", nil)
 	w := httptest.NewRecorder()
 
@@ -56,7 +56,7 @@ func BenchmarkChi(b *testing.B) {
 	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong"))
 	})
-	
+
 	req := httptest.NewRequest("GET", "/ping", nil)
 	w := httptest.NewRecorder()
 
@@ -75,7 +75,7 @@ func BenchmarkFiber(b *testing.B) {
 	})
 
 	req := httptest.NewRequest("GET", "/ping", nil)
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {

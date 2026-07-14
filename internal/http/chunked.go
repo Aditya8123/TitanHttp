@@ -64,7 +64,7 @@ func (cr *chunkedReader) Read(p []byte) (n int, err error) {
 	if err == io.EOF && cr.chunkLeft > 0 {
 		return n, io.ErrUnexpectedEOF
 	}
-	
+
 	// Mask inner EOFs until we hit the zero-chunk
 	if err == io.EOF {
 		err = nil
@@ -85,7 +85,7 @@ func (cr *chunkedReader) readChunkHeader() error {
 
 	// Remove CRLF
 	line = line[:len(line)-2]
-	
+
 	// Ignore chunk extensions
 	idx := bytes.IndexByte(line, ';')
 	if idx != -1 {

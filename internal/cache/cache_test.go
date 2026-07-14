@@ -41,10 +41,40 @@ func TestMemoryCache_Expiration(t *testing.T) {
 
 	resp := http.NewResponse200()
 	// TTL of -1 millisecond means it expires immediately
-	c.Set("/expired", resp, -1 * time.Millisecond)
+	c.Set("/expired", resp, -1*time.Millisecond)
 
 	if _, ok := c.Get("/expired"); ok {
 		t.Error("Expected cache miss for immediately expired item")
+	}
+}
+
+func TestMemoryCache_StartSweeper(t *testing.T) {
+	c := NewMemoryCache()
+
+	resp := http.NewResponse200()
+	// Set item that will expire very soon
+	c.Set("/temp1", resp, 10*time.Millisecond)
+	// Set item that does not expire
+	c.Set("/permanent", resp, 0)
+
+	// Start sweeper with short interval
+	c.StartSweeper(5 * time.Millisecond)
+
+	// Wait for sweeper to run and expire /temp1
+	time.Sleep(50 * time.Millisecond)
+
+	// We check the internal map directly to see if the sweeper actually deleted it,
+	// rather than relying on the lazy deletion in Get()
+	shard := c.getShard("/temp1")
+	shard.mu.RLock()
+	_, ok := shard.store["/temp1"]
+	shard.mu.RUnlock()
+	if ok {
+		t.Error("Expected /temp1 to be cleaned up from internal store by sweeper")
+	}
+
+	if _, ok := c.Get("/permanent"); !ok {
+		t.Error("Expected /permanent to still be in cache")
 	}
 }
 

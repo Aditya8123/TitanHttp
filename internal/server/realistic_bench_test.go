@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/Aditya8123/TitanHttp/internal/router"
-	"github.com/Aditya8123/TitanHttp/internal/middleware"
 	titanhttp "github.com/Aditya8123/TitanHttp/internal/http"
+	"github.com/Aditya8123/TitanHttp/internal/middleware"
+	"github.com/Aditya8123/TitanHttp/internal/router"
 )
 
 type Product struct {
@@ -71,16 +71,16 @@ func BenchmarkRealisticAPI_GetList(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		bytesReader.Reset(reqBytes)
 		bufReader.Reset(bytesReader)
 
 		req, _ := titanhttp.ParseRequest(bufReader)
 		res := r.ServeHTTP(req)
-		
+
 		// Consume body
 		_ = res.Body
-		
+
 		titanhttp.ReleaseRequest(req)
 		titanhttp.ReleaseResponse(res)
 	}
@@ -95,7 +95,7 @@ func BenchmarkRealisticAPI_GetParam(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		bytesReader.Reset(reqBytes)
 		bufReader.Reset(bytesReader)
 
@@ -104,9 +104,9 @@ func BenchmarkRealisticAPI_GetParam(b *testing.B) {
 			b.Fatalf("ParseRequest error: %v", err)
 		}
 		res := r.ServeHTTP(req)
-		
+
 		_ = res.Body
-		
+
 		titanhttp.ReleaseRequest(req)
 		titanhttp.ReleaseResponse(res)
 	}
@@ -116,21 +116,21 @@ func BenchmarkRealisticAPI_PostJSON(b *testing.B) {
 	r := setupRealisticRouter()
 	body := `{"id":15,"name":"Tablet","price":299.99}`
 	reqBytes := []byte("POST /products HTTP/1.1\r\nHost: localhost\r\nContent-Length: 39\r\n\r\n" + body)
-	
+
 	bytesReader := bytes.NewReader(reqBytes)
 	bufReader := bufio.NewReader(bytesReader)
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		bytesReader.Reset(reqBytes)
 		bufReader.Reset(bytesReader)
 
 		req, _ := titanhttp.ParseRequest(bufReader)
 		res := r.ServeHTTP(req)
-		
+
 		_ = res.Body
-		
+
 		titanhttp.ReleaseRequest(req)
 		titanhttp.ReleaseResponse(res)
 	}

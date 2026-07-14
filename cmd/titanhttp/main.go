@@ -21,7 +21,13 @@ func main() {
 	// Start pprof debug server in background
 	go func() {
 		log.Println("Starting pprof debug server on localhost:6060")
-		log.Println(nethttp.ListenAndServe("localhost:6060", nil))
+		debugSrv := &nethttp.Server{
+			Addr:         "localhost:6060",
+			Handler:      nil,
+			ReadTimeout:  10 * time.Second,
+			WriteTimeout: 10 * time.Second,
+		}
+		log.Println(debugSrv.ListenAndServe())
 	}()
 
 	port := os.Getenv("PORT")
@@ -32,7 +38,7 @@ func main() {
 			port = "8080"
 		}
 	}
-	
+
 	srv := server.NewServer(":" + port)
 	if timeoutEnv := os.Getenv("IDLE_TIMEOUT"); timeoutEnv != "" {
 		if d, err := time.ParseDuration(timeoutEnv); err == nil {
@@ -96,7 +102,7 @@ func main() {
 		resp := http.NewResponse()
 		resp.StatusCode = http.StatusOK
 		resp.Headers.Set("Content-Type", "text/plain")
-		resp.Body = []byte(fmt.Sprintf("Hello, %s!\n", req.Params["name"]))
+		resp.Body = fmt.Appendf(nil, "Hello, %s!\n", req.Params["name"])
 		return resp
 	})
 
@@ -129,11 +135,11 @@ func main() {
 	}))
 
 	// --- Benchmark Additions ---
-	
+
 	// Payload matrix endpoint
 	srv.Router().Get("/payload/:size", func(req *http.Request) *http.Response {
 		resp := http.NewResponse()
-		
+
 		sizeStr := req.Params["size"]
 		var size int
 		fmt.Sscanf(sizeStr, "%d", &size)
@@ -153,7 +159,7 @@ func main() {
 
 	// POST endpoint
 	srv.Router().Post("/api/users", func(req *http.Request) *http.Response {
-		// Simulating reading body and unmarshaling. We don't have json.Unmarshal right here, 
+		// Simulating reading body and unmarshaling. We don't have json.Unmarshal right here,
 		// but we can parse the body simulating standard work.
 		// For benchmark purposes, we just return the {"ok":true} directly.
 		resp := http.NewResponse()

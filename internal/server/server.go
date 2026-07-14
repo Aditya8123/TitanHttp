@@ -13,11 +13,11 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
-	"runtime"
 
 	"github.com/Aditya8123/TitanHttp/internal/http"
 	"github.com/Aditya8123/TitanHttp/internal/router"
@@ -62,14 +62,14 @@ func NewServer(addr string) *Server {
 		ReadTimeout: 10 * time.Second,
 		MaxWorkers:  10000,
 	}
-	
+
 	// Create shards to reduce channel contention
 	numShards := runtime.GOMAXPROCS(0) * 8
 	if numShards < 16 {
 		numShards = 16
 	}
 	s.shards = make([]WorkerShard, numShards)
-	
+
 	// Queue size per shard. e.g. 10000 total connections / 16 shards = 625 connections per shard
 	queueSize := s.MaxWorkers / numShards
 	for i := 0; i < numShards; i++ {
@@ -77,7 +77,7 @@ func NewServer(addr string) *Server {
 			queue: make(chan net.Conn, queueSize),
 		}
 	}
-	
+
 	return s
 }
 
@@ -123,6 +123,7 @@ func (s *Server) StartTLS(certFile, keyFile string) error {
 	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		NextProtos:   []string{"h2", "http/1.1"},
+		MinVersion:   tls.VersionTLS12,
 	}
 
 	l, err := net.Listen("tcp", s.addr)
@@ -172,7 +173,7 @@ func (s *Server) serve() error {
 	// This drastically increases the rate at which we drain the OS TCP Backlog,
 	// preventing "target machine actively refused it" errors during C10K bursts.
 	acceptors := 4 // Optimal for generic multi-core systems without excessive contention
-	
+
 	for i := 0; i < acceptors; i++ {
 		go func() {
 			for {
@@ -200,7 +201,7 @@ func (s *Server) serve() error {
 				// We use atomic round-robin to pick a shard, ensuring perfect distribution
 				// and eliminating the single-channel mutex bottleneck.
 				shardIdx := atomic.AddUint64(&s.roundRobin, 1) % uint64(len(s.shards))
-				
+
 				select {
 				case s.shards[shardIdx].queue <- conn:
 					// Dispatched successfully
@@ -222,7 +223,7 @@ func (s *Server) serve() error {
 
 func (s *Server) startWorkerPool() {
 	workersPerShard := s.MaxWorkers / len(s.shards)
-	
+
 	for i := 0; i < len(s.shards); i++ {
 		shard := s.shards[i]
 		for j := 0; j < workersPerShard; j++ {
@@ -302,10 +303,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 		}
 
 		req, err := http.ParseRequest(r)
-		
+
 		// Clear the read deadline while processing the request so long handlers aren't killed
 		if timeout > 0 {
-			conn.SetReadDeadline(time.Time{})
+			if errClear := conn.SetReadDeadline(time.Time{}); errClear != nil {
+				fmt.Printf("Failed to clear read deadline: %v\n", errClear)
+			}
 		}
 		if err != nil {
 			if err == io.EOF {
@@ -339,7 +342,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			return
 		}
 
-		// Provide a default background context. 
+		// Provide a default background context.
 		// We avoid per-request context allocations under high churn workloads unless specifically needed.
 		req.WithContext(context.Background())
 
@@ -349,7 +352,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		} else {
 			req.RemoteAddr = "127.0.0.1:0"
 		}
-		
+
 		if _, isTLS := conn.(*tls.Conn); isTLS {
 			req.Scheme = "https"
 		} else {
@@ -362,7 +365,9 @@ func (s *Server) handleConnection(conn net.Conn) {
 			}
 			if err := http.ParseBody(r, req); err != nil {
 				resp := http.NewResponse400()
-				resp.WriteTo(conn)
+				if _, wErr := resp.WriteTo(conn); wErr != nil {
+					fmt.Printf("Failed to write expect 100-continue 400 error response: %v\n", wErr)
+				}
 				return
 			}
 		}

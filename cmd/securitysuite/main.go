@@ -11,8 +11,8 @@ import (
 )
 
 type SecurityTest struct {
-	Name      string
-	Run       func(target string) (bool, string)
+	Name string
+	Run  func(target string) (bool, string)
 }
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 				defer conn.Close()
 
 				conn.Write([]byte("GET / HTTP/1.1\r\nHost: localhost\r\n"))
-				
+
 				// Trickle headers slowly
 				for i := 0; i < 15; i++ {
 					_, err := conn.Write([]byte(fmt.Sprintf("X-Slow-%d: 1\r\n", i)))
@@ -60,7 +60,7 @@ func main() {
 				defer conn.Close()
 
 				conn.Write([]byte("POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 100\r\n\r\n"))
-				
+
 				// Trickle body
 				for i := 0; i < 15; i++ {
 					_, err := conn.Write([]byte("A"))
@@ -82,16 +82,16 @@ func main() {
 				defer conn.Close()
 
 				conn.Write([]byte("GET / HTTP/1.1\r\nHost: localhost\r\n"))
-				
+
 				for i := 0; i < 2000; i++ {
 					_, err := conn.Write([]byte(fmt.Sprintf("X-Junk-%d: AAAAA\r\n", i)))
 					if err != nil {
 						return true, ""
 					}
 				}
-				
+
 				conn.Write([]byte("\r\n"))
-				
+
 				reader := bufio.NewReader(conn)
 				resp, err := reader.ReadString('\n')
 				if err != nil || strings.Contains(resp, "400") || strings.Contains(resp, "431") {
@@ -128,9 +128,9 @@ func main() {
 						conns = append(conns, conn)
 					}
 				}
-				
+
 				time.Sleep(6 * time.Second) // IdleTimeout is usually 5s
-				
+
 				active := 0
 				for _, conn := range conns {
 					conn.SetReadDeadline(time.Now().Add(100 * time.Millisecond))
@@ -143,7 +143,7 @@ func main() {
 					}
 					conn.Close()
 				}
-				
+
 				if active == 0 {
 					return true, ""
 				}
@@ -164,7 +164,7 @@ func main() {
 				conn.Write([]byte("GET / HTTP/1.1\r\nHost: localhost\r\n"))
 				conn.Write([]byte(hugeHeader))
 				conn.Write([]byte("\r\n"))
-				
+
 				reader := bufio.NewReader(conn)
 				resp, err := reader.ReadString('\n')
 				// Depending on server limits, it could drop connection or return 431/400
@@ -186,7 +186,7 @@ func main() {
 				// Send conflicting headers
 				req := "POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 4\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n"
 				conn.Write([]byte(req))
-				
+
 				reader := bufio.NewReader(conn)
 				resp, err := reader.ReadString('\n')
 				if err != nil || strings.Contains(resp, "400") {
@@ -206,7 +206,7 @@ func main() {
 
 				req := "GET /../../../etc/passwd HTTP/1.1\r\nHost: localhost\r\n\r\n"
 				conn.Write([]byte(req))
-				
+
 				var buf bytes.Buffer
 				reader := bufio.NewReader(conn)
 				for {
@@ -219,7 +219,7 @@ func main() {
 						break
 					}
 				}
-				
+
 				resp := buf.String()
 				if strings.Contains(resp, "400") || strings.Contains(resp, "403") || strings.Contains(resp, "404") {
 					return true, ""

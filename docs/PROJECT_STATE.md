@@ -9,25 +9,69 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 10 — Release |
-| **Active Task** | Task 10.1 — Preparation |
-| **Last Completed Subtask** | Chapter 10: Conclusion |
-| **Active Subtask** | Readme Update |
-| **Next Subtask** | V1 Tag |
+| **Active Task** | Task 10.1 — Testing |
+| **Last Completed Subtask** | Integration tests |
+| **Active Subtask** | End-to-end tests |
+| **Next Subtask** | GitHub Actions setup |
 
 > Note: This file is a living document tracking progress.
-> Updated to reflect the architectural pivot to a scroll-linked Interactive Engine.
+> Updated to reflect the completion of Phase 9 (Showcase Website) and transition to Phase 10 Release Testing.
 
 ---
 
-## Phase 9 — Showcase Platform (Interactive Engine)
+## Phase 10 — Release
+
+| Task | Status | Progress |
+| --- | :---: | --- |
+| 10.1 — Testing | 🚧 In Progress | 2 / 3 subtasks |
+| 10.2 — CI/CD | ⏳ Pending | 0 / 3 subtasks |
+| 10.3 — Deployment | ⏳ Pending | 0 / 3 subtasks |
+| 10.4 — Portfolio Polish | ⏳ Pending | 0 / 4 subtasks |
+
+### Task 10.1 — Testing
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Unit tests (Custom header, chunked decoder, and middleware test coverage) | ✅ |
+| 2 | Integration tests | ✅ |
+| 3 | End-to-end tests | 🚧 |
+
+### Task 10.2 — CI/CD
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | GitHub Actions setup | ⏳ |
+| 2 | Automated testing configuration | ⏳ |
+| 3 | Release pipeline integration | ⏳ |
+
+### Task 10.3 — Deployment
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Docker container configuration | ⏳ |
+| 2 | Backend deployment | ⏳ |
+| 3 | Website deployment | ⏳ |
+
+### Task 10.4 — Portfolio Polish
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Screenshots & assets compilation | ⏳ |
+| 2 | Code walkthrough documentation | ⏳ |
+| 3 | Recruiter walkthrough checklist | ⏳ |
+| 4 | Final documentation check | ⏳ |
+
+---
+
+## Phase 9 — Showcase Platform
 
 | Task | Status | Progress |
 | --- | :---: | --- |
 | 9.1 — Engine Foundation | ✅ Complete | 4 / 4 subtasks |
 | 9.2 — World | ✅ Complete | 4 / 4 subtasks |
 | 9.3 — Cinematic Hero | ✅ Complete | 3 / 3 subtasks |
-| 9.4 — Chapters | ⏳ Pending | 2 / 10 subtasks |
-| 9.5 — Polish | ⏳ Pending | 0 / 5 subtasks |
+| 9.4 — Chapters | ✅ Complete | 10 / 10 subtasks |
+| 9.5 — Polish | ✅ Complete | 5 / 5 subtasks |
 
 ### Task 9.1 — Engine Foundation
 
@@ -42,10 +86,43 @@
 
 | # | Subtask | Status |
 | --- | --- | :---: |
-| 1 | Infinite datacenter environment (Grid/Floor) | ⏳ |
-| 2 | Atmospheric Lighting & Fog | ⏳ |
-| 3 | Ambient Particle system | ⏳ |
-| 4 | The Packet Actor component | ⏳ |
+| 1 | Infinite datacenter environment (Grid/Floor) | ✅ |
+| 2 | Atmospheric Lighting & Fog | ✅ |
+| 3 | Ambient Particle system | ✅ |
+| 4 | The Packet Actor component | ✅ |
+
+### Task 9.3 — Cinematic Hero
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Camera animations and crane plunge sequence | ✅ |
+| 2 | Responsive typography synchronization | ✅ |
+| 3 | Scroll FSM and timeline integration | ✅ |
+
+### Task 9.4 — Chapters
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Chapter 1: Why HTTP Exists overlay | ✅ |
+| 2 | Chapter 2: TCP Handshake overlay & SYN/ACK WebGL | ✅ |
+| 3 | Chapter 3: Building a Socket code overlay | ✅ |
+| 4 | Chapter 4: Reading Bytes streaming visual overlay | ✅ |
+| 5 | Chapter 5: Parsing Requests & headers visualization | ✅ |
+| 6 | Chapter 6: Routing & radix tree demonstration | ✅ |
+| 7 | Chapter 7: Concurrency & worker pool presentation | ✅ |
+| 8 | Chapter 8: Production Features (Gzip, HTTPS) visual | ✅ |
+| 9 | Chapter 9: Benchmarks comparative telemetry panels | ✅ |
+| 10 | Chapter 10: Conclusion & complete source code access | ✅ |
+
+### Task 9.5 — Polish
+
+| # | Subtask | Status |
+| --- | --- | :---: |
+| 1 | Global state management (Zustand FSM) | ✅ |
+| 2 | Fluid responsive stacking layouts for all chapters | ✅ |
+| 3 | Mobile-friendly toggle navigation drawer | ✅ |
+| 4 | Telemetry and performance metric synchronization | ✅ |
+| 5 | Oxlint validation & Vite build verification | ✅ |
 
 ---
 
@@ -547,8 +624,9 @@ _Local-only (gitignored). Populated as concepts are introduced._
 - Added `"h2"` to `NextProtos` in `StartTLS()` inside `server.go` to enable HTTP/2 ALPN negotiation, resolving the failing `TestServerHTTP2_ALPN` integration test.
 - Developed [stats.ps1] in [scripts/bench/] to run any benchmark suite 10 times, calculate descriptive statistics (average, standard deviation, variance, coefficient of variation), print results in a structured console table, and output Markdown and JSON reports.
 -  Implemented Dual-Path body architecture (`RawBody []byte` for Fast Path < 64KB, `Body io.ReadCloser` for Slow Path). Added `Transfer-Encoding: chunked` decoding support in parser, making TitanHTTP fully spec compliant for payload streaming while preserving zero-allocation JSON parsing.
-
 - Resolved major flaws discovered during benchmark analysis: fixed a global test server goroutine leak (server_http2_test.go), patched unbounded memory retention in slice capacities in the Sliding Window rate limiter, and drastically reduced global mutex lock contention across all limiters by implementing a Sharded Map Architecture (defaultShardCount = 64). Updated .academy lessons accordingly.
 -  Completely redesigned the "Why build an HTTP Server?" page ([WhyPage.tsx] into an immersive telemetry and architectural blueprint dashboard. Integrated a Comparative Telemetry panel containing exact benchmark datasets (max throughput, large payload handling, and latency deltas vs. `net/http`), laid out a 10-chapter guided narrative pipeline roadmap, and embedded functional inline SVGs to visualize parsing, concurrency, and security gateway layers.
 - Overhauled the styling system in [index.css], built a custom mobile menu toggle drawer in [NavBar.tsx], and migrated structural section containers across all 10 chapters and subpages ([WhyPage.tsx],[ArchitecturePage.tsx],[DecisionsPage.tsx]) to support fully fluid, responsive stacking layouts. Verified zero overflow and perfect visual integrity across all devices.
 Configured [HeroSection.tsx] concurrency widgets to display `10,000 MAX WORKER POOL` / `BOUNDED GOROUTINES` to align with the actual thread-pool limiters in Go. Refactored mobile side drawers in [NavBar.tsx] to support smooth touch scrolling (`-webkit-overflow-scrolling: touch`) when expanding the Journey chapters.
+- Implemented Custom Header API tests, chunked transfer-encoding reader tests, and middleware tests (Auth, Recovery, Logger, Range), boosting package coverages (cache to 100.0%, middleware to 94.5%). Resolved gosec G114 and G402 security linter warnings in `server.go` and `cmd/titanhttp/main.go`.
+- Modernized all Go benchmarks across `internal/http` and `internal/server` packages to use Go 1.24+ `for b.Loop()` syntax instead of classic `for i := 0; i < b.N; i++` loops, resolving all IDE warnings.

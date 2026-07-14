@@ -21,7 +21,7 @@ func TestReverseProxy(t *testing.T) {
 		if r.URL.Path != "/api/data" {
 			t.Errorf("expected /api/data, got %s", r.URL.Path)
 		}
-		
+
 		body, _ := io.ReadAll(r.Body)
 		if string(body) != "client-data" {
 			t.Errorf("expected 'client-data', got %q", string(body))

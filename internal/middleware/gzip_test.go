@@ -11,11 +11,11 @@ import (
 
 func TestGzipMiddleware(t *testing.T) {
 	tests := []struct {
-		name                 string
-		acceptEncoding       string
-		contentType          string
-		initialBody          []byte
-		expectCompression    bool
+		name              string
+		acceptEncoding    string
+		contentType       string
+		initialBody       []byte
+		expectCompression bool
 	}{
 		{
 			name:              "Compressible content with gzip accepted",
@@ -63,8 +63,8 @@ func TestGzipMiddleware(t *testing.T) {
 
 			// Create request
 			req := &http.Request{
-				Method:  http.MethodGet,
-				Path:    "/",
+				Method: http.MethodGet,
+				Path:   "/",
 			}
 			if tt.acceptEncoding != "" {
 				req.Headers.Set("accept-encoding", tt.acceptEncoding)

@@ -63,7 +63,7 @@ func (r *Router) Static(prefix, root string) {
 				// If index.html doesn't exist or can't be opened, return 403 Forbidden
 				return http.NewResponse403()
 			}
-			
+
 			indexInfo, err := indexFile.Stat()
 			if err != nil || indexInfo.IsDir() {
 				file.Close()

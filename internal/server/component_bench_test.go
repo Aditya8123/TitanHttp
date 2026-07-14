@@ -11,7 +11,7 @@ import (
 
 // mockConn implements net.Conn to avoid OS pipe overhead during benchmarking
 type mockConn struct {
-	reqData []byte
+	reqData    []byte
 	readOffset int
 }
 
@@ -23,12 +23,12 @@ func (m *mockConn) Read(b []byte) (n int, err error) {
 	m.readOffset += n
 	return n, nil
 }
-func (m *mockConn) Write(b []byte) (n int, err error) { return len(b), nil }
-func (m *mockConn) Close() error { return nil }
-func (m *mockConn) LocalAddr() net.Addr { return nil }
-func (m *mockConn) RemoteAddr() net.Addr { return nil }
-func (m *mockConn) SetDeadline(t time.Time) error { return nil }
-func (m *mockConn) SetReadDeadline(t time.Time) error { return nil }
+func (m *mockConn) Write(b []byte) (n int, err error)  { return len(b), nil }
+func (m *mockConn) Close() error                       { return nil }
+func (m *mockConn) LocalAddr() net.Addr                { return nil }
+func (m *mockConn) RemoteAddr() net.Addr               { return nil }
+func (m *mockConn) SetDeadline(t time.Time) error      { return nil }
+func (m *mockConn) SetReadDeadline(t time.Time) error  { return nil }
 func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
 
 // BenchmarkServer_Component simulates a full request-response lifecycle
@@ -36,13 +36,13 @@ func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
 // on the performance of our Router, Parser, and connection handlers.
 func BenchmarkServer_Component(b *testing.B) {
 	srv := NewServer(":0")
-	
+
 	srv.Router().Get("/ping", func(req *http.Request) *http.Response {
 		resp := http.NewResponse200()
 		resp.Body = []byte("pong")
 		return resp
 	})
-	
+
 	reqBytes := []byte("GET /ping HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
 
 	b.ResetTimer()

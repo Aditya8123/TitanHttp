@@ -29,7 +29,7 @@ func TestRequest_WriteTo(t *testing.T) {
 
 	// We check for exact string, but headers order in map iteration is random.
 	// So we should check for presence of all parts.
-	
+
 	if !strings.HasPrefix(output, "POST /api/test HTTP/1.1\r\n") {
 		t.Errorf("Request line is incorrect, got: %s", output)
 	}

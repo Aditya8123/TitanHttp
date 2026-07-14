@@ -92,6 +92,8 @@ Our documentation is treated as a first-class, premium editorial experience. Rea
 
 ## 🛠️ Quick Start
 
+### 1. Run the Go Server (Backend)
+To boot the pure Go HTTP server and run it locally:
 ```bash
 # Clone the repository
 git clone https://github.com/Aditya8123/TitanHttp.git
@@ -99,9 +101,24 @@ git clone https://github.com/Aditya8123/TitanHttp.git
 # Enter the datacenter
 cd TitanHttp
 
-# Boot the server
+# Boot the Go server
 go run cmd/titanhttp/main.go
 ```
+The server will start listening on port `8080` (or `8443` for HTTPS).
+
+### 2. Host the Showcase Website (Frontend)
+The Showcase Website is built using React, TypeScript, and Vite. To install dependencies and host it locally:
+```bash
+# Enter the web directory
+cd web
+
+# Install Node.js dependencies
+npm install
+
+# Start the Vite development server
+npm run dev
+```
+Once the dev server is active, open your browser and navigate to the address shown in the output (typically `http://localhost:5173`) to view the Showcase Website.
 
 ---
 > *"Would a senior backend engineer enjoy reviewing this code, and would a recruiter trust the developer who built it?"* — The TitanHTTP standard.

@@ -30,7 +30,7 @@ func TestServerHTTP2_ALPN(t *testing.T) {
 	}()
 
 	time.Sleep(100 * time.Millisecond)
-	
+
 	addr := srv.Addr()
 	if addr == "127.0.0.1:0" || addr == "" {
 		t.Fatalf("Server failed to allocate a port")

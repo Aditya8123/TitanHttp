@@ -84,8 +84,8 @@ func TestParseRequestLine(t *testing.T) {
 
 func TestParseHeaders(t *testing.T) {
 	tests := []struct {
-		name          string
-		input         string
+		name            string
+		input           string
 		expectedError   error
 		expectedHeaders map[string]string
 	}{
@@ -108,9 +108,9 @@ func TestParseHeaders(t *testing.T) {
 			},
 		},
 		{
-			name:          "No headers",
-			input:         "\r\n",
-			expectedError: nil,
+			name:            "No headers",
+			input:           "\r\n",
+			expectedError:   nil,
 			expectedHeaders: map[string]string{},
 		},
 		{
@@ -295,7 +295,6 @@ func TestParseResponse(t *testing.T) {
 
 	reader := bufio.NewReader(strings.NewReader(rawResponse))
 	resp, err := ParseResponse(reader)
-
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -335,14 +334,14 @@ func TestParseResponse(t *testing.T) {
 func BenchmarkParseRequestLine(b *testing.B) {
 	reqLine := "GET /api/v1/users/12345 HTTP/1.1\r\n"
 	req := NewRequest()
-	
+
 	sr := strings.NewReader(reqLine)
 	reader := bufio.NewReader(sr)
 
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		sr.Reset(reqLine)
 		reader.Reset(sr)
 		_ = parseRequestLine(reader, req)
@@ -351,14 +350,14 @@ func BenchmarkParseRequestLine(b *testing.B) {
 
 func BenchmarkParseHeaders(b *testing.B) {
 	headersRaw := "Host: localhost:8080\r\nUser-Agent: curl/7.81.0\r\nAccept: application/json\r\nConnection: keep-alive\r\n\r\n"
-	
+
 	sr := strings.NewReader(headersRaw)
 	reader := bufio.NewReader(sr)
 
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		sr.Reset(headersRaw)
 		reader.Reset(sr)
 		var headers Header
@@ -377,7 +376,7 @@ func BenchmarkParseBody_Large(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		sr.Reset(bodyContent)
 		reader.Reset(sr)
 		req.Headers.Set("Content-Length", "1048576") // 1MB

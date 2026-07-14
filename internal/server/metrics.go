@@ -42,7 +42,8 @@ func (m *Metrics) ConnectionRejected() {
 
 // Report prints the current snapshot of server metrics.
 func (m *Metrics) Report() {
-	fmt.Printf("[Metrics] Total: %d | Active: %d | Bytes: %d | Panics: %d | Rejected: %d\n",
+	fmt.Printf(
+		"[Metrics] Total: %d | Active: %d | Bytes: %d | Panics: %d | Rejected: %d\n",
 		m.totalRequests.Load(),
 		m.activeConns.Load(),
 		m.totalBytes.Load(),

@@ -27,7 +27,7 @@ var sampleJSON = []byte(`{"id":123,"name":"John Doe","email":"john@test.com","ag
 
 func BenchmarkJSON_Marshal(b *testing.B) {
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, err := json.Marshal(sampleUser)
 		if err != nil {
 			b.Fatal(err)
@@ -37,7 +37,7 @@ func BenchmarkJSON_Marshal(b *testing.B) {
 
 func BenchmarkJSON_Unmarshal(b *testing.B) {
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		var u User
 		err := json.Unmarshal(sampleJSON, &u)
 		if err != nil {

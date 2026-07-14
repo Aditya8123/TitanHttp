@@ -12,10 +12,10 @@ import (
 
 // Backend represents a single upstream server in the load balancer pool.
 type Backend struct {
-	URL          string
-	Alive        bool
-	mux          sync.RWMutex
-	ActiveConns  int64 // For future features like least-connections
+	URL         string
+	Alive       bool
+	mux         sync.RWMutex
+	ActiveConns int64 // For future features like least-connections
 }
 
 // SetAlive safely updates the backend's health status.

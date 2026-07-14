@@ -81,7 +81,7 @@ func (sw *SlidingWindow) Allow(ip string) bool {
 	cutoff := now.Add(-sw.window)
 
 	timestamps := shard.logs[ip]
-	
+
 	// Purge timestamps older than the cutoff window
 	// Since timestamps are appended chronologically, we can just find the first valid one
 	validIdx := 0
@@ -99,7 +99,7 @@ func (sw *SlidingWindow) Allow(ip string) bool {
 	// Slice off the old timestamps to prevent memory growth
 	if validIdx > 0 {
 		timestamps = timestamps[validIdx:]
-		
+
 		// Shrink the backing array if the capacity is large but only a small fraction is used.
 		// This prevents indefinite memory retention (leak) during burst loads.
 		if cap(timestamps) > 1024 && len(timestamps) < cap(timestamps)/4 {

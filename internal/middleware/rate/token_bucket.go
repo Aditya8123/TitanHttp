@@ -96,7 +96,7 @@ func (tb *TokenBucket) Allow(ip string) bool {
 		if b.tokens > tb.capacity {
 			b.tokens = tb.capacity
 		}
-		// We only update lastRefill if we actually added tokens, 
+		// We only update lastRefill if we actually added tokens,
 		// but typically we can just set it to now.
 		b.lastRefill = now
 	}

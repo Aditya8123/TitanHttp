@@ -158,7 +158,7 @@ func parseHeaders(reader *bufio.Reader, headers *Header) error {
 		}
 
 		valueBytes := bytes.TrimSpace(line[idx+1:])
-		
+
 		var keyStr string
 		switch {
 		case bytes.Equal(keyBytes, []byte("host")):
