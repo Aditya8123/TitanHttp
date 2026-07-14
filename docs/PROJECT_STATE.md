@@ -9,10 +9,10 @@
 | Field | Value |
 | --- | --- |
 | **Active Phase** | Phase 10 — Release |
-| **Active Task** | Task 10.1 — Testing |
-| **Last Completed Subtask** | Integration tests |
-| **Active Subtask** | End-to-end tests |
-| **Next Subtask** | GitHub Actions setup |
+| **Active Task** | Task 10.3 — Deployment |
+| **Last Completed Subtask** | Release pipeline integration |
+| **Active Subtask** | Docker |
+| **Next Subtask** | Backend deployment |
 
 > Note: This file is a living document tracking progress.
 > Updated to reflect the completion of Phase 9 (Showcase Website) and transition to Phase 10 Release Testing.
@@ -23,9 +23,9 @@
 
 | Task | Status | Progress |
 | --- | :---: | --- |
-| 10.1 — Testing | 🚧 In Progress | 2 / 3 subtasks |
-| 10.2 — CI/CD | ⏳ Pending | 0 / 3 subtasks |
-| 10.3 — Deployment | ⏳ Pending | 0 / 3 subtasks |
+| 10.1 — Testing | ✅ Complete | 3 / 3 subtasks |
+| 10.2 — CI/CD | ✅ Complete | 3 / 3 subtasks |
+| 10.3 — Deployment | 🚧 In Progress | 0 / 3 subtasks |
 | 10.4 — Portfolio Polish | ⏳ Pending | 0 / 4 subtasks |
 
 ### Task 10.1 — Testing
@@ -34,21 +34,21 @@
 | --- | --- | :---: |
 | 1 | Unit tests (Custom header, chunked decoder, and middleware test coverage) | ✅ |
 | 2 | Integration tests | ✅ |
-| 3 | End-to-end tests | 🚧 |
+| 3 | End-to-end tests | ✅ |
 
 ### Task 10.2 — CI/CD
 
 | # | Subtask | Status |
 | --- | --- | :---: |
-| 1 | GitHub Actions setup | ⏳ |
-| 2 | Automated testing configuration | ⏳ |
-| 3 | Release pipeline integration | ⏳ |
+| 1 | GitHub Actions setup | ✅ |
+| 2 | Automated testing configuration | ✅ |
+| 3 | Release pipeline integration | ✅ |
 
 ### Task 10.3 — Deployment
 
 | # | Subtask | Status |
 | --- | --- | :---: |
-| 1 | Docker container configuration | ⏳ |
+| 1 | Docker container configuration | 🚧 |
 | 2 | Backend deployment | ⏳ |
 | 3 | Website deployment | ⏳ |
 
@@ -630,3 +630,5 @@ _Local-only (gitignored). Populated as concepts are introduced._
 Configured [HeroSection.tsx] concurrency widgets to display `10,000 MAX WORKER POOL` / `BOUNDED GOROUTINES` to align with the actual thread-pool limiters in Go. Refactored mobile side drawers in [NavBar.tsx] to support smooth touch scrolling (`-webkit-overflow-scrolling: touch`) when expanding the Journey chapters.
 - Implemented Custom Header API tests, chunked transfer-encoding reader tests, and middleware tests (Auth, Recovery, Logger, Range), boosting package coverages (cache to 100.0%, middleware to 94.5%). Resolved gosec G114 and G402 security linter warnings in `server.go` and `cmd/titanhttp/main.go`.
 - Modernized all Go benchmarks across `internal/http` and `internal/server` packages to use Go 1.24+ `for b.Loop()` syntax instead of classic `for i := 0; i < b.N; i++` loops, resolving all IDE warnings.
+- Created `internal/server/e2e_test.go` implementing automated end-to-end integration tests over local TCP/TLS listeners. Covered routing pipelines, middleware chains, gzip negotiation, dynamic path traversal and slowloris safety, load balancer routing, rate limiting, and cache-control validations. Fixed a critical sync.Pool memory-recycling/concurrency corruption bug in the caching middleware by introducing response cloning. Task 10.1 — Testing is now fully complete!
+- Set up a complete GitHub Actions CI/CD configuration in `.github/workflows/ci.yml`. Configured pushes and PR hooks to build and lint the React frontend using Node 20 and oxlint, download dependencies and lint/test the Go backend using Go 1.24, upload Go test coverage reports as artifacts, and cross-compile and publish production-grade server binaries for Linux, macOS, and Windows on release tag triggers. Task 10.2 — CI/CD is now fully complete!

@@ -28,7 +28,22 @@ func CacheMiddleware(c *cache.MemoryCache) router.Middleware {
 				// Try to serve from cache
 				cacheKey := req.Path
 				if cachedResp, ok := c.Get(cacheKey); ok {
-					return cachedResp
+					// Acquire a response from the pool and clone the cached fields into it.
+					// The server will release this acquired response when done.
+					resp := http.AcquireResponse()
+					resp.StatusCode = cachedResp.StatusCode
+					resp.StatusText = cachedResp.StatusText
+					resp.Version = cachedResp.Version
+
+					for _, entry := range cachedResp.Headers.Entries() {
+						resp.Headers.Add(entry.Key(), entry.Value())
+					}
+
+					if cachedResp.Body != nil {
+						resp.Body = make([]byte, len(cachedResp.Body))
+						copy(resp.Body, cachedResp.Body)
+					}
+					return resp
 				}
 			}
 
@@ -52,7 +67,21 @@ func CacheMiddleware(c *cache.MemoryCache) router.Middleware {
 							}
 						}
 					}
-					c.Set(req.Path, resp, ttl)
+					// Create a decoupled clone of the response for cache storage.
+					// This prevents it from being zeroed out when the server calls ReleaseResponse.
+					cachedResp := &http.Response{
+						StatusCode: resp.StatusCode,
+						StatusText: resp.StatusText,
+						Version:    resp.Version,
+					}
+					for _, entry := range resp.Headers.Entries() {
+						cachedResp.Headers.Add(entry.Key(), entry.Value())
+					}
+					if resp.Body != nil {
+						cachedResp.Body = make([]byte, len(resp.Body))
+						copy(cachedResp.Body, resp.Body)
+					}
+					c.Set(req.Path, cachedResp, ttl)
 				}
 			}
 
