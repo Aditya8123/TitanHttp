@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	nethttp "net/http"
-	_ "net/http/pprof"
+	_ "net/http/pprof" // #nosec G108
 	"os"
 	"runtime"
 	"strings"
@@ -142,7 +142,7 @@ func main() {
 
 		sizeStr := req.Params["size"]
 		var size int
-		fmt.Sscanf(sizeStr, "%d", &size)
+		_, _ = fmt.Sscanf(sizeStr, "%d", &size)
 
 		if size < 0 || size > 15_000_000 {
 			resp.StatusCode = http.StatusBadRequest

@@ -86,12 +86,12 @@ func Gzip(next router.Handler) router.Handler {
 			}()
 
 			if origStream != nil {
-				io.Copy(gw, origStream)
+				_, _ = io.Copy(gw, origStream)
 				if closer, ok := origStream.(io.Closer); ok {
 					closer.Close()
 				}
 			} else if len(origBody) > 0 {
-				gw.Write(origBody)
+				_, _ = gw.Write(origBody)
 			}
 		}()
 

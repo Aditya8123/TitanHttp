@@ -8,14 +8,14 @@
 
 | Field | Value |
 | --- | --- |
-| **Active Phase** | Phase 10 — Release |
-| **Active Task** | Task 10.3 — Deployment |
-| **Last Completed Subtask** | Docker container configuration |
-| **Active Subtask** | Backend deployment |
-| **Next Subtask** | Website deployment |
+| **Active Phase** | None (All Phases Complete) |
+| **Active Task** | None |
+| **Last Completed Subtask** | Final documentation check |
+| **Active Subtask** | None |
+| **Next Subtask** | None |
 
 > Note: This file is a living document tracking progress.
-> Updated to reflect the completion of Phase 9 (Showcase Website) and transition to Phase 10 Release Testing.
+> Updated to reflect the completion of Phase 10 Release Engineering and Portfolio Polish.
 
 ---
 
@@ -25,8 +25,8 @@
 | --- | :---: | --- |
 | 10.1 — Testing | ✅ Complete | 3 / 3 subtasks |
 | 10.2 — CI/CD | ✅ Complete | 3 / 3 subtasks |
-| 10.3 — Deployment | 🚧 In Progress | 1 / 3 subtasks |
-| 10.4 — Portfolio Polish | ⏳ Pending | 0 / 4 subtasks |
+| 10.3 — Deployment | ✅ Complete | 3 / 3 subtasks |
+| 10.4 — Portfolio Polish | ✅ Complete | 4 / 4 subtasks |
 
 ### Task 10.1 — Testing
 
@@ -49,17 +49,17 @@
 | # | Subtask | Status |
 | --- | --- | :---: |
 | 1 | Docker container configuration | ✅ |
-| 2 | Backend deployment | 🚧 |
-| 3 | Website deployment | ⏳ |
+| 2 | Backend deployment | ✅ |
+| 3 | Website deployment | ✅ |
 
 ### Task 10.4 — Portfolio Polish
 
 | # | Subtask | Status |
 | --- | --- | :---: |
-| 1 | Screenshots & assets compilation | ⏳ |
-| 2 | Code walkthrough documentation | ⏳ |
-| 3 | Recruiter walkthrough checklist | ⏳ |
-| 4 | Final documentation check | ⏳ |
+| 1 | Screenshots & assets compilation | ✅ |
+| 2 | Code walkthrough documentation | ✅ |
+| 3 | Recruiter walkthrough checklist | ✅ |
+| 4 | Final documentation check | ✅ |
 
 ---
 
@@ -486,69 +486,6 @@
 
 ---
 
-## `.academy/` Index
-
-_Local-only (gitignored). Populated as concepts are introduced._
-
-| File | Topic |
-| --- | --- |
-| **Module 1 — Go Fundamentals** | |
-| `lessons/01_go_fundamentals/01_syntax_and_types.md` | Go fundamentals, types, conversions, iota, named returns, variadic functions |
-| `lessons/01_go_fundamentals/02_pointers_and_memory.md` | Passing by value vs pointer, memory allocation, stack/heap escape analysis, GC, sync.Pool |
-| `lessons/01_go_fundamentals/03_structs_and_interfaces.md` | State (structs) and behavior (interfaces), struct embedding, io.Reader/Writer |
-| `lessons/01_go_fundamentals/04_error_handling.md` | The error interface, returning, wrapping, sentinels, recover middleware patterns |
-| `lessons/01_go_fundamentals/05_goroutines_and_channels.md` | Goroutines, Go scheduler details, channels, channel leaks, worker pools |
-| `lessons/01_go_fundamentals/06_slices_and_maps.md` | Slice/map internals, header structures, pre-allocation, nil map safety |
-| `lessons/01_go_fundamentals/07_io_and_bufio.md` | standard I/O reader/writer composition, bufio buffering strategies, io.ReadFull |
-| `lessons/01_go_fundamentals/08_testing_in_go.md` | Go testing framework, table tests, subtests, net.Pipe, benchmarks, -race detector, coverage |
-| **Module 2 — Networking** | |
-| `lessons/02_networking/01_tcp_fundamentals.md` | TCP vs UDP, IP, Ports, 4-tuples, 3-way/4-way handshakes, sliding windows, Nagle's, SO_REUSEADDR |
-| `lessons/02_networking/02_socket_programming.md` | Socket programming in Go, net.Listen, bind/listen syscalls, backlog, socket options |
-| `lessons/02_networking/03_accepting_connections.md` | The Accept syscall, net.Conn, connection loops, temporary error backoffs, shutdown checks |
-| `lessons/02_networking/04_reading_bytes.md` | Reading bytes, partial reads, bufio parsing strategy, io.ReadFull body reads, deadlines, DoS limits |
-| `lessons/02_networking/05_writing_bytes.md` | Writing HTTP responses, bufio.Writer, Flush(), deadlines, write-after-close coordination, sendfile |
-| `lessons/02_networking/06_defer_and_closure.md` | Robust cleanup using defer, execution stack (LIFO), loop trap, named returns, panic safety |
-| `lessons/02_networking/07_connection_lifecycle.md` | Blocking I/O model, client EOF, Keep-Alive persistent connection state, graceful shutdown |
-| `lessons/02_networking/08_network_debugging.md` | Network debugging toolkit: ss, lsof, tcpdump, curl, netcat (nc), GODEBUG flags |
-| **Module 3 — HTTP Parsing** | |
-| `lessons/03_http_parsing/01_http_anatomy.md` | Version history, CRLF sequence, wire format of requests/responses, method semantics, status code matrix |
-| `lessons/03_http_parsing/02_request_parsing.md` | HTTP parsing architecture, request line splitting, state-machine header parsing, chunked body parsing |
-| `lessons/03_http_parsing/03_response_generation.md` | Bytes() serialization, factory functions, direct WriteTo streaming, memory allocation tradeoffs |
-| `lessons/03_http_parsing/04_http_security.md` | Attack surfaces: smuggling, Slowloris, body/header bombs, path traversal, timing attacks |
-| `lessons/03_http_parsing/05_content_negotiation.md` | Content negotiation, Accept parsing, quality values (q), Content-Type parsing, Vary header |
-| **Module 4 — Concurrency** | |
-| `lessons/04_concurrency/01_goroutine_model.md` | Threading comparison, scheduler architecture (P/M/G), work stealing, preemption, stack growth, leaks |
-| `lessons/04_concurrency/02_channels_deep_dive.md` | Channel internals (hchan), unbuffered/buffered rendezvous, select statements, deadlocks, fan-out/in, pipelines |
-| `lessons/04_concurrency/03_sync_primitives.md` | sync.Mutex/RWMutex, WaitGroup patterns, sync.Once, sync/atomic lock-free ops, sync.Pool recycling |
-| `lessons/04_concurrency/04_worker_pools.md` | Concurrency bounding, load shedding (503), pool sizing, dynamic scaling, per-worker states |
-| `lessons/04_concurrency/05_context_and_cancellation.md` | Context tree, WithCancel/Timeout/Deadline/Value, propagation rules, graceful shutdown coordination |
-| `lessons/04_concurrency/06_race_conditions.md` | Data race definitions, TSAN race detector, common patterns, atomic CAS, stress testing |
-| **Module 5 — Routing** | |
-| `lessons/05_routing/01_routing_concepts.md` | Linear search, hash map, trie, radix tree lookup algorithms, routing priority |
-| `lessons/05_routing/02_pattern_matching.md` | Segment parsing, parameter extraction, wildcard captures, URL decoding, 405 vs 404 behavior |
-| `lessons/05_routing/03_middleware_pipeline.md` | Decorator pattern, HandlerFunc, Chain composition, logging/auth/recovery/CORS middleware |
-| `lessons/05_routing/04_static_files.md` | Path traversal vulnerabilities, MIME types, directory index handling, Cache-Control headers |
-| **Module 6 — Production Engineering** | |
-| `lessons/06_production/01_keep_alive.md` | Setup latency overhead, HTTP/1.0 vs 1.1 defaults, idle timeouts, request counts (max=N) |
-| `lessons/06_production/02_tls_and_https.md` | TLS 1.3 handshake RTT, certificate chains, tls.Listen, cipher suite selection, forward secrecy, HSTS |
-| `lessons/06_production/03_rate_limiting.md` | Token bucket, sliding window algorithms, RateLimit headers, proxy IP extraction (XFF) |
-| `lessons/06_production/04_observability.md` | Structured slog logging, Prometheus scraping format, P99 histograms, trace IDs, health checks |
-| `lessons/06_production/05_load_balancing.md` | Reverse proxy forwarding, round robin, least connections, IP sticky sessions, health checks |
-| **Module 8 — Performance Engineering** | |
-| `lessons/08_performance/01_profiling.md` | Setting up pprof, CPU profiling, memory allocation analysis, and goroutine leak detection |
-| `lessons/08_performance/02_benchmarking.md` | Writing micro benchmarks, b.N, ResetTimer, ReportAllocs, RunParallel, and benchstat |
-| `lessons/08_performance/03_performance_analysis.md` | Offline profiling with pprof and regression tracking using benchstat |
-| `lessons/08_performance/04_optimization.md` | Idiomatic Go optimization techniques: sync.Pool, zero-alloc routing, memory allocation reduction |
-| **Walkthroughs & Reference** | |
-| `walkthroughs/01_tcp_foundation.md` | Phase 1 walkthrough: accepting a TCP connection and writing raw bytes |
-| `walkthroughs/02_http_parsing.md` | Phase 3 walkthrough: full HTTP request parsing engine implementation |
-| `walkthroughs/03_routing_engine.md` | Phase 4 walkthrough: radix tree router, parameter extraction, and wildcards |
-| `walkthroughs/04_concurrency.md` | Phase 5 walkthrough: goroutines, worker pools, synchronization, and race condition prevention |
-| `glossary.md` | Comprehensive 60+ term dictionary of networking, concurrency, and HTTP protocols |
-| `README.md` | Academy table of contents and curriculum maps |
-
----
-
 ## Change Log
 
 - Initialized repository: git, Go module, project structure, `.gitignore`, and this bootstrap `PROJECT_STATE.md`. (Task 1.1, subtasks 1–4)
@@ -633,3 +570,5 @@ Configured [HeroSection.tsx] concurrency widgets to display `10,000 MAX WORKER P
 - Created `internal/server/e2e_test.go` implementing automated end-to-end integration tests over local TCP/TLS listeners. Covered routing pipelines, middleware chains, gzip negotiation, dynamic path traversal and slowloris safety, load balancer routing, rate limiting, and cache-control validations. Fixed a critical sync.Pool memory-recycling/concurrency corruption bug in the caching middleware by introducing response cloning. Task 10.1 — Testing is now fully complete!
 - Set up a complete GitHub Actions CI/CD configuration in `.github/workflows/ci.yml`. Configured pushes and PR hooks to build and lint the React frontend using Node 20 and oxlint, download dependencies and lint/test the Go backend using Go 1.24, upload Go test coverage reports as artifacts, and cross-compile and publish production-grade server binaries for Linux, macOS, and Windows on release tag triggers. Task 10.2 — CI/CD is now fully complete!
 - Containerized TitanHTTP backend and React showcase website. Created a multi-stage `Dockerfile` for Go compiling static optimized binaries inside an Alpine environment, a multi-stage `web/Dockerfile` with a Node build and an SPA fallback custom `web/nginx.conf` router, and a root `docker-compose.yml` to orchestrate both services. Task 10.3 — Deployment (Docker container configuration subtask) is now complete!
+- Hardened the Go backend Docker container by adding a non-privileged `titan:titan` system user (UID/GID 10001), restricted file ownership, and configured GitHub Actions CI/CD to automatically build and push the backend image to GitHub Container Registry (GHCR) on tag release triggers. Task 10.3 — Deployment (Backend deployment subtask) is now complete!
+- Hardened the frontend Nginx web container to run entirely under the non-root `nginx` user (UID/GID 101) on port 8080 (mapped to host 3000 in docker-compose.yml), configured fallback SPA routing (`try_files`), and automated the Docker build and push to GHCR on tags with OCI metadata and immutable version tags. Task 10.3 — Deployment (Website deployment / containerization subtask) is now complete!

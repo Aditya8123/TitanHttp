@@ -27,7 +27,7 @@ func ForwardRequest(req *http.Request, target string) *http.Response {
 	}
 
 	// Set deadlines to prevent hanging
-	conn.SetDeadline(time.Now().Add(30 * time.Second))
+	_ = conn.SetDeadline(time.Now().Add(30 * time.Second))
 
 	// Add Header Management
 	req.Headers.Set("connection", "close")

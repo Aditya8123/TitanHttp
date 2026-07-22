@@ -67,21 +67,22 @@ func parseRequestLine(reader *bufio.Reader, req *Request) error {
 		return ErrMalformedRequest
 	}
 	methodBytes := line[:idx1]
-	if bytes.Equal(methodBytes, []byte("GET")) {
+	switch string(methodBytes) {
+	case "GET":
 		req.Method = MethodGet
-	} else if bytes.Equal(methodBytes, []byte("POST")) {
+	case "POST":
 		req.Method = MethodPost
-	} else if bytes.Equal(methodBytes, []byte("PUT")) {
+	case "PUT":
 		req.Method = MethodPut
-	} else if bytes.Equal(methodBytes, []byte("DELETE")) {
+	case "DELETE":
 		req.Method = MethodDelete
-	} else if bytes.Equal(methodBytes, []byte("OPTIONS")) {
+	case "OPTIONS":
 		req.Method = MethodOptions
-	} else if bytes.Equal(methodBytes, []byte("HEAD")) {
+	case "HEAD":
 		req.Method = MethodHead
-	} else if bytes.Equal(methodBytes, []byte("PATCH")) {
+	case "PATCH":
 		req.Method = MethodPatch
-	} else {
+	default:
 		return ErrInvalidMethod
 	}
 
@@ -94,11 +95,12 @@ func parseRequestLine(reader *bufio.Reader, req *Request) error {
 	req.Path = string(line[idx1+1 : idx2])
 
 	versionBytes := line[idx2+1:]
-	if bytes.Equal(versionBytes, []byte("HTTP/1.1")) {
+	switch string(versionBytes) {
+	case "HTTP/1.1":
 		req.Version = "HTTP/1.1"
-	} else if bytes.Equal(versionBytes, []byte("HTTP/1.0")) {
+	case "HTTP/1.0":
 		req.Version = "HTTP/1.0"
-	} else {
+	default:
 		return ErrInvalidVersion
 	}
 

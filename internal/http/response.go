@@ -228,7 +228,7 @@ func (r *Response) WriteTo(w io.Writer) (int64, error) {
 // Warning: This buffers the entire response in memory. Use WriteTo for large payloads.
 func (r *Response) Bytes() []byte {
 	var b bytes.Buffer
-	r.WriteTo(&b)
+	_, _ = r.WriteTo(&b)
 	return b.Bytes()
 }
 

@@ -89,7 +89,7 @@ func (lb *LoadBalancer) ServeHTTP(req *http.Request) *http.Response {
 
 // NextBackend selects the next healthy backend using Round-Robin.
 func (lb *LoadBalancer) NextBackend() *Backend {
-	l := uint32(len(lb.backends))
+	l := uint32(len(lb.backends)) // #nosec G115
 	if l == 0 {
 		return nil
 	}

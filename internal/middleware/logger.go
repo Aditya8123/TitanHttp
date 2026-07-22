@@ -38,7 +38,7 @@ func Logger(next router.Handler) router.Handler {
 		buf = append(buf, ' ')
 		buf = append(buf, req.Version...)
 		buf = append(buf, '\n')
-		LogOutput.Write(buf)
+		_, _ = LogOutput.Write(buf)
 
 		// Pass execution to the next handler
 		resp := next(req)
@@ -52,7 +52,7 @@ func Logger(next router.Handler) router.Handler {
 		buf = append(buf, " ("...)
 		buf = append(buf, time.Since(start).String()...)
 		buf = append(buf, ")\n"...)
-		LogOutput.Write(buf)
+		_, _ = LogOutput.Write(buf)
 
 		*ptr = buf
 		logBufPool.Put(ptr)

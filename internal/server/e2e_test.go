@@ -170,9 +170,9 @@ func TestE2E_ProxyAndLoadBalancer(t *testing.T) {
 		resp := http.NewResponse200()
 		resp.Headers.Set("Content-Type", "application/json")
 		// Echo back client information injected by proxy
-		resp.Body = []byte(fmt.Sprintf(`{"forwarded_for": %q, "forwarded_host": %q}`,
+		resp.Body = fmt.Appendf(nil, `{"forwarded_for": %q, "forwarded_host": %q}`,
 			req.Headers.Get("x-forwarded-for"),
-			req.Headers.Get("x-forwarded-host")))
+			req.Headers.Get("x-forwarded-host"))
 		return resp
 	})
 
