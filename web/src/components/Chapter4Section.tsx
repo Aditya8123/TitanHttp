@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import chapter4Img from '../assets/images/chapter4.png';
 
 export const Chapter4Section: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -40,7 +41,7 @@ export const Chapter4Section: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundImage: `url(${import.meta.env.BASE_URL}images/chapter4.png)`,
+        backgroundImage: `url(${chapter4Img})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',

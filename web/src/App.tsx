@@ -30,7 +30,7 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className="app-container" style={{ backgroundColor: 'var(--color-void-black)', color: 'var(--color-paper-white)', minHeight: '100vh', overflowX: 'clip' }}>
         <NavBar />
         <Routes>

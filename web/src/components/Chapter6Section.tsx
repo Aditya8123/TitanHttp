@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GitMerge } from 'lucide-react';
+import chapter6Img from '../assets/images/chapter6.png';
 
 const ROUTES = [
   { method: 'GET', path: '/api/users', handler: 'handleUsers()' },
@@ -48,7 +49,7 @@ export const Chapter6Section: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundImage: `url(${import.meta.env.BASE_URL}images/chapter6.png)`,
+        backgroundImage: `url(${chapter6Img})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',

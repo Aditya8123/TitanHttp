@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Terminal } from 'lucide-react';
+import chapter9Img from '../assets/images/chapter9.png';
 
 export const Chapter9Section: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -33,7 +34,7 @@ export const Chapter9Section: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundImage: `url(${import.meta.env.BASE_URL}images/chapter9.png)`,
+        backgroundImage: `url(${chapter9Img})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
