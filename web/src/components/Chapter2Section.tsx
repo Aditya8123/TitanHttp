@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Monitor, Server } from 'lucide-react';
 import { GlassPanel } from './ui/GlassPanel.tsx';
+import chapter2Img from '../assets/images/chapter2.png';
 
 export const Chapter2Section: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -75,7 +76,7 @@ export const Chapter2Section: React.FC = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: `url(${import.meta.env.BASE_URL}images/chapter2.png)`,
+          backgroundImage: `url(${chapter2Img})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           zIndex: 0

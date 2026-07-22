@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { GlassPanel } from './ui/GlassPanel.tsx';
 import { TerminalCard } from './ui/TerminalCard.tsx';
+import landingImg from '../assets/images/landing_page_image.png';
 
 const GoLogo = ({ width = 40, height = 15, color = "var(--color-network-cyan)" }) => (
   <svg width={width} height={height} viewBox="0 0 100 38" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -210,7 +211,7 @@ export const HeroSection: React.FC = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: `url(${import.meta.env.BASE_URL}images/landing_page_image.png)`,
+          backgroundImage: `url(${landingImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
