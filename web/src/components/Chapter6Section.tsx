@@ -48,7 +48,7 @@ export const Chapter6Section: React.FC = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        backgroundImage: 'url(/images/chapter6.png)',
+        backgroundImage: 'url(./images/chapter6.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
