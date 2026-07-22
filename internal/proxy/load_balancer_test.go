@@ -41,7 +41,7 @@ func TestLoadBalancer_BackendPool(t *testing.T) {
 	// Second call adds 1 -> idx 2 % 2 = 0 (backend1).
 	// Let's fire 4 requests and verify they alternate: 2, 1, 2, 1.
 	expectedBackends := []string{"2", "1", "2", "1"}
-	
+
 	for i, expected := range expectedBackends {
 		resp := lbHandler(req)
 		if resp.StatusCode != 200 {
@@ -82,11 +82,11 @@ func TestLoadBalancer_HealthCheckFailover(t *testing.T) {
 	lb := &LoadBalancer{
 		backends: make([]*Backend, 0, 2),
 	}
-	
+
 	b1 := &Backend{URL: target1, Alive: false}
 	b2 := &Backend{URL: target2, Alive: true}
 	lb.backends = append(lb.backends, b1, b2)
-	
+
 	req := titanhttp.NewRequest()
 	req.Method = titanhttp.MethodGet
 	req.Path = "/"

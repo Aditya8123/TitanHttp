@@ -50,7 +50,7 @@ func (tb *TokenBucket) getShard(ip string) *tokenBucketShard {
 
 // StartSweeper begins a background goroutine to periodically clean up stale IPs.
 // An IP is considered stale if it hasn't made a request in a long time (e.g., 5 minutes).
-func (tb *TokenBucket) StartSweeper(interval time.Duration, maxIdle time.Duration) {
+func (tb *TokenBucket) StartSweeper(interval, maxIdle time.Duration) {
 	go func() {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -96,7 +96,7 @@ func (tb *TokenBucket) Allow(ip string) bool {
 		if b.tokens > tb.capacity {
 			b.tokens = tb.capacity
 		}
-		// We only update lastRefill if we actually added tokens, 
+		// We only update lastRefill if we actually added tokens,
 		// but typically we can just set it to now.
 		b.lastRefill = now
 	}

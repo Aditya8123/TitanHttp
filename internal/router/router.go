@@ -95,4 +95,3 @@ func (r *Router) serveHTTP(req *http.Request) *http.Response {
 	// Fallback to 404
 	return http.NewResponse404()
 }
-

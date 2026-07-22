@@ -55,11 +55,11 @@ func (n *node) search(searchPath string, params map[string]string) Handler {
 	curr := n
 
 	// Skip leading slashes
-	for len(searchPath) > 0 && searchPath[0] == '/' {
+	for searchPath != "" && searchPath[0] == '/' {
 		searchPath = searchPath[1:]
 	}
 
-	for len(searchPath) > 0 {
+	for searchPath != "" {
 		var segment string
 		idx := strings.IndexByte(searchPath, '/')
 		if idx == -1 {
@@ -69,7 +69,7 @@ func (n *node) search(searchPath string, params map[string]string) Handler {
 			segment = searchPath[:idx]
 			searchPath = searchPath[idx+1:]
 			// Skip consecutive slashes
-			for len(searchPath) > 0 && searchPath[0] == '/' {
+			for searchPath != "" && searchPath[0] == '/' {
 				searchPath = searchPath[1:]
 			}
 		}
@@ -87,7 +87,7 @@ func (n *node) search(searchPath string, params map[string]string) Handler {
 					return nil
 				}
 				// Wildcard matched! Consume the rest of the path.
-				if len(searchPath) > 0 {
+				if searchPath != "" {
 					params[child.paramKey] = segment + "/" + searchPath
 				} else {
 					params[child.paramKey] = segment

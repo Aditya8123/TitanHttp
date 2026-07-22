@@ -45,7 +45,7 @@ func TestServerTLS(t *testing.T) {
 
 	// Give the server a moment to bind the port
 	time.Sleep(100 * time.Millisecond)
-	
+
 	addr := srv.Addr()
 	if addr == "127.0.0.1:0" || addr == "" {
 		t.Fatalf("Server failed to allocate a port")

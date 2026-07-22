@@ -32,7 +32,7 @@ func (h *Header) Add(key, value string) {
 // It replaces any existing values associated with key.
 func (h *Header) Set(key, value string) {
 	k := strings.ToLower(key)
-	
+
 	// If index is built, we can just replace the first one and remove others,
 	// or rebuild. For simplicity, we just delete and add.
 	h.Del(k)
@@ -82,7 +82,7 @@ func (h *Header) GetAll(key string) []string {
 // Del deletes the values associated with key.
 func (h *Header) Del(key string) {
 	k := strings.ToLower(key)
-	
+
 	// Fast path: rebuild entries without the key
 	var newEntries []headerEntry
 	for _, entry := range h.entries {
@@ -91,7 +91,7 @@ func (h *Header) Del(key string) {
 		}
 	}
 	h.entries = newEntries
-	
+
 	if h.index != nil {
 		h.buildIndex()
 	}

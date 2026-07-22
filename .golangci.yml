@@ -90,6 +90,20 @@ issues:
       linters:
         - forbidigo
       text: "fmt.Print"
+    # Relax strict security/errcheck rules for standalone benchmark and test helper binaries
+    - path: cmd/(compliance|nethttp_bench|securitysuite)/
+      linters:
+        - errcheck
+        - gosec
+        - gocritic
+        - staticcheck
+    # Relax strict errcheck and gosec rules in unit and integration test files
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+        - noctx
+        - staticcheck
 
 # ── Output ──────────────────────────────────────────────────
 output:

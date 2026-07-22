@@ -45,7 +45,7 @@ func TestCacheMiddleware(t *testing.T) {
 	reqPost := http.NewRequest()
 	reqPost.Method = http.MethodPost
 	reqPost.Path = "/test"
-	
+
 	handler(reqPost)
 	if callCount != 2 {
 		t.Errorf("Expected callCount to be 2 after POST, got %d", callCount)
@@ -61,14 +61,14 @@ func TestCacheMiddleware_Validation(t *testing.T) {
 		callCount++
 		resp := http.NewResponse200()
 		resp.Body = []byte("Validated")
-		
+
 		switch req.Path {
 		case "/no-store":
 			resp.Headers.Set("cache-control", "no-store")
 		case "/max-age":
 			resp.Headers.Set("cache-control", "max-age=60")
 		}
-		
+
 		return resp
 	})
 
@@ -87,7 +87,7 @@ func TestCacheMiddleware_Validation(t *testing.T) {
 	req2 := http.NewRequest()
 	req2.Method = http.MethodGet
 	req2.Path = "/max-age"
-	
+
 	handler(req2) // Miss 1 (callCount=3)
 	handler(req2) // Hit 1 (callCount=3)
 	if callCount != 3 {

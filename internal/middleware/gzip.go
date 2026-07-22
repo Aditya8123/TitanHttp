@@ -12,14 +12,14 @@ import (
 
 // CompressibleTypes maps MIME types that benefit from Gzip compression.
 var CompressibleTypes = map[string]bool{
-	"text/plain":               true,
-	"text/html":                true,
-	"text/css":                 true,
-	"application/json":         true,
-	"application/javascript":   true,
-	"application/xml":          true,
-	"text/xml":                 true,
-	"image/svg+xml":            true,
+	"text/plain":                true,
+	"text/html":                 true,
+	"text/css":                  true,
+	"application/json":          true,
+	"application/javascript":    true,
+	"application/xml":           true,
+	"text/xml":                  true,
+	"image/svg+xml":             true,
 	"text/plain; charset=utf-8": true,
 	"text/html; charset=utf-8":  true,
 	"text/css; charset=utf-8":   true,
@@ -65,7 +65,7 @@ func Gzip(next router.Handler) router.Handler {
 
 		// 4. Wrap the response in an io.Pipe and pooled gzip.Writer
 		pr, pw := io.Pipe()
-		
+
 		gw := gzipWriterPool.Get().(*gzip.Writer)
 		gw.Reset(pw)
 
@@ -86,12 +86,12 @@ func Gzip(next router.Handler) router.Handler {
 			}()
 
 			if origStream != nil {
-				io.Copy(gw, origStream)
+				_, _ = io.Copy(gw, origStream)
 				if closer, ok := origStream.(io.Closer); ok {
 					closer.Close()
 				}
 			} else if len(origBody) > 0 {
-				gw.Write(origBody)
+				_, _ = gw.Write(origBody)
 			}
 		}()
 

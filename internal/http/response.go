@@ -17,13 +17,13 @@ const (
 	StatusPartialContent StatusCode = 206
 
 	// 4xx Client Errors
-	StatusBadRequest       StatusCode = 400
-	StatusUnauthorized     StatusCode = 401
-	StatusForbidden        StatusCode = 403
-	StatusNotFound         StatusCode = 404
-	StatusMethodNotAllowed StatusCode = 405
-	StatusURITooLong       StatusCode = 414
-	StatusTooManyRequests  StatusCode = 429
+	StatusBadRequest                  StatusCode = 400
+	StatusUnauthorized                StatusCode = 401
+	StatusForbidden                   StatusCode = 403
+	StatusNotFound                    StatusCode = 404
+	StatusMethodNotAllowed            StatusCode = 405
+	StatusURITooLong                  StatusCode = 414
+	StatusTooManyRequests             StatusCode = 429
 	StatusRequestHeaderFieldsTooLarge StatusCode = 431
 
 	// 5xx Server Errors
@@ -84,19 +84,19 @@ func NewResponse() *Response {
 }
 
 var statusText = map[StatusCode]string{
-	StatusOK:                  "OK",
-	StatusCreated:             "Created",
-	StatusPartialContent:      "Partial Content",
-	StatusBadRequest:          "Bad Request",
-	StatusUnauthorized:        "Unauthorized",
-	StatusForbidden:           "Forbidden",
-	StatusNotFound:            "Not Found",
-	StatusMethodNotAllowed:    "Method Not Allowed",
-	StatusURITooLong:          "URI Too Long",
-	StatusTooManyRequests:     "Too Many Requests",
+	StatusOK:                          "OK",
+	StatusCreated:                     "Created",
+	StatusPartialContent:              "Partial Content",
+	StatusBadRequest:                  "Bad Request",
+	StatusUnauthorized:                "Unauthorized",
+	StatusForbidden:                   "Forbidden",
+	StatusNotFound:                    "Not Found",
+	StatusMethodNotAllowed:            "Method Not Allowed",
+	StatusURITooLong:                  "URI Too Long",
+	StatusTooManyRequests:             "Too Many Requests",
 	StatusRequestHeaderFieldsTooLarge: "Request Header Fields Too Large",
-	StatusInternalServerError: "Internal Server Error",
-	StatusNotImplemented:      "Not Implemented",
+	StatusInternalServerError:         "Internal Server Error",
+	StatusNotImplemented:              "Not Implemented",
 }
 
 // StatusText returns a text for the HTTP status code. It returns the empty
@@ -228,7 +228,7 @@ func (r *Response) WriteTo(w io.Writer) (int64, error) {
 // Warning: This buffers the entire response in memory. Use WriteTo for large payloads.
 func (r *Response) Bytes() []byte {
 	var b bytes.Buffer
-	r.WriteTo(&b)
+	_, _ = r.WriteTo(&b)
 	return b.Bytes()
 }
 

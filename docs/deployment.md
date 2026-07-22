@@ -29,7 +29,7 @@ Once code is merged to `main` and all CI checks pass, a release process can be t
 
 1. **Tagging:** A semantic version tag (e.g., `v1.0.0`) is pushed.
 2. **Image Build & Push:** GitHub Actions builds the Docker image and pushes it to a container registry (e.g., GitHub Container Registry or Docker Hub).
-3. **Showcase Deployment:** The premium documentation and live interactive dashboard (Phase 9) will be deployed, potentially utilizing a platform-as-a-service (PaaS) or a lightweight VPS.
+3. **Showcase Deployment:** The premium documentation and showcase website (Phase 9) will be deployed, potentially utilizing a platform-as-a-service (PaaS) or a lightweight VPS.
 
 ---
 > *Design Note: The deployment pipeline should be as deterministic and clean as the HTTP server code itself.*

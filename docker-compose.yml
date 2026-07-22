@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: titanhttp-backend
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - PORT=8080
+      - IDLE_TIMEOUT=5m
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: titanhttp-showcase
+    ports:
+      - "3000:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped

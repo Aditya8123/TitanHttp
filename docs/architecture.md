@@ -4,6 +4,8 @@
 
 TitanHTTP is designed to process HTTP requests efficiently, cleanly, and concurrently. Rather than relying on Go's `net/http` package, this project implements the fundamental networking and protocol parsing required to serve web traffic. 
 
+![Architecture Blueprint](./assets/screenshots/architecture_page.png)
+
 ## The Request Lifecycle
 
 The architecture is modeled as a pipeline, where a raw stream of bytes is systematically transformed into a structured HTTP Response.

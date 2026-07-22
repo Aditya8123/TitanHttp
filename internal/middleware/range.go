@@ -26,13 +26,13 @@ func Range(next router.Handler) router.Handler {
 			if len(parts) == 2 {
 				start, err1 := strconv.Atoi(parts[0])
 				end, err2 := strconv.Atoi(parts[1])
-				
+
 				if err1 == nil && err2 == nil && start >= 0 && end >= start && end < len(resp.Body) {
 					resp.StatusCode = http.StatusPartialContent
-					
+
 					origLen := len(resp.Body)
 					resp.Body = resp.Body[start : end+1]
-					
+
 					resp.Headers.Set("Content-Range", "bytes "+strconv.Itoa(start)+"-"+strconv.Itoa(end)+"/"+strconv.Itoa(origLen))
 					resp.Headers.Set("Content-Length", strconv.Itoa(len(resp.Body)))
 				}

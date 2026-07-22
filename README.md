@@ -2,6 +2,8 @@
 
 > A cinematic orchestration of raw infrastructure. Visualizing the invisible.
 
+![TitanHTTP Hero Section](./docs/assets/screenshots/hero_section.png)
+
 TitanHTTP is a production-inspired HTTP server built completely from scratch in Go. It is not just a backend system; it is an immersive, educational, and premium engineering experience designed to demystify the core of web infrastructure.
 
 Here, data packets don't just transfer—they move like light through a datacenter. Invisible systems become visible. Complexity is revealed progressively, and motion always has meaning.
@@ -24,6 +26,8 @@ TitanHTTP was built for raw, data-driven optimizations, profiling, regression te
 | **Concurrent Connections** (`C200/Keep-Alive`) | **68,172 req/s** | 38,043 req/s | **+84.1% (Winner)** |
 | **P99 Latency (Max Load)** | **4.76 ms** | 11.06 ms | **-56.9% (Winner)** |
 | **Memory Leak Profile** | **0 MB Leaked** | 0 MB Leaked | **Stable (after 500K requests)** |
+
+![TitanHTTP Telemetry Dashboard](./docs/assets/screenshots/why_dashboard.png)
 
 ### 🛠️ Key Technical Achievements & Optimizations
 
@@ -64,14 +68,18 @@ powershell -File ./scripts/bench/bench.ps1
 The project is structured as a guided narrative. A visitor follows a single packet through the entire lifecycle:
 
 * **Chapter 1:** Why HTTP Exists
-* **Chapter 2:** TCP
+* **Chapter 2:** TCP (Reliable byte streams)
+  ![Chapter 2: TCP Syn/Ack WebGL](./docs/assets/screenshots/chapter2_tcp.png)
 * **Chapter 3:** Building a Socket
 * **Chapter 4:** Reading Bytes
-* **Chapter 5:** Parsing Requests
+* **Chapter 5:** Parsing Requests (Wire-format decoding)
+  ![Chapter 5: Request Parsing Terminal](./docs/assets/screenshots/chapter5_parsing.png)
 * **Chapter 6:** Routing
-* **Chapter 7:** Concurrency
+* **Chapter 7:** Concurrency (Thread pool scheduling)
+  ![Chapter 7: Worker Pool Concurrency](./docs/assets/screenshots/chapter7_concurrency.png)
 * **Chapter 8:** Production Features
-* **Chapter 9:** Benchmarks
+* **Chapter 9:** Benchmarks (Telemetry graphs)
+  ![Chapter 9: Telemetry & Benchmarks](./docs/assets/screenshots/why_dashboard.png)
 * **Chapter 10:** Source Code
 
 *(See [phases.md](./docs/phases.md) for the strict engineering roadmap.)*
@@ -92,6 +100,8 @@ Our documentation is treated as a first-class, premium editorial experience. Rea
 
 ## 🛠️ Quick Start
 
+### 1. Run the Go Server (Backend)
+To boot the pure Go HTTP server and run it locally:
 ```bash
 # Clone the repository
 git clone https://github.com/Aditya8123/TitanHttp.git
@@ -99,8 +109,48 @@ git clone https://github.com/Aditya8123/TitanHttp.git
 # Enter the datacenter
 cd TitanHttp
 
-# Boot the server
+# Boot the Go server
 go run cmd/titanhttp/main.go
+```
+The server will start listening on port `8080` (or `8443` for HTTPS).
+
+### 2. Host the Showcase Website (Frontend)
+The Showcase Website is built using React, TypeScript, and Vite. To install dependencies and host it locally:
+```bash
+# Enter the web directory
+cd web
+
+# Install Node.js dependencies
+npm install
+
+# Start the Vite development server
+npm run dev
+```
+Once the dev server is active, open your browser and navigate to the address shown in the output (typically `http://localhost:5173`) to view the Showcase Website.
+
+### 3. Run via Docker & Docker Compose
+To run both the backend server and the showcase website in a production-like containerized environment using Docker:
+
+#### Using Docker Compose (Full Stack)
+Spin up both the hardened Go backend and the Nginx-hosted React website simultaneously:
+```bash
+# Build and start both containers in the foreground
+docker compose up --build
+
+# Or start in detached mode
+docker compose up -d --build
+```
+- **Showcase Website:** Open `http://localhost:3000`
+- **Go Backend API:** Access `http://localhost:8080` (or secure `https://localhost:8443`)
+
+#### Using Standalone Docker (Go Backend Only)
+To build and run just the hardened, statically linked Go server container:
+```bash
+# Build the backend Docker image
+docker build -t titanhttp-backend .
+
+# Run the container (mapping port 8080)
+docker run -p 8080:8080 titanhttp-backend
 ```
 
 ---

@@ -79,7 +79,7 @@ func (r *Request) WithContext(ctx context.Context) *Request {
 var requestPool = sync.Pool{
 	New: func() interface{} {
 		return &Request{
-			Params:  make(map[string]string),
+			Params: make(map[string]string),
 		}
 	},
 }
@@ -103,7 +103,7 @@ func ReleaseRequest(req *Request) {
 	req.ctx = nil
 
 	req.Headers.Reset()
-	
+
 	for k := range req.Params {
 		delete(req.Params, k)
 	}
@@ -138,12 +138,12 @@ func (r *Request) Validate() error {
 // WantsKeepAlive determines if the client wants to maintain a persistent connection.
 func (r *Request) WantsKeepAlive() bool {
 	connHeader := r.Headers.Get("connection")
-	
+
 	if r.Version == "HTTP/1.1" {
 		// HTTP/1.1 is keep-alive by default, unless "close" is specified.
 		return connHeader != "close"
 	}
-	
+
 	// HTTP/1.0 is close by default, unless "keep-alive" is explicitly specified.
 	return connHeader == "keep-alive"
 }
@@ -188,4 +188,3 @@ func (r *Request) WriteTo(w io.Writer) (int64, error) {
 
 	return totalWritten, nil
 }
-
