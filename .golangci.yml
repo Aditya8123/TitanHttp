@@ -8,7 +8,7 @@
 # ── Runner ───────────────────────────────────────────────────
 run:
   timeout: 3m
-  go: "1.26"
+  go: "1.24"
   # Don't lint test files yet — tests land in Phase 2+.
   tests: true
 
