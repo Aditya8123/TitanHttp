@@ -75,7 +75,7 @@ export const Chapter2Section: React.FC = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: 'url(/images/chapter2.png)',
+          backgroundImage: 'url(./images/chapter2.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           zIndex: 0
