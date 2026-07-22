@@ -122,10 +122,9 @@ func BenchmarkMiddlewareChain_10Layers(b *testing.B) {
 	req := http.NewRequest()
 	req.Method = http.MethodGet
 
-	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = finalHandler(req)
 	}
 }
