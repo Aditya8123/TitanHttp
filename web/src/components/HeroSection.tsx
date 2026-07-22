@@ -210,7 +210,7 @@ export const HeroSection: React.FC = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: 'url(./images/landing_page_image.png)',
+          backgroundImage: `url(${import.meta.env.BASE_URL}images/landing_page_image.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
