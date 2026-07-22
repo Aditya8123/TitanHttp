@@ -120,10 +120,9 @@ func BenchmarkRouterStatic(b *testing.B) {
 	r := setupBenchmarkRouter()
 	req := &http.Request{Method: http.MethodGet, Path: "/hello", Params: make(map[string]string)}
 
-	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = r.ServeHTTP(req)
 	}
 }
@@ -132,10 +131,9 @@ func BenchmarkRouterParams(b *testing.B) {
 	r := setupBenchmarkRouter()
 	req := &http.Request{Method: http.MethodGet, Path: "/users/12345", Params: make(map[string]string)}
 
-	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = r.ServeHTTP(req)
 	}
 }
@@ -144,10 +142,9 @@ func BenchmarkRouterWildcard(b *testing.B) {
 	r := setupBenchmarkRouter()
 	req := &http.Request{Method: http.MethodGet, Path: "/static/css/main.css", Params: make(map[string]string)}
 
-	b.ResetTimer()
 	b.ReportAllocs()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = r.ServeHTTP(req)
 	}
 }
